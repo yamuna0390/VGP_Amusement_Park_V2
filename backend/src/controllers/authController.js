@@ -1,4 +1,5 @@
-const authService = require("../services/authService");
+const authService = require("../services/auth/authService");
+const response = require("../utils/response");
 
 /**
  * Register User
@@ -7,18 +8,20 @@ async function register(req, res) {
   try {
     const result = await authService.register(req.body);
 
-    return res.status(201).json({
-      success: true,
-      message: result.message,
-      data: {
+    return response.success(
+      res,
+      result.message,
+      {
         id: result.id,
       },
-    });
+      201
+    );
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return response.error(
+      res,
+      error.message,
+      400
+    );
   }
 }
 
@@ -31,16 +34,17 @@ async function login(req, res) {
 
     const result = await authService.login(email, password);
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: result,
-    });
+    return response.success(
+      res,
+      "Login successful",
+      result
+    );
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: error.message,
-    });
+    return response.error(
+      res,
+      error.message,
+      401
+    );
   }
 }
 

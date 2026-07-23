@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { login } from "../../services/authService";
+import { login as loginService } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginForm({ switchToRegister, onClose }) {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ export default function LoginForm({ switchToRegister, onClose }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -28,20 +31,22 @@ export default function LoginForm({ switchToRegister, onClose }) {
     setError("");
 
     try {
-      const response = await login(formData);
+      // Call Backend Login API
+      const response = await loginService(formData);
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Save user & token using AuthContext
+      login(
+        response.data.user,
+        response.data.token
+      );
 
       alert("Login successful!");
 
       if (onClose) {
         onClose();
       }
-
-      window.location.reload();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -49,7 +54,6 @@ export default function LoginForm({ switchToRegister, onClose }) {
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
-
       {error && (
         <p style={{ color: "red", marginBottom: "10px" }}>
           {error}
@@ -91,7 +95,10 @@ export default function LoginForm({ switchToRegister, onClose }) {
       </button>
 
       <div className="forgot-password">
-        <button type="button" className="link-btn">
+        <button
+          type="button"
+          className="link-btn"
+        >
           Forgot Password?
         </button>
       </div>

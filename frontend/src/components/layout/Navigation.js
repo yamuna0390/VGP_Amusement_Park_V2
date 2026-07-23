@@ -1,15 +1,26 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AuthModal from "../auth/AuthModal";
+import { useAuth } from "@/context/AuthContext";
+
 export default function Navigation() {
- const [drawerOpen, setDrawerOpen] = useState(false);
- const [authOpen, setAuthOpen] = useState(false);
- const [isRegister, setIsRegister] = useState(false);
- const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+
+  const { user, logout } = useAuth();
+
+  const pathname = usePathname();
 
   const toggleDrawer = (state) => setDrawerOpen(state);
+
+  const handleLogout = () => {
+    logout();
+    alert("Logged out successfully.");
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -46,16 +57,27 @@ export default function Navigation() {
           <Link href="/book" className="btn-book" id="nav-book-btn">
             🎟️ Book Now
           </Link>
-        <button
-  className="btn-login"
-  id="nav-login-btn"
-  onClick={() => {
-    setIsRegister(false);
-    setAuthOpen(true);
-  }}
->
-  👤 Login
-</button>
+
+          {user ? (
+            <button
+              className="btn-login"
+              onClick={handleLogout}
+            >
+              👤 {user.fullName} | Logout
+            </button>
+          ) : (
+            <button
+              className="btn-login"
+              id="nav-login-btn"
+              onClick={() => {
+                setIsRegister(false);
+                setAuthOpen(true);
+              }}
+            >
+              👤 Login
+            </button>
+          )}
+
           <button
             className="hamburger"
             id="nav-hamburger"
@@ -75,37 +97,106 @@ export default function Navigation() {
 
       {/* Drawer */}
       <div className={`drawer ${drawerOpen ? "open" : ""}`} id="drawer">
-        <button className="close" onClick={() => toggleDrawer(false)} aria-label="Close menu">✕</button>
-        <Link href="/" onClick={() => toggleDrawer(false)}>🏰 Home</Link>
-        <Link href="/rides" onClick={() => toggleDrawer(false)}>🎢 Rides</Link>
-        <Link href="/restaurant" onClick={() => toggleDrawer(false)}>🍽️ Restaurant</Link>
-        <Link href="/group" onClick={() => toggleDrawer(false)}>🚌 Group</Link>
-        <Link href="/offers" onClick={() => toggleDrawer(false)}>🎁 Offers</Link>
-        <Link href="/parks" onClick={() => toggleDrawer(false)}>🌴 Parks</Link>
-        <Link href="/book" onClick={() => toggleDrawer(false)}>🎟️ Book Now</Link>
-       
-       <a
-        onClick={() => {
-      toggleDrawer(false);
-      setIsRegister(false);
-      setAuthOpen(true);
-        }} style={{ cursor: "pointer" }}>
-        🔑 Login
-     </a>
-        <Link href="/contact" onClick={() => toggleDrawer(false)}>📞 Contact Us</Link>
-        <Link href="/events" onClick={() => toggleDrawer(false)}>🎪 Events</Link>
-        <Link href="/banquet" onClick={() => toggleDrawer(false)}>💒 Banquet Hall — Sea Thru</Link>
-        <Link href="/stay" onClick={() => toggleDrawer(false)}>🛏️ Stay — Room Bookings</Link>
-        <Link href="/awards" onClick={() => toggleDrawer(false)}>🏆 Awards</Link>
-        <a onClick={() => { toggleDrawer(false); alert("Tour Operator Login"); }} style={{cursor:'pointer'}}>🧳 Tour Operator&apos;s Login</a>
-        <Link href="/about" onClick={() => toggleDrawer(false)}>👑 About Us</Link>
+        <button
+          className="close"
+          onClick={() => toggleDrawer(false)}
+          aria-label="Close menu"
+        >
+          ✕
+        </button>
+
+        <Link href="/" onClick={() => toggleDrawer(false)}>
+          🏰 Home
+        </Link>
+
+        <Link href="/rides" onClick={() => toggleDrawer(false)}>
+          🎢 Rides
+        </Link>
+
+        <Link href="/restaurant" onClick={() => toggleDrawer(false)}>
+          🍽️ Restaurant
+        </Link>
+
+        <Link href="/group" onClick={() => toggleDrawer(false)}>
+          🚌 Group
+        </Link>
+
+        <Link href="/offers" onClick={() => toggleDrawer(false)}>
+          🎁 Offers
+        </Link>
+
+        <Link href="/parks" onClick={() => toggleDrawer(false)}>
+          🌴 Parks
+        </Link>
+
+        <Link href="/book" onClick={() => toggleDrawer(false)}>
+          🎟️ Book Now
+        </Link>
+
+        {user ? (
+          <a
+            onClick={() => {
+              toggleDrawer(false);
+              handleLogout();
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            🚪 Logout
+          </a>
+        ) : (
+          <a
+            onClick={() => {
+              toggleDrawer(false);
+              setIsRegister(false);
+              setAuthOpen(true);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            🔑 Login
+          </a>
+        )}
+
+        <Link href="/contact" onClick={() => toggleDrawer(false)}>
+          📞 Contact Us
+        </Link>
+
+        <Link href="/events" onClick={() => toggleDrawer(false)}>
+          🎪 Events
+        </Link>
+
+        <Link href="/banquet" onClick={() => toggleDrawer(false)}>
+          💒 Banquet Hall — Sea Thru
+        </Link>
+
+        <Link href="/stay" onClick={() => toggleDrawer(false)}>
+          🛏️ Stay — Room Bookings
+        </Link>
+
+        <Link href="/awards" onClick={() => toggleDrawer(false)}>
+          🏆 Awards
+        </Link>
+
+        <a
+          onClick={() => {
+            toggleDrawer(false);
+            alert("Tour Operator Login");
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          🧳 Tour Operator&apos;s Login
+        </a>
+
+        <Link href="/about" onClick={() => toggleDrawer(false)}>
+          👑 About Us
+        </Link>
       </div>
+
       <AuthModal
-  isOpen={authOpen}
-  onClose={() => setAuthOpen(false)}
-  isRegister={isRegister}
-  setIsRegister={setIsRegister}
-/>
+        isOpen={authOpen}
+        onClose={() => setAuthOpen(false)}
+        isRegister={isRegister}
+        setIsRegister={setIsRegister}
+      />
     </>
   );
 }

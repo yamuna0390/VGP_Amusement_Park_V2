@@ -1,37 +1,54 @@
 "use client";
+
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  
+
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("ukdUser");
-      if (stored) {
-        setUser(JSON.parse(stored));
+      const storedUser = localStorage.getItem("user");
+
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
-    } catch (e) {}
+    } catch (error) {
+      console.error(error);
+    }
   }, []);
 
-  const login = (emailOrPhone, isOp, code) => {
-    const newUser = { user: emailOrPhone, operator: isOp, code, ts: Date.now() };
-    setUser(newUser);
+  const login = (userData, token) => {
+    setUser(userData);
+
     try {
-      localStorage.setItem("ukdUser", JSON.stringify(newUser));
-    } catch (e) {}
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", token);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const logout = () => {
     setUser(null);
+
     try {
-      localStorage.removeItem("ukdUser");
-    } catch (e) {}
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -42,11 +42,13 @@ export default function AuthModal({
           {isRegister ? (
             <RegisterForm
               switchToLogin={() => setIsRegister(false)}
+               onClose={onClose}
             />
           ) : (
-            <LoginForm
+          <LoginForm
               switchToRegister={() => setIsRegister(true)}
-            />
+              onClose={onClose}
+          />
           )}
         </div>
       </div>

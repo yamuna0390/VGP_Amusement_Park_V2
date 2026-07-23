@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
-
+const bookingRoutes = require("./routes/bookingRoutes");
 const app = express();
 
 // Enable CORS
@@ -26,5 +26,6 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 module.exports = app;
