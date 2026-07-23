@@ -1,0 +1,124 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+
+import {
+  LayoutDashboard,
+  CalendarCheck,
+  Users,
+  FerrisWheel,
+  Ticket,
+  UtensilsCrossed,
+  BadgePercent,
+  CalendarDays,
+  Image as ImageIcon,
+  CreditCard,
+  MessageSquare,
+  Settings,
+} from "lucide-react";
+
+import "./Sidebar.css";
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
+  const menus = [
+    {
+      name: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Bookings",
+      href: "/admin/bookings",
+      icon: CalendarCheck,
+    },
+    {
+      name: "Users",
+      href: "/admin/users",
+      icon: Users,
+    },
+    {
+      name: "Attractions",
+      href: "/admin/attractions",
+      icon: FerrisWheel,
+    },
+    {
+      name: "Ticket Types",
+      href: "/admin/ticket-types",
+      icon: Ticket,
+    },
+    {
+      name: "Food Items",
+      href: "/admin/food-items",
+      icon: UtensilsCrossed,
+    },
+    {
+      name: "Offers",
+      href: "/admin/offers",
+      icon: BadgePercent,
+    },
+    {
+      name: "Events",
+      href: "/admin/events",
+      icon: CalendarDays,
+    },
+    {
+      name: "Gallery",
+      href: "/admin/gallery",
+      icon: ImageIcon,
+    },
+    {
+      name: "Payments",
+      href: "/admin/payments",
+      icon: CreditCard,
+    },
+    {
+      name: "Contact",
+      href: "/admin/contact",
+      icon: MessageSquare,
+    },
+    {
+      name: "Settings",
+      href: "/admin/settings",
+      icon: Settings,
+    },
+  ];
+
+  return (
+    <aside className="admin-sidebar">
+      <div className="sidebar-top">
+        <Image
+          src="/images/ukdlogo-1.png"
+          alt="VGP Logo"
+          width={80}
+          height={80}
+        />
+
+        <h2>VGP Universal Kingdom</h2>
+
+        <p>Admin Portal</p>
+      </div>
+
+      <nav className="sidebar-menu">
+        {menus.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={pathname === item.href ? "active" : ""}
+            >
+              <Icon size={20} />
+
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </aside>
+  );
+}

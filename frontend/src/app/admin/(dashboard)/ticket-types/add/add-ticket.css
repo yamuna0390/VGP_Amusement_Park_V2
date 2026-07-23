@@ -1,0 +1,9 @@
+.add-ticket-page {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.add-ticket-page h1 {
+    margin-bottom: 10px;
+}

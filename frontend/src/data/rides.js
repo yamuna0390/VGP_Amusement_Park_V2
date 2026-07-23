@@ -1,0 +1,48 @@
+﻿export const rides = [
+/* ---- FAMILY (5) ---- */
+{n:"Tea Cup",m:"Okamoto Â· Japan",c:"family",i:"teacup",bg:"bg-blue",d:"Climb into a colourful teacup and spin your way through a cheerful adventure. Gentle thrills, playful turns and plenty of laughter."},
+{n:"Telecombat",m:"Okamoto Â· Japan",c:"family",ph:"Sky War on Telecombat",bg:"bg-purple",d:"Take control of your own flying vehicle as you rise, dip and circle through the air. Every rider gets a playful aerial adventure."},
+{n:"Merry-Go-Round",m:"Okamoto Â· Japan",c:"family",i:"carousel",bg:"bg-blue",d:"Ride beautifully crafted horses to gentle movement and cheerful music. A timeless, magical classic for children and families."},
+{n:"Balloon Racer",m:"Okamoto Â· Japan",c:"family",ph:"Balloon Racer",bg:"bg-green",d:"Climb into a colourful balloon-shaped gondola and gently rise into the air. Smooth circles and delightful views for the family."},
+{n:"Crazy Plane",m:"Zamperla Â· Italy",c:"family",i:"plane",bg:"bg-blue",d:"Take flight as the Crazy Plane spins, rises and moves through the air. Gentle thrills with the exciting sensation of flying."},
+/* ---- ADULT (13) ---- */
+{n:"Flying Machine",m:"Zamperla Â· Italy",c:"adult",ph:"Flying Machine",bg:"bg-yellow",d:"Take to the skies as the Flying Machine rises and circles through the air. The exciting feeling of true flight."},
+{n:"Power Surge",m:"Zamperla Â· Italy",c:"adult",ph:"Top Gun",bg:"bg-purple",d:"Brace yourself for powerful spins, sweeping swings and unexpected changes in direction. An electrifying mix of speed, height and adrenaline."},
+{n:"Rock & Roll",m:"Okamoto Â· Japan",c:"adult",i:"spinner",bg:"bg-green",d:"Get ready to spin, twist and rock through an energetic adventure. Fast rotations and lively movements deliver non-stop excitement."},
+{n:"Giant Wheel",m:"UKD Classic",c:"adult",ph:"Ferris Wheel",bg:"bg-purple",d:"Rise high above the park and enjoy beautiful panoramic views from the top. See the whole Kingdom â€” and the sea â€” from the very top."},
+{n:"Octopus",m:"Okamoto Â· Japan",c:"adult",i:"octopus",bg:"bg-yellow",d:"Hold on as the giant arms spin, rise and dip in different directions. Speed and unpredictable movement make it thrillingly lively."},
+{n:"Flash Dance",m:"Okamoto Â· Japan",c:"adult",i:"spinner",bg:"bg-yellow",d:"Feel the rush as the ride spins rapidly and changes direction without warning. A dazzling adventure of speed and surprise."},
+{n:"Discoâ€™16",m:"Zamperla Â· Italy",c:"adult",i:"disco",bg:"bg-yellow",d:"Ride a giant spinning disc that sweeps back and forth along a curved track. Rotation, speed and soaring movement in one unforgettable thrill."},
+{n:"Jumping Tower",m:"Moser Rides",c:"adult",i:"tower",bg:"bg-blue",d:"Rise high above the ground before bouncing through exciting drops. Weightless moments, laughter and adventure combined."},
+{n:"Viking",m:"Okamoto Â· Japan",c:"adult",i:"ship",bg:"bg-blue",d:"Set sail aboard a giant ship that swings higher with every movement. Exciting drops and moments of pure weightlessness."},
+{n:"Flying Tiger",m:"UKD Classic",c:"adult",i:"pendulum",bg:"bg-red",d:"Leap on the tiger's back as it swoops and circles high above the midway. A roaring adventure of speed and sweeping turns."},
+{n:"Wave Swinger",m:"Okamoto Â· Japan",c:"adult",i:"swinger",bg:"bg-purple",d:"Soar through the air as colourful chairs rise, tilt and circle gracefully. A refreshing feeling of freedom, speed and excitement."},
+{n:"Mixer",m:"Zamperla Â· Italy",c:"adult",i:"spinner",bg:"bg-purple",d:"Prepare for powerful spins and sweeping rotations on this high-energy attraction. Intense, pulse-racing fun for adventure lovers."},
+{n:"Roller Coaster",m:"UKD Classic",c:"adult",ph:"Roller Coaster",bg:"bg-red",d:"Race through exciting twists, sharp turns and thrilling drops at high speed. A heart-pounding adventure riders will remember."},
+/* ---- CHILD (4) ---- */
+{n:"Fun Clown",m:"UKD Classic",c:"child",i:"clown",bg:"bg-green",d:"Join the cheerful Fun Clown for a colourful ride filled with smiles. Gentle movement makes it perfect for young children."},
+{n:"Flying Chair",m:"Omes",c:"child",i:"swinger",bg:"bg-red",d:"Colourful chairs gently spin little adventurers through the air. Smooth movement for a safe, joyful feeling of flight."},
+{n:"Aladdin",m:"Omes",c:"child",i:"carpet",bg:"bg-yellow",d:"Embark on a magical journey aboard a colourful flying carpet. Gentle spins make an enchanting family adventure."},
+{n:"Jet Star",m:"Okamoto Â· Japan",c:"child",i:"coaster",bg:"bg-purple",d:"Hold on tight as the mini coaster races through drops and sweeping curves. The perfect first taste of coaster thrills."},
+/* ---- WATER PARK (11) ---- */
+{n:"Surfing Pool",m:"Aqua Kingdom",c:"water",e:"ðŸ„",bg:"bg-blue",d:"Catch the Kingdom's rolling surf right beside the Bay of Bengal. Body-surf the swells and ride wave after wave."},
+{n:"Wave Pool",m:"Aqua Kingdom",c:"water",e:"ðŸŒŠ",bg:"bg-purple",d:"Dive into rolling waves in the Kingdom's giant wave pool. Thousands of gallons of swirling, splashing fun for everyone."},
+{n:"Tornado",m:"Aqua Kingdom",c:"water",e:"ðŸŒªï¸",bg:"bg-green",d:"Spiral down the giant funnel and whirl like you're inside a storm. The splashdown is worth every scream."},
+{n:"Deep Sea",m:"Aqua Kingdom",c:"water",e:"ðŸ¤¿",bg:"bg-blue",d:"Take a plunge into the deepest pool in the park. Cool off, float about and dive like a pro."},
+{n:"River Ride",m:"Aqua Kingdom",c:"water",e:"ðŸ›Ÿ",bg:"bg-yellow",d:"Grab a float and drift along the winding river. The current does the walking while you do the laughing."},
+{n:"Kurinji Falls",m:"Aqua Kingdom",c:"water",e:"ðŸžï¸",bg:"bg-green",d:"Stand beneath the thundering waterfall and feel the hills come to Chennai. Nature's massage, Kingdom style."},
+{n:"Multi Mat Racer",m:"Aqua Kingdom",c:"water",e:"ðŸ›",bg:"bg-red",d:"Grab a mat, pick a lane and race your friends head-first to the splash finish. May the fastest slider win!"},
+{n:"Multi Double Slide",m:"Aqua Kingdom",c:"water",e:"ðŸ›",bg:"bg-purple",d:"Twin twisting slides running side by side â€” double the lanes, double the fun. Perfect for a friendly face-off."},
+{n:"Multi Body Slide (Open & Closed)",m:"Aqua Kingdom",c:"water",e:"ðŸ’¦",bg:"bg-blue",d:"Choose the open chute for the views or the closed tube for the thrill of the dark. Either way, you land with a mighty splash."},
+{n:"Kids' Water Slide",m:"Aqua Kingdom",c:"water",e:"ðŸ§’",bg:"bg-yellow",d:"Gentle mini slides made just for the little splashers. Safe, shallow and seriously fun."},
+{n:"Rain Dance",m:"Aqua Kingdom",c:"water",ph:"Rain Dance",bg:"bg-purple",d:"We play thumping music and we know kids dance when they see water. You'll never find a kid sing rain-rain-go-away here!"},
+/* ---- PETTING ZOO (8) ---- */
+{n:"Pigeon",m:"Pet Zoo",c:"zoo",e:"ðŸ•Šï¸",bg:"bg-blue",d:"Watch fluffy fantails and homing pigeons strut and coo. Gentle enough for the smallest visitors to greet."},
+{n:"Emu",m:"Pet Zoo",c:"zoo",e:"ðŸ¦¤",bg:"bg-green",d:"Meet the giant flightless wonder from Australia. Watch it stride, stare and steal the show."},
+{n:"Country Chicken",m:"Pet Zoo",c:"zoo",e:"ðŸ“",bg:"bg-yellow",d:"Say hello to proud roosters and clucking hens of the good old country breed. Farm life, up close."},
+{n:"Ducks",m:"Pet Zoo",c:"zoo",e:"ðŸ¦†",bg:"bg-blue",d:"Follow the waddling parade around the pond. Splashy landings guaranteed."},
+{n:"Rabbits",m:"Pet Zoo",c:"zoo",e:"ðŸ‡",bg:"bg-green",d:"Soft, twitchy-nosed and endlessly adorable. The cuddliest corner of the whole Kingdom."},
+{n:"Sanganoor Parrots",m:"Pet Zoo",c:"zoo",e:"ðŸ¦œ",bg:"bg-red",d:"Bright green chatterboxes with plenty of opinions. Listen closely â€” they might just say hello first."},
+{n:"Cockatoos",m:"Pet Zoo",c:"zoo",e:"ðŸ¦",bg:"bg-purple",d:"Crested show-offs who love an audience. Expect head-bobs, squawks and dance moves."},
+{n:"Macaws",m:"Pet Zoo",c:"zoo",e:"ðŸ¦œ",bg:"bg-yellow",d:"Rainbow giants of the parrot world. Big, bold, brilliant â€” and very photogenic."}
+];

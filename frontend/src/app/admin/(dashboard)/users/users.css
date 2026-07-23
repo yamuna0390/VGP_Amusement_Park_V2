@@ -1,0 +1,35 @@
+.users-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.users-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.users-page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.users-page-subtitle {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.users-export-btn {
+    height: 40px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}

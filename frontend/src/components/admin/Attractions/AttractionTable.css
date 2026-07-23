@@ -1,0 +1,97 @@
+/* Attraction image */
+
+.attraction-image-placeholder {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 10px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+}
+
+/* Optional width adjustments */
+
+.admin-table th:nth-child(2),
+.admin-table td:nth-child(2) {
+  width: 70px;
+  text-align: center;
+}
+
+.admin-table th:nth-child(3),
+.admin-table td:nth-child(3) {
+  min-width: 200px;
+}
+
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4) {
+  min-width: 150px;
+}
+
+.admin-table th:nth-child(5),
+.admin-table td:nth-child(5) {
+  width: 120px;
+}
+
+.admin-table th:nth-child(6),
+.admin-table td:nth-child(6) {
+  width: 130px;
+}
+
+.admin-table th:nth-child(7),
+.admin-table td:nth-child(7) {
+  width: 120px;
+}
+
+.admin-table th:nth-child(8),
+.admin-table td:nth-child(8) {
+  width: 150px;
+}
+.page-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.filter-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.filter-left input {
+  width: 320px;
+}
+
+.filter-left select {
+  width: 180px;
+}
+
+.page-filters .btn-primary {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .page-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-left {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filter-left input,
+  .filter-left select,
+  .page-filters .btn-primary {
+    width: 100%;
+  }
+}

@@ -1,0 +1,181 @@
+/* ==========================================================
+   ADMIN TABLE (Common)
+========================================================== */
+
+/* Card */
+
+.admin-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Scroll */
+
+.admin-table-scroll {
+  overflow-x: auto;
+}
+
+/* Table */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+/* Header */
+
+.admin-table thead {
+  background: #f8fafc;
+}
+
+.admin-table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+/* Body */
+
+.admin-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.admin-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Alignment */
+
+.admin-text-center {
+  text-align: center;
+}
+
+.admin-text-right {
+  text-align: right;
+}
+
+/* Common Text */
+
+.admin-id {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.admin-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.admin-email {
+  color: #64748b;
+}
+
+.admin-amount {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Action Buttons */
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-action-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.admin-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* View */
+
+.admin-view {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.admin-view:hover {
+  background: #dbeafe;
+}
+
+/* Edit */
+
+.admin-edit {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.admin-edit:hover {
+  background: #ffedd5;
+}
+
+/* Delete */
+
+.admin-delete {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.admin-delete:hover {
+  background: #fee2e2;
+}
+
+/* Print */
+
+.admin-print {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.admin-print:hover {
+  background: #dcfce7;
+}
+
+/* Disabled */
+
+.admin-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Empty State */
+
+.admin-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}

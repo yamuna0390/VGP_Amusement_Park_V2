@@ -1,0 +1,101 @@
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+/* Group */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* Inputs */
+.filter-select,
+.filter-date {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 155px;
+}
+
+.filter-select:focus,
+.filter-date:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* Visual divider between dropdown filters and date filters */
+.filter-divider {
+  width: 1px;
+  height: 40px;
+  background: #e2e8f0;
+  align-self: flex-end;
+  flex-shrink: 0;
+}
+
+/* Actions */
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.filter-apply-btn,
+.filter-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.filter-apply-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.filter-apply-btn:hover {
+  background: #1d4ed8;
+}
+
+.filter-reset-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-reset-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}

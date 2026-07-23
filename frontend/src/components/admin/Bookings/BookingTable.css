@@ -1,0 +1,95 @@
+/* ==========================================================
+   BOOKING TABLE (Module Specific)
+   Only styles unique to the Booking module.
+========================================================== */
+
+/* ──────────────────────────────────────────────────────────
+   Scroll Wrapper
+────────────────────────────────────────────────────────── */
+
+.admin-table-scroll {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Sticky Header
+────────────────────────────────────────────────────────── */
+
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Sort
+────────────────────────────────────────────────────────── */
+
+.bt-th-sortable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bt-th-sortable:hover {
+  color: #2563eb;
+}
+
+.bt-sort-icon {
+  margin-left: 4px;
+  vertical-align: middle;
+  color: #cbd5e1;
+}
+
+.bt-sort-active {
+  color: #2563eb;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Ticket Column
+────────────────────────────────────────────────────────── */
+
+.bt-ticket-type {
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 180px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Empty State
+────────────────────────────────────────────────────────── */
+
+.bt-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.bt-empty-icon {
+  color: #cbd5e1;
+  margin-bottom: 20px;
+}
+
+.bt-empty-state h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.bt-empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}

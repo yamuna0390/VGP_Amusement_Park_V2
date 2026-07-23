@@ -1,0 +1,77 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+}
+.modal-box {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  width: 600px;
+  max-width: 95vw;
+  max-height: 90vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sizes */
+
+.modal-sm {
+  width: 420px;
+}
+
+.modal-md {
+  width: 600px;
+}
+
+.modal-lg {
+  width: 800px;
+}
+
+.modal-xl {
+  width: 1000px;
+}
+
+.modal-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
