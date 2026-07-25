@@ -77,7 +77,38 @@ async function login(email, password) {
   };
 }
 
+async function updateProfile(userId, email, phone) {
+  // Check if user exists
+  const user = await authRepository.findUserById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // If email changes, make sure it is not taken by another user
+  if (email.toLowerCase() !== user.email.toLowerCase()) {
+    const existingUser = await authRepository.findUserByEmail(email);
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error("Email is already registered by another account");
+    }
+  }
+
+  // Update profile in DB
+  await authRepository.updateUserProfile(userId, email, phone);
+
+  // Fetch and return the updated user details
+  const updatedUser = await authRepository.findUserById(userId);
+
+  return {
+    id: updatedUser.id,
+    fullName: updatedUser.full_name,
+    email: updatedUser.email,
+    phone: updatedUser.phone,
+    role: updatedUser.role,
+  };
+}
+
 module.exports = {
   register,
   login,
+  updateProfile,
 };

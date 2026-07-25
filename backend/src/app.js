@@ -3,29 +3,56 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+
+const errorMiddleware = require("./middleware/errorMiddleware");
+
 const app = express();
 
-// Enable CORS
+// ----------------------------
+// CORS
+// ----------------------------
 app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
+    cors({
+        origin: "http://localhost:3000",
+        credentials: true,
+    })
 );
 
-// Middleware
+// ----------------------------
+// Body Parsers
+// ----------------------------
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// ----------------------------
 // Health Check
+// ----------------------------
 app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "VGP Backend API is running",
-  });
+    res.status(200).json({
+        success: true,
+        message: "VGP Backend API is running",
+    });
 });
 
+// ----------------------------
 // API Routes
+// ----------------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+// ----------------------------
+// 404 Handler
+// ----------------------------
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "API endpoint not found",
+    });
+});
+
+// ----------------------------
+// Global Error Handler
+// ----------------------------
+app.use(errorMiddleware);
 
 module.exports = app;

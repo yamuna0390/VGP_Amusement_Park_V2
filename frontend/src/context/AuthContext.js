@@ -41,12 +41,22 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    try {
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

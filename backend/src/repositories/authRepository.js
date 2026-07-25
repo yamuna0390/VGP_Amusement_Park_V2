@@ -28,7 +28,31 @@ async function createUser(user) {
   return result.insertId;
 }
 
+/**
+ * Find a user by ID
+ */
+async function findUserById(id) {
+  const [rows] = await pool.execute(
+    "SELECT * FROM users WHERE id = ?",
+    [id]
+  );
+
+  return rows[0];
+}
+
+/**
+ * Update user email and phone
+ */
+async function updateUserProfile(id, email, phone) {
+  await pool.execute(
+    "UPDATE users SET email = ?, phone = ? WHERE id = ?",
+    [email, phone, id]
+  );
+}
+
 module.exports = {
   findUserByEmail,
   createUser,
+  findUserById,
+  updateUserProfile,
 };

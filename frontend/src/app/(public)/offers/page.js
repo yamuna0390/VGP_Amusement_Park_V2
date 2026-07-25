@@ -39,7 +39,7 @@ export default function Offers() {
             <ScrollBanner title="Current Offers" subtitle="Valid for online & counter bookings" colorClass="sb-c1" />
           </div>
 
-          <div id="offer-list" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div id="offer-list" style={{ display: "flex", flexDirection: "column", gap: "24px" ,backgroundColor: "brown"}}>
             {OFFER_DEFAULTS.map((offer) => {
               const enrichedOffer = {
                 ...offer,

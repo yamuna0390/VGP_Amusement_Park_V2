@@ -1,57 +1,147 @@
+const db = require("../../config/database");
+
 const bookingRepository = require("../../repositories/bookingRepository");
 
-/**
- * Generate Booking Number
- */
-function generateBookingNumber() {
-  const timestamp = Date.now();
-  return `VGP${timestamp}`;
-}
+const {
+    calculateBookingPrice,
+} = require("./pricingService");
 
-/**
- * Create Booking
- */
-async function createBooking(data) {
-  const bookingNumber = generateBookingNumber();
+const {
+    generateBookingNumber,
+} = require("./bookingNumberService");
 
-  const booking = {
+const createBooking = async (bookingRequest, authUser) => {
+
+    const connection = await db.getConnection();
+
+    try {
+
+        await connection.beginTransaction();
+
+        // Calculate pricing
+        const pricing = await calculateBookingPrice({
+            tickets: bookingRequest.tickets,
+            meals: bookingRequest.meals,
+            visitDate: bookingRequest.visitDate,
+            couponCode: bookingRequest.couponCode,
+        });
+
+        // Initial booking insert
+        const bookingId = await bookingRepository.createBooking(
+            connection,
+            {
+                bookingNumber: "TEMP",
+                invoiceNumber: "INV-TEMP",
+
+                customerId: authUser ? authUser.id : null,
+
+                customerName: authUser ? authUser.name : bookingRequest.customer.name,
+                customerEmail: authUser ? authUser.email : bookingRequest.customer.email,
+                customerMobile: authUser ? authUser.mobile : bookingRequest.customer.mobile,
+
+                visitDate: bookingRequest.visitDate,
+
+                offerId: pricing.offerId,
+                offerName: pricing.offerName,
+
+                subtotal: pricing.subtotal,
+                discount: pricing.discount,
+                tax: pricing.tax,
+                grandTotal: pricing.grandTotal,
+
+                couponCode: pricing.couponCode,
+
+                paymentStatus: "Pending",
+                bookingStatus: "Pending",
+            }
+        );
+
+        // Generate booking number
+        const bookingNumber =
+            await generateBookingNumber(bookingId);
+
+        const invoiceNumber = `INV-${bookingNumber}`;
+
+        // Update booking number and invoice number
+        await bookingRepository.updateBookingNumber(
+            connection,
+            bookingId,
+            bookingNumber,
+            invoiceNumber
+        );
+
+        // Save ticket items
+        await bookingRepository.createBookingItems(
+            connection,
+            bookingId,
+            pricing.ticketItems
+        );
+
+        // Save meal items
+        await bookingRepository.createBookingMeals(
+            connection,
+            bookingId,
+            pricing.mealItems
+        );
+
+        await connection.commit();
+
+    return {
+    bookingId,
     bookingNumber,
-    customerId: null,
-    customerName: data.customer.name,
-    customerEmail: data.customer.email,
-    customerMobile: data.customer.mobile,
+    invoiceNo: `INV-${bookingNumber}`,
+    bookingDate: new Date().toISOString().split("T")[0],
 
-    visitDate: data.visitDate,
+    subtotal: pricing.subtotal,
+    discount: pricing.discount,
+    tax: pricing.tax,
+    grandTotal: pricing.grandTotal,
 
-    offerId: data.selectedOffer?.id || null,
-    offerName: data.selectedOffer?.name || null,
+    paymentStatus: "Pending",
+    bookingStatus: "Pending",
+};
 
-    subtotal: data.subtotal,
-    discount: data.discount,
-    tax: data.tax,
-    grandTotal: data.grandTotal,
+    } catch (error) {
 
-    couponCode: data.couponCode || null,
-  };
+        await connection.rollback();
+        throw error;
 
-  const bookingId = await bookingRepository.createBooking(booking);
+    } finally {
 
-  await bookingRepository.saveTicketItems(
-    bookingId,
-    data.ticketQty
-  );
+        connection.release();
 
-  await bookingRepository.saveMealItems(
-    bookingId,
-    data.mealQty
-  );
+    }
+};
 
-  return {
-    bookingId,
-    bookingNumber,
-  };
-}
+const getCustomerBookings = async (customerId) => {
+    return await bookingRepository.getBookingsByCustomerId(customerId);
+};
+
+const findBooking = async ({ bookingNumber, mobileNumber, email }) => {
+    const booking = await bookingRepository.getBookingByNumber(bookingNumber);
+    if (!booking) {
+        throw new Error("Booking not found");
+    }
+
+    const matchMobile = mobileNumber && booking.customer_mobile === mobileNumber;
+    const matchEmail = email && booking.customer_email.toLowerCase() === email.toLowerCase();
+
+    if (!matchMobile && !matchEmail) {
+        throw new Error("Invalid booking number or contact details");
+    }
+
+    const tickets = await bookingRepository.getBookingItems(booking.id);
+    const meals = await bookingRepository.getBookingMeals(booking.id);
+
+    return {
+        ...booking,
+        tickets,
+        meals,
+    };
+};
 
 module.exports = {
-  createBooking,
+    createBooking,
+    getCustomerBookings,
+    findBooking,
 };

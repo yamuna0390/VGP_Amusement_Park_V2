@@ -48,7 +48,29 @@ async function login(req, res) {
   }
 }
 
+async function updateProfile(req, res) {
+  try {
+    if (!req.user) {
+      return response.error(res, "Unauthorized. Please log in.", 401);
+    }
+
+    const { email, phone } = req.body;
+    if (!email || !phone) {
+      return response.error(res, "Email and phone numbers are required.", 400);
+    }
+
+    const updatedUser = await authService.updateProfile(req.user.id, email, phone);
+
+    return response.success(res, "Profile updated successfully", {
+      user: updatedUser
+    });
+  } catch (error) {
+    return response.error(res, error.message, 400);
+  }
+}
+
 module.exports = {
   register,
   login,
+  updateProfile,
 };

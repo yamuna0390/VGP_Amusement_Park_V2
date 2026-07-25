@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "../auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
+import UserDropdown from "./UserDropdown";
 
 export default function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -14,11 +15,13 @@ export default function Navigation() {
   const { user, logout } = useAuth();
 
   const pathname = usePathname();
+  const router = useRouter();
 
   const toggleDrawer = (state) => setDrawerOpen(state);
 
   const handleLogout = () => {
     logout();
+    router.push("/");
     alert("Logged out successfully.");
   };
 
@@ -59,12 +62,7 @@ export default function Navigation() {
           </Link>
 
           {user ? (
-            <button
-              className="btn-login"
-              onClick={handleLogout}
-            >
-              👤 {user.fullName} | Logout
-            </button>
+            <UserDropdown user={user} logout={logout} />
           ) : (
             <button
               className="btn-login"
@@ -134,15 +132,26 @@ export default function Navigation() {
         </Link>
 
         {user ? (
-          <a
-            onClick={() => {
-              toggleDrawer(false);
-              handleLogout();
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            🚪 Logout
-          </a>
+          <>
+            <div className="drawer-user-info" style={{ padding: "11px 14px", color: "#fff", fontWeight: "800", fontSize: "1.1rem", borderBottom: "1px solid rgba(255,255,255,0.1)", marginBottom: "8px" }}>
+              👤 {user.fullName}
+            </div>
+            <Link href="/profile" onClick={() => toggleDrawer(false)}>
+              👤 My Profile
+            </Link>
+            <Link href="/profile/bookings" onClick={() => toggleDrawer(false)}>
+              🎟️ My Bookings
+            </Link>
+            <a
+              onClick={() => {
+                toggleDrawer(false);
+                handleLogout();
+              }}
+              style={{ cursor: "pointer", color: "#ff8fa3" }}
+            >
+              🚪 Logout
+            </a>
+          </>
         ) : (
           <a
             onClick={() => {

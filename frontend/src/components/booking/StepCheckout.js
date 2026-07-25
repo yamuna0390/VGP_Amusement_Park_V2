@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createBooking } from "@/services/bookingApi";
 import { useBooking } from "@/context/BookingContext";
+import { useAuth } from "@/context/AuthContext";
 import CouponForm from "@/components/booking/CouponForm";
 import CustomerForm from "@/components/booking/CustomerForm";
 import BookingSummary from "@/components/booking/BookingSummary";
@@ -17,29 +19,98 @@ function validateCustomer(c) {
 }
 
 export default function StepCheckout({ onBack, onConfirm }) {
-  const {
-    visitDate, selectedOffer, ticketQty, mealQty,
-    couponCode, appliedCoupon, setCoupon,
-    customer, setCustomer,
-    agreedToTerms, setTerms,
-  } = useBooking();
+const {
+  visitDate,
+  selectedOffer,
 
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
+  ticketQty,
+  mealQty,
+
+  couponCode,
+  appliedCoupon,
+  setCoupon,
+
+  customer,
+  setCustomer,
+
+  agreedToTerms,
+  setTerms,
+
+  setBookingResult,
+} = useBooking();
+
+const { user } = useAuth();
+
+useEffect(() => {
+  if (user) {
+    setCustomer({
+      name: user.fullName || "",
+      email: user.email || "",
+      mobile: user.phone || "",
+    });
+  }
+}, [user, setCustomer]);
+
+const [errors, setErrors] = useState({});
+const [submitting, setSubmitting] = useState(false);
+const [apiError, setApiError] = useState("");
 
   const ticketBase = calcTicketSubtotal(ticketQty);
 
-  const handlePay = async () => {
-    const errs = validateCustomer(customer);
-    if (!agreedToTerms) errs.terms = "You must agree to the Terms & Conditions.";
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    setErrors({});
-    setSubmitting(true);
-    // Simulated API call delay — replace with real payment gateway
-    await new Promise((r) => setTimeout(r, 1200));
+const handlePay = async () => {
+  const errs = validateCustomer(customer);
+
+  if (!agreedToTerms) {
+    errs.terms = "You must agree to the Terms & Conditions.";
+  }
+
+  if (Object.keys(errs).length) {
+    setErrors(errs);
+    return;
+  }
+
+  setErrors({});
+  setApiError("");
+  setSubmitting(true);
+
+  try {
+
+    const tickets = Object.entries(ticketQty)
+      .filter(([, quantity]) => quantity > 0)
+      .map(([ticketType, quantity]) => ({
+        ticketType,
+        quantity,
+      }));
+
+    const meals = Object.entries(mealQty)
+      .filter(([, quantity]) => quantity > 0)
+      .map(([mealType, quantity]) => ({
+        mealType,
+        quantity,
+      }));
+const payload = {
+  visitDate,
+  customer,
+  couponCode,
+  tickets,
+  meals,
+  agreedToTerms,
+};
+
+    const bookingResult = await createBooking(payload);
+
+    setBookingResult(bookingResult);
+
+  } catch (error) {
+
+    setApiError(error.message || "Booking failed.");
+
+  } finally {
+
     setSubmitting(false);
-    onConfirm();
-  };
+
+  }
+};
 
   return (
     <div className="bk-step-content">
@@ -103,7 +174,11 @@ export default function StepCheckout({ onBack, onConfirm }) {
           </label>
           {errors.terms && <p className="bk-err" role="alert">{errors.terms}</p>}
         </div>
-
+{apiError && (
+  <p className="bk-err" role="alert">
+    {apiError}
+  </p>
+)}
         <div className="bk-nav-btns">
           <button className="bk-btn-back" onClick={onBack} id="step4-back-btn">← Back</button>
           <button
