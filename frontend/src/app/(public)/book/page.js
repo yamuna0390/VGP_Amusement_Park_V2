@@ -16,21 +16,18 @@ export default function BookPage() {
   const goBack = () => setStep(Math.max(step - 1, 1));
 
   return (
-    <main className="bk-page">
-      {/* Page heading */}
-      <div className="bk-page__head">
-        <p className="bk-page__kicker">Your day, planned</p>
-        <h1 className="bk-page__title">Book Now</h1>
-      </div>
-
-      {/* Greek zigzag divider */}
-      <div className="greek" aria-hidden="true" />
-
+    <main className="bk-page" style={{ background: "#F4F5F7", minHeight: "100vh", paddingBottom: "60px" }}>
       {/* Hide stepper after successful booking */}
-      {step < 5 && <BookingStepper currentStep={step} />}
+      {step < 5 && (
+        <div style={{ background: "#ffffff", borderBottom: "1px solid #E2E8F0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+            <BookingStepper currentStep={step} />
+          </div>
+        </div>
+      )}
 
-      {/* Booking Steps */}
-      <div className="bk-body" key={step}>
+      {/* Booking Steps Body */}
+      <div className="bk-body" key={step} style={{ maxWidth: "1180px", margin: "0 auto", padding: "24px 16px" }}>
         {step === 1 && <StepDateOffers onNext={goNext} />}
         {step === 2 && <StepTickets onNext={goNext} onBack={goBack} />}
         {step === 3 && <StepFood onNext={goNext} onBack={goBack} />}

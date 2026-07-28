@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import { ChevronLeft } from "lucide-react";
 import { createBooking } from "@/services/bookingApi";
 import { useBooking } from "@/context/BookingContext";
 import { useAuth } from "@/context/AuthContext";
-import CouponForm from "@/components/booking/CouponForm";
-import CustomerForm from "@/components/booking/CustomerForm";
 import BookingSummary from "@/components/booking/BookingSummary";
+import CustomerForm from "@/components/booking/CustomerForm";
 import { calcTicketSubtotal, calcOfferDiscount, fmt } from "@/utils/bookingCalc";
 
 function validateCustomer(c) {
@@ -28,8 +28,6 @@ export default function StepCheckout({ onBack }) {
     mealQty,
 
     couponCode,
-    appliedCoupon,
-    setCoupon,
 
     customer,
     setCustomer,
@@ -57,32 +55,8 @@ export default function StepCheckout({ onBack }) {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  // Coupon conflict modal states
-  const [showCouponConfirm, setShowCouponConfirm] = useState(false);
-  const [pendingCoupon, setPendingCoupon] = useState(null);
-
   const ticketBase = calcTicketSubtotal(ticketQty);
-
-  // Compute savings from selected offer
   const offerSavings = calcOfferDiscount(selectedOffer, ticketBase, ticketQty);
-
-  const handleCouponApplyAttempt = (code, coupon) => {
-    // If an offer is already applied and code is not empty, show confirmation popup
-    if (selectedOffer && code) {
-      setPendingCoupon({ code, coupon });
-      setShowCouponConfirm(true);
-    } else {
-      setCoupon(code, coupon);
-    }
-  };
-
-  const confirmCouponApply = () => {
-    if (pendingCoupon) {
-      setCoupon(pendingCoupon.code, pendingCoupon.coupon);
-    }
-    setPendingCoupon(null);
-    setShowCouponConfirm(false);
-  };
 
   const handlePay = async () => {
     const errs = validateCustomer(customer);
@@ -136,200 +110,112 @@ export default function StepCheckout({ onBack }) {
 
   return (
     <div className="bk-step-content">
-      <div className="bk-panel bk-panel--wide">
+      <div className="bk-step-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         
-        {/* Promotion Summary Widget */}
-        {selectedOffer && (
-          <div className="bk-promo-summary" style={{
-            backgroundColor: "#fff8e1",
-            border: "2px solid #ffe082",
-            borderRadius: "12px",
-            padding: "16px 20px",
-            marginBottom: "20px",
-            position: "relative"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
-              <div>
-                <h4 style={{ color: "#b78103", fontWeight: "800", display: "flex", alignItems: "center", gap: "6px", margin: 0, fontSize: "1.05rem" }}>
-                  ✓ {selectedOffer.name || selectedOffer.title} Applied
-                </h4>
-                <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", color: "#6d5c3d", fontWeight: "600" }}>
-                  {selectedOffer.description || "Special promotional offer applied to your booking passes."}
-                </p>
-                {offerSavings > 0 && (
-                  <div style={{ marginTop: "6px", fontSize: "0.9rem", fontWeight: "800", color: "var(--purple-deep)" }}>
-                    Savings: {fmt(offerSavings)}
-                  </div>
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => setStep(1)}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "1.5px solid #b78103",
-                    color: "#b78103",
-                    padding: "6px 12px",
-                    borderRadius: "8px",
-                    fontSize: "0.75rem",
-                    fontWeight: "800",
-                    cursor: "pointer"
-                  }}
-                >
-                  Change Offer
-                </button>
-                <button
-                  onClick={() => setOffer(null)}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "1.5px solid #d32f2f",
-                    color: "#d32f2f",
-                    padding: "6px 12px",
-                    borderRadius: "8px",
-                    fontSize: "0.75rem",
-                    fontWeight: "800",
-                    cursor: "pointer"
-                  }}
-                >
-                  Remove Offer
-                </button>
-              </div>
-            </div>
+        {/* ── Left Card Panel: Review Booking Summary (Screenshot 4 Match) ── */}
+        <div className="bk-panel" style={{
+          background: "#FFFFFF",
+          borderRadius: "24px",
+          padding: "28px 26px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          border: "1px solid #E2E8F0"
+        }}>
+          {/* Header row with back button + Title */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+            <button
+              onClick={onBack}
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "#FDDB00",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#1E293B",
+                fontWeight: "900",
+                cursor: "pointer"
+              }}
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <h2 style={{
+              fontSize: "1.45rem",
+              fontWeight: "900",
+              color: "#1E293B",
+              fontFamily: "var(--font-roboto-condensed), sans-serif",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              margin: 0
+            }}>
+              REVIEW YOUR BOOKING
+            </h2>
           </div>
-        )}
 
-        {/* Coupon Form */}
-        <CouponForm
-          ticketSubtotal={ticketBase}
-          couponCode={couponCode}
-          appliedCoupon={appliedCoupon}
-          onApply={handleCouponApplyAttempt}
-        />
-
-        <hr className="bk-divider" />
-
-        {/* Customer details */}
-        <CustomerForm
-          customer={customer}
-          onChange={(key, val) => setCustomer({ [key]: val })}
-          errors={errors}
-        />
-
-        <div className="bk-cust__grid" style={{ marginTop: 8 }}>
-          <div className="bk-field">
-            <label className="bk-field__label">Visit Date</label>
-            <input className="bk-field__input" readOnly value={visitDate || ""} />
-          </div>
+          <BookingSummary
+            ticketQty={ticketQty}
+            mealQty={mealQty}
+            offer={selectedOffer}
+            couponCode={couponCode}
+            visitDate={visitDate}
+          />
         </div>
 
-        <hr className="bk-divider" />
+        {/* ── Right Card Panel: Billing Information Form (Screenshot 4 Match) ── */}
+        <div className="bk-panel" style={{
+          background: "#FFFFFF",
+          borderRadius: "24px",
+          padding: "28px 26px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          border: "1px solid #E2E8F0"
+        }}>
+          <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", marginBottom: "18px" }}>
+            ADD YOUR BILLING INFORMATION
+          </h3>
 
-        {/* Summary */}
-        <BookingSummary
-          ticketQty={ticketQty}
-          mealQty={mealQty}
-          offer={selectedOffer}
-          couponCode={couponCode}
-          visitDate={visitDate}
-        />
+          <CustomerForm
+            customer={customer}
+            onChange={(key, val) => setCustomer({ [key]: val })}
+            errors={errors}
+          />
 
-        {/* T&C */}
-        <div className="bk-terms">
-          <p className="bk-terms__note">
-            T&amp;C: No cancellation/postponement after booking · Entry free for children below 90 cm ·
-            Senior citizens 60+ and students must carry valid ID.
-          </p>
-          <label className="bk-terms__label">
-            <input
-              type="checkbox"
-              className="bk-terms__chk"
-              checked={agreedToTerms}
-              onChange={(e) => { setTerms(e.target.checked); setErrors((p) => ({ ...p, terms: undefined })); }}
-              id="terms-chk"
-            />
-            <span>
-              I have read and agree to the VGP Universal Kingdom{" "}
-              <a href="/terms" className="bk-terms__link">Terms &amp; Conditions</a>,
-              Privacy Policy, and cancellation &amp; refund policy.
-              I understand that approved refunds may take 15 to 30 days to reflect in the
-              original payment method.
-            </span>
-          </label>
-          {errors.terms && <p className="bk-err" role="alert">{errors.terms}</p>}
-        </div>
+          {/* Terms & Conditions Checkbox */}
+          <div className="bk-terms" style={{ marginTop: "20px" }}>
+            <label className="bk-terms__label" style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <input
+                type="checkbox"
+                className="bk-terms__chk"
+                checked={agreedToTerms}
+                onChange={(e) => { setTerms(e.target.checked); setErrors((p) => ({ ...p, terms: undefined })); }}
+                id="terms-chk"
+                style={{ marginTop: "3px" }}
+              />
+              <span style={{ fontSize: "0.85rem", color: "#475569", fontWeight: "600", lineHeight: "1.4" }}>
+                I agree to the VGP Universal Kingdom{" "}
+                <a href="/terms" className="bk-terms__link" style={{ color: "#2563EB", textDecoration: "underline" }}>Terms &amp; Conditions</a> and Privacy Policy.
+              </span>
+            </label>
+            {errors.terms && <p className="bk-err" role="alert" style={{ color: "#DC2626", fontWeight: "700", marginTop: "6px" }}>{errors.terms}</p>}
+          </div>
 
-        {apiError && (
-          <p className="bk-err" role="alert">
-            {apiError}
-          </p>
-        )}
-        
-        <div className="bk-nav-btns">
-          <button className="bk-btn-back" onClick={onBack} id="step4-back-btn">← Back</button>
+          {apiError && (
+            <p className="bk-err" role="alert" style={{ color: "#DC2626", fontWeight: "700", marginTop: "10px" }}>
+              {apiError}
+            </p>
+          )}
+
           <button
             className="cta-big cta-red"
             onClick={handlePay}
             disabled={submitting}
             id="step4-pay-btn"
+            style={{ width: "100%", marginTop: "22px", padding: "14px 24px", fontSize: "1.05rem" }}
           >
-            {submitting ? "Processing…" : "Pay & Get Tickets 🎟"}
+            {submitting ? "Processing Booking…" : "Book Now 🎟"}
           </button>
         </div>
       </div>
-
-      {/* Confirmation Modal */}
-      {showCouponConfirm && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 9999,
-          padding: "20px"
-        }}>
-          <div className="bk-panel" style={{
-            maxWidth: "460px",
-            padding: "30px",
-            background: "#fff",
-            borderRadius: "16px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            textAlign: "center"
-          }}>
-            <h3 style={{ color: "var(--purple-deep)", fontSize: "1.35rem", marginBottom: "12px", fontWeight: "900" }}>
-              Promotion Already Applied
-            </h3>
-            <p style={{ fontSize: "0.95rem", color: "var(--ink)", marginBottom: "24px", lineHeight: "1.5", fontWeight: "600" }}>
-              <strong>{selectedOffer?.name || selectedOffer?.title}</strong> is currently applied. <br />
-              Only ONE promotional offer or coupon can be used per booking. <br /><br />
-              Applying this coupon will remove the selected offer. Continue?
-            </p>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-              <button
-                className="bk-btn-back"
-                onClick={() => {
-                  setPendingCoupon(null);
-                  setShowCouponConfirm(false);
-                }}
-                style={{ margin: 0, padding: "8px 24px", height: "45px" }}
-              >
-                Cancel
-              </button>
-              <button
-                className="cta-big cta-red"
-                onClick={confirmCouponApply}
-                style={{ padding: "8px 24px", fontSize: "0.9rem", height: "45px" }}
-              >
-                Apply Coupon
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

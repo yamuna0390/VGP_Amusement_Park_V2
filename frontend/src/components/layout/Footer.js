@@ -32,9 +32,8 @@ export default function Footer() {
         </div>
         <div className="ft-col">
           <h4>Partners</h4>
-          <Link href="/group">Group Booking</Link>
-          <a href="#" onClick={(e) => { e.preventDefault(); alert("Tour Operator Login"); }}>Tour Operator Portal</a>
-          <Link href="/operator/register">Partner Registration</Link>
+          <Link href="/operator">Tour Operator Portal</Link>
+          <Link href="/operator?tab=register">Partner Registration</Link>
           <p style={{marginTop: "12px", fontSize: "0.8rem", opacity: 0.7}}>VGP Universal Kingdom is a member of IAAPA.</p>
         </div>
       </div>

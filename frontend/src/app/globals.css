@@ -902,9 +902,9 @@ p{line-height:1.6}
 .conf-ref{background:var(--blue);color:var(--purple);border-radius:14px;padding:12px;margin:14px auto;max-width:320px;font-size:1rem}
 .conf-ref b{font-size:1.35rem;letter-spacing:1.5px}
 .conf-total{font-weight:800;color:var(--red);font-size:1.2rem;margin:6px 0 16px}
-.hero h2{font-size:clamp(2.4rem,6vw,4.2rem);color:#FDDB00;text-shadow:3px 3px 0 var(--red);position:relative;z-index:2}
-@media(max-width:760px){.hero h2{font-size:2.2rem}}
-@media(max-width:460px){.hero h2{font-size:1.85rem}}
+.hero h2,.contact-main-heading{font-size:clamp(2.4rem,6vw,4.2rem);color:#FDDB00;text-shadow:3px 3px 0 var(--red);position:relative;z-index:2;font-family:var(--font-roboto-condensed),'Arial Narrow',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin:0}
+@media(max-width:760px){.hero h2,.contact-main-heading{font-size:2.2rem}}
+@media(max-width:460px){.hero h2,.contact-main-heading{font-size:1.85rem}}
 :focus-visible{outline:3px solid var(--purple);outline-offset:2px}
 .tax-note{font-size:.82rem;font-weight:700;color:var(--purple);background:var(--blue);border-radius:12px;padding:8px 12px;margin:2px 0 12px}
 /* ---------- Book Now redesign ---------- */
@@ -1225,9 +1225,11 @@ body.portal-mode{background:#EEF0F6}
 
 /* Page shell */
 .bk-page{min-height:80vh;background:var(--cream)}
-.bk-page__head{background:var(--purple-deep);text-align:center;padding:32px 20px 28px;position:relative}
-.bk-page__kicker{color:var(--yellow);font-weight:700;font-size:.85rem;letter-spacing:1px;margin-bottom:4px}
-.bk-page__title{color:#fff;font-size:clamp(2rem,5vw,3rem);letter-spacing:1px;text-shadow:2px 2px 0 rgba(0,0,0,.2)}
+.bk-page__head{background:linear-gradient(135deg, var(--purple-deep) 0%, #2A103D 100%);text-align:center;padding:42px 20px 36px;position:relative;color:#fff}
+.bk-hero-content{max-width:860px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+.bk-hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(253,219,0,.15);border:1px solid rgba(253,219,0,.4);color:#FDDB00;font-weight:800;font-size:.8rem;letter-spacing:1.2px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:12px}
+.bk-page__title{color:#FDDB00;font-size:clamp(2.4rem,6vw,4rem);font-family:var(--font-roboto-condensed),'Arial Narrow',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:1px;text-shadow:3px 3px 0 var(--red);margin:0;line-height:1.1}
+.bk-hero-sub{color:#E2D6EE;font-weight:700;font-size:clamp(.95rem,2vw,1.15rem);margin:12px 0 0;max-width:680px;line-height:1.4}
 .bk-body{max-width:1100px;margin:0 auto;padding:32px 18px 60px;animation:pop .3s ease}
 
 /* ── Stepper ─────────────────────────────────────── */
@@ -1243,6 +1245,19 @@ body.portal-mode{background:#EEF0F6}
 .bk-step__arrow{color:#c9bde0;font-size:1rem;margin:0 2px}
 .bk-step__arrow--done{color:var(--purple-deep)}
 
+@media(max-width:640px){
+  .bk-stepper{padding:12px 10px;gap:2px;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch}
+  .bk-step{padding:5px 10px;font-size:.78rem}
+  .bk-step__num{width:22px;height:22px;font-size:.75rem}
+}
+
+/* ── Smooth Scroll Containers for Lists ─────────── */
+.bk-offers-scroll,.bk-tickets-scroll,.bk-meals-scroll{max-height:480px;overflow-y:auto;padding-right:6px;display:flex;flex-direction:column;gap:10px}
+.bk-offers-scroll::-webkit-scrollbar,.bk-tickets-scroll::-webkit-scrollbar,.bk-meals-scroll::-webkit-scrollbar{width:6px}
+.bk-offers-scroll::-webkit-scrollbar-track,.bk-tickets-scroll::-webkit-scrollbar-track,.bk-meals-scroll::-webkit-scrollbar-track{background:#F1EAFA;border-radius:10px}
+.bk-offers-scroll::-webkit-scrollbar-thumb,.bk-tickets-scroll::-webkit-scrollbar-thumb,.bk-meals-scroll::-webkit-scrollbar-thumb{background:#C4B2DC;border-radius:10px}
+.bk-offers-scroll::-webkit-scrollbar-thumb:hover,.bk-tickets-scroll::-webkit-scrollbar-thumb:hover,.bk-meals-scroll::-webkit-scrollbar-thumb:hover{background:var(--purple-deep)}
+
 /* ── Panels ──────────────────────────────────────── */
 .bk-panel{background:#fff;border-radius:20px;padding:28px 26px;box-shadow:0 8px 24px rgba(74,33,107,.10)}
 .bk-panel--wide{max-width:820px;margin:0 auto}
@@ -1250,9 +1265,9 @@ body.portal-mode{background:#EEF0F6}
 .bk-panel__sub{font-size:.88rem;font-weight:600;color:#7a6a9a;margin-bottom:18px}
 .bk-optional{font-size:.7rem;font-weight:700;color:#9a8bb8;background:#f0eaf8;border-radius:10px;padding:2px 8px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-nunito)}
 
-/* Step 1 layout */
-.bk-step1-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-@media(max-width:780px){.bk-step1-grid{grid-template-columns:1fr}}
+/* Step 1 & Step 2-4 Layouts */
+.bk-step1-grid,.bk-step-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.bk-step1-grid,.bk-step-grid{grid-template-columns:1fr!important;gap:16px!important}}
 .bk-proceed{width:100%;margin-top:20px;font-size:1.1rem}
 
 /* ── Info banner ─────────────────────────────────── */

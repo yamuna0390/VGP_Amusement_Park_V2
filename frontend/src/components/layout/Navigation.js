@@ -185,15 +185,9 @@ export default function Navigation() {
           🏆 Awards
         </Link>
 
-        <a
-          onClick={() => {
-            toggleDrawer(false);
-            alert("Tour Operator Login");
-          }}
-          style={{ cursor: "pointer" }}
-        >
+        <Link href="/operator" onClick={() => toggleDrawer(false)}>
           🧳 Tour Operator&apos;s Login
-        </a>
+        </Link>
 
         <Link href="/about" onClick={() => toggleDrawer(false)}>
           👑 About Us
