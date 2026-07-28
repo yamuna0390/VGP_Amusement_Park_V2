@@ -1,0 +1,33 @@
+/* ==========================================
+   Ride Information & Safety Section Grid
+========================================== */
+
+.ride-info-safety-section {
+  padding: 60px 20px;
+  background: var(--cream, #FFF7E7);
+}
+
+.ride-info-safety-wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.ride-info-safety-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+@media (max-width: 992px) {
+  .ride-info-safety-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ride-info-safety-section {
+    padding: 40px 16px;
+  }
+}

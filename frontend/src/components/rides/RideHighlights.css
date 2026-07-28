@@ -1,0 +1,159 @@
+/* ==========================================
+   Ride Highlights (Floating Overlay Card)
+========================================== */
+
+.ride-highlights-wrapper {
+  max-width: 1150px;
+  margin: -45px auto 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.ride-highlights-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 22px 28px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 12px 32px rgba(60, 41, 80, 0.15), 0 4px 0 var(--border, #EAD7B4);
+  border: 2px solid rgba(234, 215, 180, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 10px;
+  border-right: 1px dashed var(--border, #EAD7B4);
+}
+
+.highlight-item:last-child {
+  border-right: none;
+}
+
+.highlight-icon-box {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+}
+
+.highlight-item:hover .highlight-icon-box {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+/* Color theme mappings matching global tokens */
+.highlight-icon-box.purple {
+  background: var(--cream, #FFF7E7);
+  color: var(--purple, #5A257F);
+  border: 2px solid rgba(90, 37, 127, 0.15);
+}
+
+.highlight-icon-box.yellow {
+  background: #FFF9E6;
+  color: #D89A16;
+  border: 2px solid rgba(246, 195, 59, 0.3);
+}
+
+.highlight-icon-box.red {
+  background: #FDF0F5;
+  color: var(--red, #B11E63);
+  border: 2px solid rgba(177, 30, 99, 0.15);
+}
+
+.highlight-icon-box.green {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 2px solid rgba(46, 125, 50, 0.2);
+}
+
+.highlight-text-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.highlight-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6C5B7B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.highlight-value {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--purple-deep, #4A216B);
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Breakpoints */
+
+@media (max-width: 1024px) {
+  .ride-highlights-card {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 16px;
+    padding: 20px;
+  }
+
+  .highlight-item {
+    border-right: none;
+    background: #FAF6F0;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ride-highlights-wrapper {
+    margin-top: -30px;
+    padding: 0 16px;
+  }
+
+  .ride-highlights-card {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .highlight-item:nth-child(5) {
+    grid-column: span 2;
+  }
+
+  .highlight-icon-box {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+  }
+
+  .highlight-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .highlight-label {
+    font-size: 0.72rem;
+  }
+
+  .highlight-value {
+    font-size: 0.98rem;
+  }
+}

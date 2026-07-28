@@ -1,0 +1,138 @@
+/* ==========================================
+   Ride Information Card
+========================================== */
+
+.ride-info-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(60, 41, 80, 0.1), 0 4px 0 var(--border, #EAD7B4);
+  border: 2px solid var(--border, #EAD7B4);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ride-info-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed var(--border, #EAD7B4);
+}
+
+.ride-info-card-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--purple-deep, #4A216B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.ride-info-badge {
+  background: var(--purple-deep, #4A216B);
+  color: var(--yellow, #F6C33B);
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 14px;
+  text-transform: uppercase;
+}
+
+.ride-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ride-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #FAF6F0;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+.ride-info-row:hover {
+  background: #F4ECE1;
+}
+
+.ride-info-label-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ride-info-row-icon {
+  color: var(--purple, #5A257F);
+}
+
+.ride-info-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #6C5B7B;
+}
+
+.ride-info-value-box {
+  text-align: right;
+}
+
+.ride-info-value {
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--purple-deep, #4A216B);
+}
+
+/* Status Pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-pill.operational {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.status-pill .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2E7D32;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+}
+
+@media (max-width: 640px) {
+  .ride-info-card {
+    padding: 20px;
+  }
+
+  .ride-info-card-title {
+    font-size: 1.25rem;
+  }
+
+  .ride-info-row {
+    padding: 8px 10px;
+  }
+
+  .ride-info-label {
+    font-size: 0.85rem;
+  }
+
+  .ride-info-value {
+    font-size: 0.88rem;
+  }
+}

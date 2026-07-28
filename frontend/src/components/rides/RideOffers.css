@@ -1,0 +1,245 @@
+/* ==========================================
+   Ride Offers Section (Exact Reference Styling)
+========================================== */
+
+.ride-offers-section {
+  padding: 50px 20px;
+  background: var(--cream, #FFF7E7);
+}
+
+.ride-offers-wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.offers-banner-container {
+  background: #F3EAFA;
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 8px 24px rgba(90, 37, 127, 0.08);
+  border: 2px solid #E5D5F2;
+}
+
+.offers-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.offers-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 900;
+  color: var(--purple-deep, #4A216B);
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.5px;
+}
+
+.offers-subtext {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6C5B7B;
+  margin: 0;
+}
+
+.slider-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.slider-arrow-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #E5D5F2;
+  color: var(--purple-deep, #4A216B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.slider-arrow-btn:hover {
+  background: var(--purple-deep, #4A216B);
+  color: var(--yellow, #F6C33B);
+}
+
+/* Grid Layout */
+.offers-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.offers-slider-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 2px 12px 2px;
+  scrollbar-width: thin;
+}
+
+/* Reference Card Styling */
+.reference-offer-card {
+  flex: 0 0 240px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border: 1px solid #EAD7B4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: transform 0.25s ease;
+}
+
+.reference-offer-card:hover {
+  transform: translateY(-4px);
+}
+
+.card-top-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.offer-type-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--purple, #5A257F);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.save-badge {
+  background: #FF6D00;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.card-offer-title {
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--purple-deep, #4A216B);
+  margin: 0 0 4px 0;
+}
+
+.card-offer-subtext {
+  font-size: 0.8rem;
+  color: #6C5B7B;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+
+.card-price-row {
+  margin-bottom: 14px;
+}
+
+.card-price-value {
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--red, #B11E63);
+}
+
+.card-book-now-btn {
+  width: 100%;
+  background: #FFF7E7;
+  color: var(--purple-deep, #4A216B);
+  border: 1px solid #EAD7B4;
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.card-book-now-btn:hover {
+  background: var(--yellow, #F6C33B);
+  border-color: var(--yellow, #F6C33B);
+}
+
+/* Reference Purple CTA Card */
+.reference-purple-cta-card {
+  background: linear-gradient(135deg, var(--purple, #5A257F) 0%, var(--purple-deep, #4A216B) 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  box-shadow: 0 6px 18px rgba(74, 33, 107, 0.25);
+}
+
+.purple-cta-title {
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.purple-cta-desc {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  opacity: 0.9;
+  margin: 0 0 20px 0;
+}
+
+.yellow-view-offers-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--yellow, #F6C33B);
+  color: var(--purple-deep, #4A216B);
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 22px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.yellow-view-offers-btn:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 992px) {
+  .offers-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .offers-banner-container {
+    padding: 24px 18px;
+  }
+
+  .reference-offer-card {
+    flex: 0 0 210px;
+  }
+}

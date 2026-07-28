@@ -3,6 +3,9 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const offerRoutes = require("./routes/offerRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const errorMiddleware = require("./middleware/errorMiddleware");
 
@@ -39,6 +42,9 @@ app.get("/", (req, res) => {
 // ----------------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/offers", offerRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // ----------------------------
 // 404 Handler

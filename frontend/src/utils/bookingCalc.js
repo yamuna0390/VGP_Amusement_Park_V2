@@ -45,21 +45,70 @@ export function calcFoodSubtotal(mealQty) {
  */
 export function calcOfferDiscount(offer, ticketSubtotal, ticketQty) {
   if (!offer) return 0;
-  if (offer.discountType === "percent") {
-    return parseFloat(((offer.discountValue / 100) * ticketSubtotal).toFixed(2));
+
+  // Handle Online Booking Offer (already baked into displayed prices)
+  if (offer.id === "ONLINE15" || offer.code === "ONLINE15") {
+    return 0;
   }
-  if (offer.discountType === "flat") {
-    return Math.min(offer.discountValue, ticketSubtotal);
+
+  // Handle Birthday Buddy (BOGO same category: Adult, Child, Senior, Student)
+  if (offer.id === "BIRTHDAY" || offer.id === "BIRTHDAYBOGO" || offer.code === "BIRTHDAYBOGO") {
+    let discount = 0;
+    TICKETS.forEach((tk) => {
+      if (["adult", "child", "senior", "student"].includes(tk.id)) {
+        const qty = ticketQty[tk.id] || 0;
+        discount += qty * effectivePrice(tk);
+      }
+    });
+    return parseFloat(discount.toFixed(2));
   }
-  if (offer.discountType === "bogo") {
-    // Buy 1 get 1 on adult ticket
-    const adultTicket = TICKETS.find((t) => t.id === offer.applicableTo);
-    if (adultTicket) {
-      const qty = ticketQty[adultTicket.id] || 0;
-      const free = Math.floor(qty / 2);
-      return parseFloat((free * effectivePrice(adultTicket)).toFixed(2));
+
+  // Handle Adi Thalubadi / Friendship Trio (B2G1 same category: Adult, Child, Senior, Student)
+  if (
+    offer.id === "ADITHALUBADI" ||
+    offer.id === "FRIENDTRIO" ||
+    offer.code === "ADITHALUBADI" ||
+    offer.code === "FRIENDTRIO"
+  ) {
+    let discount = 0;
+    TICKETS.forEach((tk) => {
+      if (["adult", "child", "senior", "student"].includes(tk.id)) {
+        const qty = ticketQty[tk.id] || 0;
+        const free = Math.floor(qty / 2);
+        discount += free * effectivePrice(tk);
+      }
+    });
+    return parseFloat(discount.toFixed(2));
+  }
+
+  // Handle Campus Thrill Deal (20% off Student passes)
+  if (offer.id === "CAMPUS20" || offer.code === "CAMPUS20") {
+    const studentTk = TICKETS.find((tk) => tk.id === "student");
+    if (studentTk) {
+      const qty = ticketQty[studentTk.id] || 0;
+      return parseFloat((qty * effectivePrice(studentTk) * 0.2).toFixed(2));
     }
   }
+
+  // Handle Freedom Fun Fest (Flat 175.00 off per adult ticket)
+  if (offer.id === "FREEDOM800" || offer.code === "FREEDOM800") {
+    const adultTk = TICKETS.find((tk) => tk.id === "adult");
+    if (adultTk) {
+      const qty = ticketQty[adultTk.id] || 0;
+      return parseFloat((qty * 175.00).toFixed(2));
+    }
+  }
+
+  // Fallbacks
+  if (offer.discountType === "percent" || offer.offer_rule === "PERCENTAGE") {
+    const value = offer.discountValue !== undefined ? offer.discountValue : offer.discount_value;
+    return parseFloat(((Number(value) / 100) * ticketSubtotal).toFixed(2));
+  }
+  if (offer.discountType === "flat" || offer.offer_rule === "FLAT") {
+    const value = offer.discountValue !== undefined ? offer.discountValue : offer.discount_value;
+    return Math.min(Number(value), ticketSubtotal);
+  }
+
   return 0;
 }
 

@@ -1,6 +1,18 @@
 "use client";
 
 export default function OfferCard({ offer, isSelected, onSelect }) {
+  // Determine the discount label to display
+  const getDiscountLabel = () => {
+    switch (offer.discountType) {
+      case "percent": return `${offer.discountValue}% OFF`;
+      case "flat":    return `₹${offer.discountValue} OFF`;
+      case "bogo":    return "BUY 1 GET 1";
+      case "b2g1":    return "BUY 2 GET 1";
+      case "combo":   return "COMBO DEAL";
+      default:        return "SPECIAL";
+    }
+  };
+
   return (
     <div
       className={`bk-offer ${isSelected ? "bk-offer--open" : ""}`}
@@ -26,32 +38,16 @@ export default function OfferCard({ offer, isSelected, onSelect }) {
       {isSelected && (
         <div className="bk-offer__body">
           <p className="bk-offer__desc">{offer.description}</p>
-          {offer.couponCode && (
-            <p className="bk-offer__code">
-              🎫 Code: <strong>{offer.couponCode}</strong> — applied automatically
-            </p>
+          {offer.terms && (
+            <p className="bk-offer__terms">⚠️ {offer.terms}</p>
           )}
-          <p className="bk-offer__terms">⚠️ {offer.terms}</p>
-          {offer.discountType === "percent" && (
-            <div className="bk-offer__tag">
-              {offer.discountValue}% OFF
-            </div>
-          )}
-          {offer.discountType === "bogo" && (
-            <div className="bk-offer__tag">BUY 1 GET 1</div>
-          )}
+          <div className="bk-offer__tag">{getDiscountLabel()}</div>
         </div>
       )}
 
       {/* Collapsed discount label */}
       {!isSelected && (
-        <span className="bk-offer__pct">
-          {offer.discountType === "percent"
-            ? `${offer.discountValue}% OFF`
-            : offer.discountType === "bogo"
-            ? "BUY 1 GET 1"
-            : "COMBO"}
-        </span>
+        <span className="bk-offer__pct">{getDiscountLabel()}</span>
       )}
     </div>
   );

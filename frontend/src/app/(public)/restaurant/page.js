@@ -2,6 +2,7 @@
 import Link from "next/link";
 import ScrollBanner from "@/components/ui/ScrollBanner";
 import Polaroid from "@/components/ui/Polaroid";
+import RestaurantGallerySlider from "@/components/ui/RestaurantGallerySlider";
 
 export default function Restaurant() {
   return (
@@ -61,14 +62,7 @@ export default function Restaurant() {
               </div>
             </div>
           </div>
-          <div className="gallery st-gallery">
-            <figure className="shot r-l"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/6C2A8654-scaled.jpg" alt="Sea Thru Diner beachside ambience" loading="lazy" /><figcaption>Beachside Ambience</figcaption></figure>
-            <figure className="shot r-r"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/VIG05914.jpg" alt="Sea Thru Diner dining" loading="lazy" /><figcaption>Dine Under The Stars</figcaption></figure>
-            <figure className="shot r-l"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/VIG05886.jpg" alt="Sea Thru Diner food" loading="lazy" /><figcaption>Gourmet Cuisine</figcaption></figure>
-            <figure className="shot r-r"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/VIG05952.jpg" alt="Sea Thru Diner candlelight" loading="lazy" /><figcaption>Candlelight Evenings</figcaption></figure>
-            <figure className="shot r-l"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/IMG_0351.jpg" alt="Sea Thru Diner celebration" loading="lazy" /><figcaption>Celebrations</figcaption></figure>
-            <figure className="shot r-r"><img src="https://vgpseathrudiner.in/wp-content/uploads/2024/08/VIG05866.jpg" alt="Sea Thru Diner live music" loading="lazy" /><figcaption>Live Music</figcaption></figure>
-          </div>
+          <RestaurantGallerySlider />
           <p style={{ textAlign: "center", fontWeight: 800, color: "var(--purple)", marginTop: "8px" }}>
             ⭐ Must try: Coin Parotta · Thai Green Curry · BBQ Fish · Grilled Chicken
           </p>

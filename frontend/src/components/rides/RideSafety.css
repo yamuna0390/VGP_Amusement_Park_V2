@@ -1,0 +1,152 @@
+/* ==========================================
+   Ride Safety Guidelines Card
+========================================== */
+
+.ride-safety-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(60, 41, 80, 0.1), 0 4px 0 var(--border, #EAD7B4);
+  border: 2px solid var(--border, #EAD7B4);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ride-safety-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed var(--border, #EAD7B4);
+}
+
+.safety-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.safety-header-icon {
+  color: var(--red, #B11E63);
+}
+
+.ride-safety-card-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--purple-deep, #4A216B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.safety-badge {
+  background: #FFF3E0;
+  color: #E65100;
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 14px;
+  text-transform: uppercase;
+  border: 1px solid rgba(230, 81, 0, 0.2);
+}
+
+.safety-intro-text {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #6C5B7B;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.safety-rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.safety-rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  transition: transform 0.2s ease;
+}
+
+.safety-rule-item.standard {
+  background: #F1F8E9;
+  border: 1px solid #C8E6C9;
+}
+
+.safety-rule-item.warning {
+  background: #FFF3E0;
+  border: 1px solid #FFE0B2;
+}
+
+.safety-rule-item:hover {
+  transform: translateX(4px);
+}
+
+.safety-icon-wrapper {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.safety-icon.check {
+  color: #2E7D32;
+}
+
+.safety-icon.warning {
+  color: #E65100;
+}
+
+.safety-rule-text {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--purple-deep, #4A216B);
+  line-height: 1.45;
+}
+
+.safety-footer-box {
+  background: var(--cream, #FFF7E7);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6C5B7B;
+  border: 1px solid var(--border, #EAD7B4);
+}
+
+.safety-footer-icon {
+  color: var(--purple, #5A257F);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .ride-safety-card {
+    padding: 20px;
+  }
+
+  .ride-safety-card-title {
+    font-size: 1.25rem;
+  }
+
+  .safety-rule-item {
+    padding: 10px 12px;
+  }
+
+  .safety-rule-text {
+    font-size: 0.88rem;
+  }
+}

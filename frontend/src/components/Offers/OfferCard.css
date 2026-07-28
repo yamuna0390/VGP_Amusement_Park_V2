@@ -1,0 +1,255 @@
+/* ==========================================
+   OfferCard Component Styles
+   Adapts ride-card design system for promotions
+========================================== */
+
+.offer-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.offer-media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.offer-photo {
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+}
+
+.offer-card:hover .offer-photo {
+  transform: scale(1.06);
+}
+
+.offer-badge {
+  background: var(--red, #B11E63);
+  color: #ffffff;
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 5px 14px;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(177, 30, 99, 0.35);
+  text-transform: uppercase;
+}
+
+.offer-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.offer-code-tag {
+  font-size: 0.75rem;
+  color: var(--purple-deep, #4A216B);
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.offer-code-tag strong {
+  background: rgba(90, 37, 127, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: var(--purple-deep, #4A216B);
+  font-family: monospace;
+}
+
+.offer-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--purple-deep, #4A216B);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.offer-desc {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(60, 41, 80, 0.85);
+  margin-bottom: 12px;
+}
+
+.offer-validity-box {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed var(--border, #EAD7B4);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6C5B7B;
+  margin-bottom: 16px;
+  margin-top: auto;
+}
+
+.offer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(60, 41, 80, 0.08);
+}
+
+.offer-claim-btn {
+  background: var(--red, #B11E63);
+  color: #ffffff;
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 9px 24px;
+  border-radius: 22px;
+  border: none;
+  box-shadow: 0 4px 0 var(--red-dark, #922152), 0 6px 14px rgba(177, 30, 99, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.offer-claim-btn:hover {
+  transform: translateY(-2px);
+  background: var(--purple-deep, #4A216B);
+  box-shadow: 0 4px 0 var(--purple, #5A257F), 0 8px 16px rgba(74, 33, 107, 0.3);
+  color: var(--yellow, #F6C33B);
+}
+
+/* Offers Hero Header matching reference */
+.offers-hero-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #ffffff;
+}
+
+.offers-main-heading {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+  font-weight: 900;
+  color: #FDDB00;
+  text-shadow: 3px 3px 0 var(--red);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 16px 0;
+  line-height: 1;
+}
+
+.offers-notice-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #EEF5FF;
+  border: 1px solid #3B82F6;
+  border-radius: 30px;
+  padding: 6px 22px 6px 8px;
+  color: #2563EB;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.notice-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Empty State Box */
+.empty-offers-box {
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(60, 41, 80, 0.08);
+  border: 2px solid var(--border, #EAD7B4);
+  max-width: 600px;
+  margin: 40px auto;
+}
+
+.empty-offers-title {
+  font-family: var(--font-roboto-condensed), sans-serif;
+  font-size: 1.75rem;
+  color: var(--purple-deep, #4A216B);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.empty-offers-desc {
+  color: #6C5B7B;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Promotional Banner */
+.promo-banner-card {
+  margin-top: 60px;
+  padding: 36px 28px;
+  background: linear-gradient(135deg, var(--purple, #5A257F) 0%, var(--purple-deep, #4A216B) 100%);
+  border-radius: 24px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: 0 12px 32px rgba(74, 33, 107, 0.25);
+  border: 3px solid var(--yellow, #F6C33B);
+}
+
+.promo-banner-sub {
+  color: var(--yellow, #F6C33B);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+}
+
+.promo-banner-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 4px 0 6px 0;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.promo-banner-desc {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .promo-banner-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 20px;
+  }
+
+  .offers-main-heading {
+    font-size: 2.2rem;
+  }
+
+  .offers-notice-pill {
+    font-size: 0.82rem;
+    padding: 5px 16px 5px 6px;
+  }
+}

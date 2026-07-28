@@ -1,66 +1,97 @@
-// ─── Mock Offer Data ───────────────────────────────────────────────────────
-// Replace with API call: GET /api/offers
+// ─── Booking Offers — Single Source of Truth ───────────────────────────────
+// All 6 promotional offers. Shapes match both OfferCard.js and the backend API.
+// The `code` field must match the offer_code in the DB (used in backend API calls).
+// discountType: "percent" | "flat" | "bogo" | "b2g1" | "combo" | "info"
 export const BOOKING_OFFERS = [
   {
     id: "ONLINE15",
+    code: "ONLINE15",
     title: "Online Booking Offer",
     badge: "Online 15%",
     badgeColor: "#2E8B57",
     description:
-      "15% online booking discount — already included in the displayed ticket prices.",
-    couponCode: "U0001F4C5",
-    discountType: "percent",   // "percent" | "flat" | "bogo"
+      "15% online booking discount on Adult, Child, and Senior passes — already reflected in the displayed ticket prices.",
+    discountType: "percent",
     discountValue: 15,
-    applicableTo: "tickets",   // "tickets" | "all"
-    validDays: [0, 1, 2, 3, 4, 5, 6], // all days
-    terms: "Cannot be combined with other offers.",
+    applicableTo: "tickets",
+    terms: "Cannot be combined with other offers or coupons.",
+    validDays: [0, 1, 2, 3, 4, 5, 6],
   },
   {
     id: "CAMPUS20",
+    code: "CAMPUS20",
     title: "Campus Thrill Deal",
     badge: "College ID",
     badgeColor: "#4A9A3A",
     description:
       "20% discount for college students. Valid college ID must be shown at entry.",
-    couponCode: null,
     discountType: "percent",
     discountValue: 20,
-    applicableTo: "tickets",
+    applicableTo: "student",
+    terms: "Valid college ID mandatory at the gate.",
     validDays: [0, 1, 2, 3, 4, 5, 6],
-    terms: "Valid college ID mandatory at gate.",
   },
   {
-    id: "BIRTHDAY",
+    id: "BIRTHDAYBOGO",
+    code: "BIRTHDAYBOGO",
     title: "Birthday Buddy Treat",
     badge: "Birthday month",
     badgeColor: "#C73A7B",
     description:
-      "Buy 1 get 1 free on Adult Fun Pass for the birthday person (DOB proof required).",
-    couponCode: null,
+      "Buy 1 ticket and get 1 FREE (same category) during your birthday month. Valid for Adult, Child, Senior, and Student passes.",
     discountType: "bogo",
     discountValue: 1,
-    applicableTo: "adult",
+    applicableTo: "adult,child,senior,student",
+    terms: "Original DOB proof required at entry. Minimum 2 tickets of same category.",
     validDays: [0, 1, 2, 3, 4, 5, 6],
-    terms: "Original DOB proof required at entry.",
   },
   {
-    id: "DOUBLE",
-    title: "Double Fun Pass",
-    badge: "2-day pass",
+    id: "ADITHALUBADI",
+    code: "ADITHALUBADI",
+    title: "Adi Thalubadi",
+    badge: "Tue & Wed · Jul 21–Aug 12",
+    badgeColor: "#3A6AC7",
+    description:
+      "Buy 2 tickets and get 1 FREE (same category) on Tuesdays & Wednesdays, 21 July – 12 August 2026.",
+    discountType: "b2g1",
+    discountValue: 1,
+    applicableTo: "adult,child,senior,student",
+    terms: "Valid only on Tuesdays & Wednesdays between 21 Jul – 12 Aug 2026. Minimum 3 tickets.",
+    validDays: [2, 3],
+  },
+  {
+    id: "FRIENDTRIO",
+    code: "FRIENDTRIO",
+    title: "Friendship Trio Fun Pass",
+    badge: "2 Aug only",
     badgeColor: "#B36D3C",
     description:
-      "Access both Universal Kingdom and Marine Kingdom — 2 parks, 1 price.",
-    couponCode: null,
-    discountType: "combo",
-    discountValue: 0,
-    applicableTo: "dfpa",
+      "Two friends book, the third goes FREE! Buy 2 get 1 free (same category), valid only on 2 August 2026.",
+    discountType: "b2g1",
+    discountValue: 1,
+    applicableTo: "adult,child,senior,student",
+    terms: "Valid only on 2 August 2026. Minimum 3 tickets of the same category.",
     validDays: [0, 1, 2, 3, 4, 5, 6],
-    terms: "Both parks must be visited on the same day.",
+  },
+  {
+    id: "FREEDOM800",
+    code: "FREEDOM800",
+    title: "Freedom Fun Fest",
+    badge: "15 Aug only",
+    badgeColor: "#8B6914",
+    description:
+      "Independence Day Special — ₹175 flat off per Adult Fun Pass (before tax). Valid only on 15 August 2026.",
+    discountType: "flat",
+    discountValue: 175,
+    applicableTo: "adult",
+    terms: "Valid only on 15 August 2026. Applicable to Adult Fun Pass only.",
+    validDays: [0, 1, 2, 3, 4, 5, 6],
   },
 ];
 
 // ─── Coupon Codes ──────────────────────────────────────────────────────────
-// Replace with API validation call: POST /api/coupons/validate
+// These are used ONLY as a fallback for BookingSummary pre-checkout display.
+// Actual coupon validation is done via POST /api/coupons/validate.
 export const COUPONS = [
   {
     code: "WELCOME10",

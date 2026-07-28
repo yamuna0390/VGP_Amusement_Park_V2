@@ -6,8 +6,38 @@ import OfferCard from "@/components/booking/OfferCard";
 import { BOOKING_OFFERS } from "@/data/bookingOffers";
 
 export default function StepDateOffers({ onNext }) {
-  const { visitDate, setDate, selectedOffer, setOffer } = useBooking();
+  const { 
+    visitDate, 
+    setDate, 
+    selectedOffer, 
+    setOffer, 
+    couponCode, 
+    appliedCoupon 
+  } = useBooking();
+  
   const [err, setErr] = useState("");
+
+  // Reverse rule modal states
+  const [showOfferConfirm, setShowOfferConfirm] = useState(false);
+  const [pendingOffer, setPendingOffer] = useState(null);
+
+  const handleOfferSelectAttempt = (offer) => {
+    // If selecting an offer, and a coupon is currently applied, show popup
+    if (offer && couponCode) {
+      setPendingOffer(offer);
+      setShowOfferConfirm(true);
+    } else {
+      setOffer(offer);
+    }
+  };
+
+  const confirmApplyOffer = () => {
+    if (pendingOffer) {
+      setOffer(pendingOffer);
+    }
+    setPendingOffer(null);
+    setShowOfferConfirm(false);
+  };
 
   const handleNext = () => {
     if (!visitDate) { setErr("Please select a visit date to continue."); return; }
@@ -32,7 +62,7 @@ export default function StepDateOffers({ onNext }) {
                 key={offer.id}
                 offer={offer}
                 isSelected={selectedOffer?.id === offer.id}
-                onSelect={setOffer}
+                onSelect={handleOfferSelectAttempt}
               />
             ))}
           </div>
@@ -58,6 +88,60 @@ export default function StepDateOffers({ onNext }) {
           </button>
         </div>
       </div>
+
+      {/* Reverse Rule Modal */}
+      {showOfferConfirm && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          padding: "20px"
+        }}>
+          <div className="bk-panel" style={{
+            maxWidth: "460px",
+            padding: "30px",
+            background: "#fff",
+            borderRadius: "16px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            textAlign: "center"
+          }}>
+            <h3 style={{ color: "var(--purple-deep)", fontSize: "1.35rem", marginBottom: "12px", fontWeight: "900" }}>
+              Coupon Already Applied
+            </h3>
+            <p style={{ fontSize: "0.95rem", color: "var(--ink)", marginBottom: "24px", lineHeight: "1.5", fontWeight: "600" }}>
+              Coupon <strong>{couponCode}</strong> is currently applied. <br />
+              Applying this Offer will remove the coupon. <br /><br />
+              Continue?
+            </p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <button
+                className="bk-btn-back"
+                onClick={() => {
+                  setPendingOffer(null);
+                  setShowOfferConfirm(false);
+                }}
+                style={{ margin: 0, padding: "8px 24px", height: "45px" }}
+              >
+                Cancel
+              </button>
+              <button
+                className="cta-big cta-red"
+                onClick={confirmApplyOffer}
+                style={{ padding: "8px 24px", fontSize: "0.9rem", height: "45px" }}
+              >
+                Apply Offer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,9 +6,17 @@ const bookingSchema = Joi.object({
     "date.base": "Invalid visit date.",
   }),
 
-  offerId: Joi.number().allow(null),
+ offerId: Joi.number().allow(null),
 
-  couponCode: Joi.string().allow("", null),
+offerCode: Joi.string()
+  .trim()
+  .allow("", null)
+  .optional(),
+
+couponCode: Joi.string()
+  .trim()
+  .allow("", null)
+  .optional(),
 
   customer: Joi.object({
     name: Joi.string().trim().min(3).max(150).required().messages({

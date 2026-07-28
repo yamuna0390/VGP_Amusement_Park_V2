@@ -112,16 +112,32 @@ export default function BookingsHistoryPage() {
                       <strong style={{ color: "var(--ink)" }}>{new Date(booking.visit_date).toLocaleDateString("en-IN", { dateStyle: "medium" })}</strong>
                     </div>
                     <div>
-                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>STATUS</span>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>BOOKING STATUS</span>
                       <span 
                         style={{
                           display: "inline-block",
                           padding: "4px 10px",
                           borderRadius: "12px",
-                          fontSize: "0.75rem",
+                          fontSize: "0.72rem",
                           fontWeight: "800",
-                          backgroundColor: booking.payment_status === "Paid" ? "#e8f5e9" : "#fff3e0",
-                          color: booking.payment_status === "Paid" ? "#2e7d32" : "#e65100"
+                          backgroundColor: booking.booking_status === "Confirmed" ? "#e8f5e9" : (booking.booking_status === "Cancelled" ? "#ffebee" : "#e0f7fa"),
+                          color: booking.booking_status === "Confirmed" ? "#2e7d32" : (booking.booking_status === "Cancelled" ? "#c62828" : "#00838f")
+                        }}
+                      >
+                        {booking.booking_status || "Confirmed"}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>PAYMENT</span>
+                      <span 
+                        style={{
+                          display: "inline-block",
+                          padding: "4px 10px",
+                          borderRadius: "12px",
+                          fontSize: "0.72rem",
+                          fontWeight: "800",
+                          backgroundColor: booking.payment_status === "Completed" || booking.payment_status === "Paid" ? "#e8f5e9" : "#ffe082",
+                          color: booking.payment_status === "Completed" || booking.payment_status === "Paid" ? "#2e7d32" : "#b78103"
                         }}
                       >
                         {booking.payment_status}
@@ -129,15 +145,66 @@ export default function BookingsHistoryPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "15px", alignItems: "center" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "15px", alignItems: "center", borderBottom: "1px solid #f3effa", paddingBottom: "10px" }}>
                     <div>
-                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>GUEST INFO</span>
-                      <span style={{ fontSize: "0.9rem", fontWeight: "700" }}>{booking.customer_name} ({booking.customer_mobile})</span>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>PROMOTION</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: "700", color: booking.coupon_code ? "#2e7d32" : "var(--purple-deep)" }}>
+                        {booking.offer_name || booking.coupon_code || "None"}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>VISITORS</span>
+                      <span style={{ fontSize: "0.9rem", fontWeight: "800" }}>
+                        👥 {booking.visitor_count || 1} Guest{booking.visitor_count !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>GUEST CONTACT</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: "600" }}>{booking.customer_mobile}</span>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>TOTAL AMOUNT</span>
-                      <strong style={{ color: "var(--red)", fontSize: "1.2rem" }}>₹{booking.grand_total}</strong>
+                      <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>TOTAL PAID</span>
+                      <strong style={{ color: "var(--red)", fontSize: "1.15rem" }}>₹{booking.grand_total}</strong>
                     </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "4px" }}>
+                    <Link 
+                      href={`/bookings/${booking.booking_number}`} 
+                      target="_blank"
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: "0.75rem",
+                        fontWeight: "800",
+                        color: "var(--purple-deep)",
+                        border: "1.5px solid var(--purple-deep)",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      📄 Download Invoice
+                    </Link>
+                    <Link 
+                      href={`/bookings/${booking.booking_number}/ticket`} 
+                      target="_blank"
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: "0.75rem",
+                        fontWeight: "800",
+                        color: "#fff",
+                        backgroundColor: "var(--red)",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      🎟️ Download Ticket
+                    </Link>
                   </div>
                 </div>
               ))}

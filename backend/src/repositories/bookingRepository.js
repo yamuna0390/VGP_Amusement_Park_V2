@@ -140,11 +140,29 @@ const getBookingMeals = async (bookingId) => {
     return rows;
 };
 
+const updateBookingStatus = async (connection, bookingId, bookingStatus, paymentStatus) => {
+    const conn = connection || pool;
+    await conn.query(
+        `UPDATE bookings SET booking_status = ?, payment_status = ? WHERE id = ?`,
+        [bookingStatus, paymentStatus, bookingId]
+    );
+};
+
+const getBookingById = async (bookingId) => {
+    const [rows] = await pool.execute(
+        "SELECT * FROM bookings WHERE id = ?",
+        [bookingId]
+    );
+    return rows[0];
+};
+
 module.exports = {
     createBooking,
     createBookingItems,
     createBookingMeals,
     updateBookingNumber,
+    updateBookingStatus,
+    getBookingById,
     getBookingsByCustomerId,
     getBookingByNumber,
     getBookingItems,

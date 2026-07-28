@@ -4,13 +4,19 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import "swiper/css/pagination";
+import HeroVideoBackground from "@/components/ui/HeroVideoBackground";
+import BeachSlider from "@/components/ui/BeachSlider";
 
 export default function Home() {
   return (
     <main>
       {/* ================= HERO ================= */}
       <div className="hero hero-full doodle-bg" id="page-home-hero">
-        <div className="hero-video" id="hero-video"></div>
+        {/* hero-video: YouTube BG for now — swap to /public/assets/video/hero.mp4 later via HeroVideoBackground config */}
+        <div className="hero-video" id="hero-video">
+          <HeroVideoBackground />
+        </div>
         <div className="hero-scrim"></div>
 
         {/* Bunting */}
@@ -98,12 +104,12 @@ export default function Home() {
           decoding="async"
           alt="Chutti Sepoy"
         />
-
+{/* 
         <h1>A New Time Table!</h1>
         <div className="hero-ctas">
           <Link href="/book" className="cta-big cta-red" id="home-book-btn">Book Tickets</Link>
           <Link href="/rides" className="cta-big cta-green" id="home-rides-btn">Explore Rides</Link>
-        </div>
+        </div> */}
       </div>
 
       {/* Greek border divider */}
@@ -130,11 +136,11 @@ export default function Home() {
             <Link href="/rides" style={{textDecoration:'none'}}>
               <div className="polaroid r-l">
                 <img src="/assets/img_d19d00aca574.jpg" alt="Top Gun" loading="lazy"/>
-                <span className="ribbon">Top Gun</span>
+                <span className="ribbon">Power Cell </span>
                 <div className="note">
                   <b>Class 01 · Spinning in the Air</b>
-                  One of those rare times when you won&rsquo;t say &lsquo;silence&rsquo; when the kids are shouting.
-                </div>
+               This ride steals your voice ⚡
+Meet Power Surge 🎢  </div>
               </div>
             </Link>
             <Link href="/rides" style={{textDecoration:'none'}}>
@@ -160,10 +166,10 @@ export default function Home() {
             <Link href="/rides" style={{textDecoration:'none'}}>
               <div className="polaroid r-r">
                 <img src="/assets/img_d4c0f73d794b.jpg" alt="London Bull" loading="lazy"/>
-                <span className="ribbon">London Bull</span>
+                <span className="ribbon">Flying Tiger</span>
                 <div className="note">
-                  <b>Class 08 · Rodeo Ride</b>
-                  Your kids have read about bulls. Now let them ride one.
+                  <b>Class 08 · Flying Tiger</b>
+                  The Flying Tiger is here to turn your world completely upside down
                 </div>
               </div>
             </Link>
@@ -266,7 +272,7 @@ export default function Home() {
             </figure></SwiperSlide>
             <SwiperSlide><figure className="shot r-r">
               <img src="/assets/img_42fedc45c496.jpg" loading="lazy" decoding="async" alt="Flying Machine"/>
-              <figcaption>Flying Machine</figcaption>
+              <figcaption>Wave Swinger</figcaption>
             </figure></SwiperSlide>
             <SwiperSlide><figure className="shot r-l">
               <img src="/assets/img_5b25b363752a.jpg" loading="lazy" decoding="async" alt="Petting Zoo"/>
@@ -336,15 +342,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= BEACH STRIP ================= */}
-      <section className="beach" style={{padding:'56px 20px'}}>
-        <h2>🏖️ Private Beach</h2>
-        <p>
-          The serene meadows and the sandy beach can double as a unique venue for your special events —
-          school annual days, award functions &amp; big celebrations for up to 3,000 guests.
-        </p>
-        <Link href="/events" className="cta-big cta-red" id="host-event-btn">Host A Big Event</Link>
-      </section>
+      {/* ================= BEACH SLIDER ================= */}
+      <BeachSlider />
     </main>
   );
 }

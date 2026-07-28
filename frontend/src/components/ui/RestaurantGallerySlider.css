@@ -1,0 +1,274 @@
+/* ==========================================
+   Restaurant Gallery Slider Component Styles
+========================================== */
+
+.restaurant-gallery-slider-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(60, 41, 80, 0.18), 0 4px 0 var(--border, #EAD7B4);
+  border: 4px solid #ffffff;
+  background: var(--purple-deep, #4A216B);
+  margin: 24px 0;
+}
+
+.rg-swiper {
+  width: 100%;
+  aspect-ratio: 16 / 8.5;
+  min-height: 420px;
+  max-height: 560px;
+  position: relative;
+}
+
+.rg-slide-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.rg-image-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.rg-slide-img {
+  object-fit: cover !important;
+  object-position: center !important;
+  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Subtle Ken Burns Zoom on active slide */
+.rg-image-container.active-zoom .rg-slide-img {
+  transform: scale(1.08);
+}
+
+/* Cinematic Gradient Overlay */
+.rg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(30, 10, 45, 0.9) 0%,
+    rgba(30, 10, 45, 0.45) 45%,
+    rgba(0, 0, 0, 0.1) 85%
+  );
+  pointer-events: none;
+}
+
+/* Glassmorphism Caption Panel */
+.rg-caption-panel {
+  position: relative;
+  z-index: 5;
+  margin: 0 32px 36px 32px;
+  max-width: 580px;
+  background: rgba(30, 10, 45, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  padding: 24px 28px;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+}
+
+.rg-caption-panel.rg-caption-anim {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rg-tagline {
+  display: inline-block;
+  color: var(--yellow, #F6C33B);
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.rg-title {
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  line-height: 1.15;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.rg-description {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Controls Navigation Row (Floating Bottom Right) */
+.rg-controls-row {
+  position: absolute;
+  bottom: 28px;
+  right: 32px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 10, 45, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.rg-nav-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--purple-deep, #4A216B);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.rg-nav-btn:hover {
+  background: var(--yellow, #F6C33B);
+  color: var(--purple-deep, #4A216B);
+  transform: scale(1.1);
+}
+
+/* Pagination Dots */
+.rg-dots {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  width: auto !important;
+  position: static !important;
+}
+
+.rg-dots .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  opacity: 0.4;
+  border-radius: 50%;
+  margin: 0 !important;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.rg-dots .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: var(--yellow, #F6C33B);
+  width: 24px;
+  border-radius: 10px;
+}
+
+/* Autoplay Progress Bar Track */
+.rg-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 15;
+}
+
+.rg-progress-bar {
+  height: 100%;
+  background: var(--yellow, #F6C33B);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.1s linear;
+}
+
+/* Breakpoints */
+
+@media (max-width: 992px) {
+  .rg-swiper {
+    aspect-ratio: 16 / 10;
+    min-height: 380px;
+  }
+
+  .rg-caption-panel {
+    margin: 0 20px 70px 20px;
+    max-width: 100%;
+    padding: 20px 22px;
+  }
+
+  .rg-controls-row {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .restaurant-gallery-slider-wrapper {
+    border-radius: 18px;
+    margin: 18px 0;
+    border-width: 3px;
+  }
+
+  .rg-swiper {
+    aspect-ratio: 4 / 3.2;
+    min-height: 340px;
+  }
+
+  .rg-caption-panel {
+    margin: 0 14px 64px 14px;
+    padding: 16px 18px;
+    border-radius: 14px;
+  }
+
+  .rg-tagline {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+  }
+
+  .rg-title {
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+  }
+
+  .rg-description {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .rg-controls-row {
+    bottom: 14px;
+    right: 14px;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .rg-nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .rg-nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}

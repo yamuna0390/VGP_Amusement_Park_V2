@@ -64,6 +64,8 @@ function bookingReducer(state, action) {
       return {
         ...state,
         selectedOffer: action.payload,
+        couponCode: "",
+        appliedCoupon: null,
       };
 
     case "SET_TICKET_QTY":
@@ -78,6 +80,7 @@ function bookingReducer(state, action) {
     case "SET_MEAL_QTY":
       return {
         ...state,
+        role: undefined, // ensure state remains clean
         mealQty: {
           ...state.mealQty,
           [action.id]: Math.max(0, action.payload),
@@ -89,6 +92,7 @@ function bookingReducer(state, action) {
         ...state,
         couponCode: action.payload,
         appliedCoupon: action.coupon || null,
+        selectedOffer: null,
       };
 
     case "SET_CUSTOMER":
@@ -113,6 +117,14 @@ function bookingReducer(state, action) {
         bookingId: action.payload.bookingNumber,
         invoiceNo: action.payload.invoiceNo,
         bookingDate: action.payload.bookingDate,
+        subtotal: action.payload.subtotal,
+        discount: action.payload.discount,
+        discountPercent: action.payload.discountPercent,
+        tax: action.payload.tax,
+        grandTotal: action.payload.grandTotal,
+        savings: action.payload.savings,
+        tickets: action.payload.tickets,
+        offer_name: action.payload.offerName,
         step: 5,
       };
 

@@ -19,7 +19,7 @@ export default function Footer() {
           <Link href="/parks">Parks &amp; Attractions</Link>
           <Link href="/rides">Rides</Link>
           <Link href="/restaurant">Dining</Link>
-          <Link href="/stay">VGP Golden Beach Resort</Link>
+          <Link href="/stay">Seathru</Link>
           <Link href="/events">Events</Link>
         </div>
         <div className="ft-col">

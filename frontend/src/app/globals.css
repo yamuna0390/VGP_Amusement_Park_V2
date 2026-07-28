@@ -110,6 +110,10 @@ section{padding:56px 20px}
 .play-btn{width:76px;height:76px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 var(--red-dark)}
 .play-btn:after{content:"";border-left:26px solid #fff;border-top:16px solid transparent;border-bottom:16px solid transparent;margin-left:6px}
 .video-frame span{color:var(--purple);font-weight:800}
+/* Once the player is active, suppress hover-scale (iframe captures pointer events). */
+.video-frame[data-activated]:hover{transform:none;cursor:default}
+/* Iframe/video fills the frame exactly when the player is live. */
+.video-frame[data-activated]{padding:0;gap:0}
 .hero-ctas{margin-top:30px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .cta-big{font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;font-weight:700;font-size:1.25rem;padding:14px 34px;border-radius:32px;border:none;cursor:pointer;color:#fff}
 .cta-red{background:var(--red);box-shadow:0 5px 0 var(--red-dark)}
@@ -119,7 +123,10 @@ section{padding:56px 20px}
 /* ---------- cards ---------- */
 .grid{display:grid;gap:22px}
 .g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.g4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:28px;
+}
 .card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.12);transition:.25s;position:relative}
 .card:hover{transform:translateY(-6px) rotate(-.6deg)}
 .card-media{height:150px;display:flex;align-items:center;justify-content:center;font-size:4rem}
@@ -152,10 +159,330 @@ section{padding:56px 20px}
 .review p{font-weight:600;font-size:.95rem;margin:8px 0}
 .review .who{font-weight:800;color:var(--purple);font-size:.85rem}
 
-/* ---------- beach strip ---------- */
-.beach{background:linear-gradient(180deg,var(--blue) 0 62%,var(--tan) 62% 78%,var(--blue-deep) 78%);color:var(--brown-dark);text-align:center;position:relative}
-.beach h2{font-size:2.4rem;color:var(--purple)}
-.beach p{max-width:620px;margin:12px auto 22px;font-weight:700}
+/* ---------- beach slider ---------- */
+/* Legacy .beach kept as empty shell so any stray reference doesn't break */
+.beach{}
+
+/* Section wrapper */
+.beach-slider{
+  position:relative;
+  background:linear-gradient(180deg,#EAF8F7 0%,#ffffff 100%);
+  padding:70px 20px 56px;
+  overflow:hidden;
+}
+
+/* SVG wave watermark sits behind everything */
+.bs-wave-bg{
+  position:absolute;
+  inset:auto 0 0 0;
+  width:100%;
+  height:55%;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Card-like inner container */
+.bs-wrap{
+  position:relative;
+  z-index:1;
+  max-width:1360px;
+  margin:0 auto;
+}
+
+/* Swiper instance */
+.bs-swiper{
+  border-radius:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,.08);
+  overflow:hidden;
+  background:#fff;
+}
+
+/* Individual slide card — two-column layout */
+.bs-card{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:520px;
+  padding:60px;
+  gap:48px;
+  align-items:center;
+  background:#fff;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Subtle tinted top-left corner blob using CSS accent variable */
+.bs-card::before{
+  content:'';
+  position:absolute;
+  top:-120px;
+  left:-120px;
+  width:400px;
+  height:400px;
+  border-radius:50%;
+  background:var(--accent, var(--blue));
+  opacity:.08;
+  pointer-events:none;
+}
+
+/* ── LEFT: text ──────────────────────────────────────────── */
+.bs-content{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  max-width:520px;
+}
+
+.bs-sub{
+  display:inline-block;
+  font-family:var(--font-nunito),Verdana,sans-serif;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:2.5px;
+  color:var(--accent,var(--red));
+  text-transform:uppercase;
+  margin-bottom:10px;
+  padding:4px 12px;
+  background:color-mix(in srgb, var(--accent,var(--red)) 10%, transparent);
+  border-radius:20px;
+  align-self:flex-start;
+}
+
+.bs-icon{
+  font-size:3rem;
+  line-height:1;
+  margin-bottom:10px;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.15));
+}
+
+.bs-heading{
+  font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;
+  font-size:clamp(2.4rem,4.5vw,3.4rem);
+  font-weight:700;
+  color:var(--purple-deep);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  line-height:1.05;
+  margin-bottom:18px;
+}
+
+.bs-desc{
+  font-size:1.05rem;
+  font-weight:600;
+  line-height:1.7;
+  color:var(--ink);
+  max-width:460px;
+  margin-bottom:32px;
+  opacity:.88;
+}
+
+.bs-actions{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+/* Primary pill button */
+.bs-btn-primary{
+  font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  color:#fff;
+  background:linear-gradient(135deg, var(--accent,var(--red)), var(--accent-dark,var(--red-dark)));
+  padding:14px 32px;
+  border-radius:50px;
+  box-shadow:0 6px 20px color-mix(in srgb, var(--accent,var(--red)) 40%, transparent);
+  transition:transform .2s, box-shadow .2s;
+  display:inline-block;
+}
+.bs-btn-primary:hover{
+  transform:translateY(-3px) scale(1.02);
+  box-shadow:0 12px 28px color-mix(in srgb, var(--accent,var(--red)) 50%, transparent);
+  color:#fff;
+}
+
+/* Ghost / secondary button */
+.bs-btn-ghost{
+  font-family:var(--font-nunito),Verdana,sans-serif;
+  font-weight:800;
+  font-size:.95rem;
+  color:var(--purple-deep);
+  padding:13px 24px;
+  border-radius:50px;
+  border:2.5px solid var(--purple-deep);
+  background:transparent;
+  transition:background .2s, color .2s, transform .2s;
+  display:inline-block;
+}
+.bs-btn-ghost:hover{
+  background:var(--purple-deep);
+  color:#F6C33B;
+  transform:translateY(-2px);
+}
+
+/* ── RIGHT: image ───────────────────────────────────────── */
+.bs-img-wrap{
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 16px 40px rgba(0,0,0,.18);
+  aspect-ratio:4/3;
+  background:var(--blue);
+}
+
+.bs-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform 6s ease;
+  transform:scale(1.04);
+}
+
+.bs-img-wrap:hover .bs-img,
+.swiper-slide-active .bs-img{
+  transform:scale(1.10);
+}
+
+/* Emoji chip overlay on image */
+.bs-chip{
+  position:absolute;
+  top:18px;
+  right:18px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(6px);
+  border-radius:50%;
+  width:52px;
+  height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.6rem;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);
+}
+
+/* ── NAVIGATION ROW ─────────────────────────────────────── */
+.bs-nav-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin-top:28px;
+}
+
+/* Arrow buttons */
+.bs-arrow{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#fff;
+  border:2px solid #e8e0f5;
+  color:var(--purple-deep);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.09);
+  transition:transform .2s, box-shadow .2s, background .2s, color .2s;
+  flex-shrink:0;
+}
+.bs-arrow:hover{
+  transform:scale(1.12);
+  box-shadow:0 8px 20px rgba(0,0,0,.14);
+  background:var(--purple-deep);
+  color:#F6C33B;
+  border-color:var(--purple-deep);
+}
+.bs-arrow.swiper-button-disabled{
+  opacity:.35;
+  pointer-events:none;
+}
+
+/* Swiper pagination dots — injected into .bs-dots */
+.bs-dots{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  position:static!important;
+  width:auto!important;
+}
+.bs-dots .swiper-pagination-bullet{
+  width:9px;height:9px;
+  border-radius:50%;
+  background:#D8D8D8;
+  opacity:1;
+  transition:background .3s, width .3s, border-radius .3s;
+  margin:0!important;
+}
+.bs-dots .swiper-pagination-bullet-active{
+  background:#E91E63;
+  width:26px;
+  border-radius:5px;
+}
+
+/* Autoplay progress bar */
+.bs-progress-track{
+  height:3px;
+  background:#e8e0f5;
+  border-radius:2px;
+  margin-top:16px;
+  overflow:hidden;
+}
+.bs-progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--red),var(--yellow-deep));
+  border-radius:2px;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .1s linear;
+}
+
+/* ── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes bsUp{
+  from{opacity:0;transform:translateY(28px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+@keyframes bsIn{
+  from{opacity:0;transform:scale(.96)}
+  to  {opacity:1;transform:scale(1)}
+}
+
+.bs-anim-up{animation:bsUp .6s cubic-bezier(.22,.61,.36,1) both}
+.bs-delay-1{animation-delay:.12s}
+.bs-delay-2{animation-delay:.24s}
+.bs-anim-in{animation:bsIn .7s cubic-bezier(.22,.61,.36,1) both}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+/* Tablet: stack image on top */
+@media(max-width:900px){
+  .beach-slider{padding:48px 16px 40px}
+  .bs-card{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto;
+    min-height:unset;
+    padding:40px 28px 36px;
+    gap:28px;
+  }
+  /* Image moves above text on tablet */
+  .bs-img-wrap{order:-1;aspect-ratio:16/9}
+  .bs-content{max-width:100%}
+  .bs-heading{font-size:2rem}
+  .bs-desc{font-size:.95rem}
+}
+
+/* Phone */
+@media(max-width:560px){
+  .beach-slider{padding:36px 12px 32px}
+  .bs-card{padding:28px 18px 24px;gap:20px}
+  .bs-heading{font-size:1.7rem}
+  .bs-desc{font-size:.9rem;margin-bottom:22px}
+  .bs-actions{flex-direction:column;align-items:stretch;gap:10px}
+  .bs-btn-primary,.bs-btn-ghost{text-align:center;padding:13px 20px}
+  .bs-img-wrap{aspect-ratio:4/3}
+  .bs-chip{width:40px;height:40px;font-size:1.2rem}
+}
 
 /* ---------- offers ---------- */
 .offer-card{border-radius:22px;padding:26px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.15);cursor:pointer;transition:.25s}
@@ -298,7 +625,7 @@ footer a:hover,.footer a:hover{color:#F6C33B}
 .ribbon{position:absolute;top:20px;left:-9px;background:var(--red);color:#fff;font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:5px 16px;box-shadow:0 3px 0 var(--red-dark);font-size:.85rem}
 .ribbon:before{content:"";position:absolute;left:0;bottom:-8px;border-top:8px solid var(--red-dark);border-left:9px solid transparent}
 .note{background:#FFF3A6;border:2px dashed var(--green);margin-top:10px;padding:10px 12px;border-radius:6px;font-size:.83rem;font-weight:700;color:var(--ink)}
-.note b{display:block;color:#fff;font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;text-transform:uppercase;font-size:.8rem;margin-bottom:4px;letter-spacing:.5px}
+.note b{display:block;color:#4b1010;font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;text-transform:uppercase;font-size:.8rem;margin-bottom:4px;letter-spacing:.5px}
 .procl{background-color:var(--purple-deep);padding:52px 20px}
 .procl-in{display:flex;gap:34px;align-items:center;justify-content:center;max-width:960px;margin:auto;flex-wrap:wrap}
 .procl-king{width:230px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4))}
@@ -349,6 +676,9 @@ footer a:hover,.footer a:hover{color:#F6C33B}
 .watch-pill .play-btn{width:46px;height:46px}
 .watch-pill .play-btn:after{border-left-width:16px;border-top-width:10px;border-bottom-width:10px;margin-left:4px}
 @media(max-width:1000px){.ferris-deco{display:none}}
+/* The yt-cover iframe uses an oversized width intentionally (cover-fill math).
+   Override the global iframe{max-width:100%} reset so it is not clipped. */
+.hero-video .yt-cover{max-width:none;max-height:none}
 
 .park-logo{max-width:82%;max-height:115px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
 .site-link{display:inline-block;margin-top:10px;background:var(--yellow);color:var(--purple);font-weight:800;text-decoration:none;padding:7px 18px;border-radius:20px;box-shadow:0 3px 0 var(--yellow-deep);font-size:.85rem}
@@ -560,7 +890,7 @@ p{line-height:1.6}
 .card-body h3{line-height:1.1;margin-bottom:6px}
 .land-txt p{line-height:1.65;max-width:560px}
 .st-info p{max-width:640px}
-.beach p,.parks-hero p{max-width:620px;margin-left:auto;margin-right:auto}
+.parks-hero p{max-width:620px;margin-left:auto;margin-right:auto}
 .review p{line-height:1.55}
 .award p{line-height:1.4}
 @media(max-width:640px){.scroll-banner{padding:14px 40px 18px;min-height:74px}.sb-scroll{padding:16px 56px 22px}.scroll-banner h2{font-size:1.4rem}.scroll-banner .kicker{font-size:.72rem}}
@@ -1220,4 +1550,277 @@ body.portal-mode{background:#EEF0F6}
 
 
 
+
+/* ============================================================
+   RIDES PAGE — Premium Refinement Pass
+   Extends existing .card / .card-media / .card-body — never replaces them
+   ============================================================ */
+
+/* ── Pastel palette (low-saturation, image-first) ── */
+.bg-mint       { background: #D8F5EF; }
+.bg-lavender   { background: #EAE2F8; }
+.bg-sky        { background: #D5EEFF; }
+.bg-cream      { background: #FFF8EC; }
+.bg-peach      { background: #FFE8DC; }
+.bg-softyellow { background: #FFF6D0; }
+.bg-purple-card{ background: #5A257F; }   /* dark accent card */
+
+/* ── Ride-specific 3/2/1 grid ── */
+.ride-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  align-items: stretch;   /* all cards in a row share the same height */
+}
+@media (max-width: 1024px) { .ride-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px)  { .ride-grid { grid-template-columns: 1fr; } }
+
+/* ── Card shell ── */
+.ride-card {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 6px  rgba(60, 41, 80, .08),
+    0 8px 24px rgba(60, 41, 80, .10);
+  transition:
+    transform   280ms cubic-bezier(.34,1.2,.64,1),
+    box-shadow  280ms ease,
+    border-color 280ms ease;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  position: relative;     /* anchor for arrow */
+  /* cancel generic card tilt-on-hover */
+}
+.ride-card:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 4px 12px  rgba(60, 41, 80, .12),
+    0 20px 50px rgba(60, 41, 80, .22);
+  border-color: rgba(90, 37, 127, .22);
+}
+
+/* ── Image container — 3:2 aspect (≈60 % of card height) ── */
+.ride-media {
+  /* override .card-media fixed height */
+  height: auto !important;
+  aspect-ratio: 3 / 2;
+  position: relative;
+  overflow: hidden;
+  /* bottom border-radius is replaced by the wave */
+  border-radius: 20px 20px 0 0;
+  display: block !important;
+  font-size: inherit;
+  background: #e8e0f3;   /* skeleton placeholder */
+  flex-shrink: 0;
+}
+
+/* Next.js Image fill */
+.ride-photo {
+  object-fit: cover;
+  transition: transform 320ms ease;
+  will-change: transform;
+}
+.ride-card:hover .ride-photo {
+  transform: scale(1.06);
+}
+
+/* Depth gradient over photo */
+.ride-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(0, 0, 0, .20) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* SVG icon / emoji fallback */
+.ride-svg-icon,
+.ride-emoji-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  z-index: 0;
+}
+.ride-svg-icon > div,
+.ride-media .svg-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ride-svg-icon svg,
+.ride-media .svg-icon svg {
+  width: 104px;
+  height: 104px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.22));
+}
+
+/* ── Category badge — top-left, over the image ── */
+.ride-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  background: var(--red, #B11E63);
+  color: #fff;
+  font-size: .70rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: capitalize;
+  padding: 5px 13px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .28);
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* ── Curved SVG wave transition (image → body) ── */
+.ride-wave {
+  display: block;
+  margin-top: -2px;          /* tight seal with media */
+  line-height: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.ride-wave svg {
+  display: block;
+  width: 100%;
+  height: 36px;              /* wave height */
+}
+
+/* ── Card body ── */
+.ride-body {
+  padding: 4px 22px 22px;    /* top gap handled by wave height */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  z-index: 2;
+  /* background already the card's pastel via wave fill match */
+}
+
+/* ── Ride title ── */
+.ride-name {
+  font-size: 1.30rem;
+  font-weight: 800;
+  color: var(--ink, #3C2950);
+  line-height: 1.15;
+  margin: 0 0 8px;
+  /* override h3 uppercase from globals */
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-roboto-condensed), 'Arial Narrow', Helvetica, sans-serif;
+}
+
+/* ── Description — 2 lines default → 4 on hover (no grid jump) ── */
+.ride-desc {
+  font-size: .875rem;
+  font-weight: 500;
+  color: rgba(60, 41, 80, .78);
+  line-height: 1.55;
+  margin: 0 0 10px;
+  /* Hard clamp — always 3 lines, ellipsis, never expands */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  /* no max-height, no transition — height is fixed by line-clamp */
+}
+
+/* ── Footer row ── */
+.ride-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+/* ── Manufacturer ── */
+.ride-mfr {
+  font-size: .74rem !important;
+  font-weight: 500 !important;
+  color: rgba(60, 41, 80, .45) !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* ── Arrow CTA — 44 px circle, bottom-right ── */
+.ride-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--purple-deep, #4A216B);
+  color: #F6C33B;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow:
+    0 4px 12px rgba(74, 33, 107, .35),
+    0 1px 3px  rgba(0, 0, 0, .15);
+  transition:
+    transform     260ms ease,
+    background    260ms ease,
+    box-shadow    260ms ease;
+  position: relative;
+  /* Slightly protrude toward bottom-right */
+  margin-right: -4px;
+  margin-bottom: -4px;
+}
+.ride-arrow svg {
+  transition: transform 260ms ease;
+  flex-shrink: 0;
+}
+.ride-card:hover .ride-arrow {
+  background: var(--red, #B11E63);
+  box-shadow:
+    0 6px 20px rgba(177, 30, 99, .45),
+    0 2px 6px  rgba(0, 0, 0, .15);
+  transform: scale(1.12);
+}
+.ride-card:hover .ride-arrow svg {
+  transform: translateX(3px);
+}
+
+/* ── Enhanced filter pills ── */
+.pills .pill {
+  transition:
+    background  240ms ease,
+    color       240ms ease,
+    box-shadow  240ms ease,
+    transform   200ms ease;
+}
+.pills .pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(74, 33, 107, .22);
+}
+.pills .pill.active {
+  background: linear-gradient(135deg, var(--purple-deep, #4A216B), var(--purple, #5A257F));
+  color: #F6C33B;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(74, 33, 107, .32);
+}
+
+/* ── Mobile tweaks ── */
+@media (max-width: 640px) {
+  .ride-body  { padding: 4px 18px 18px; }
+  .ride-name  { font-size: 1.12rem; }
+  .ride-arrow { width: 40px; height: 40px; }
+  .ride-wave svg { height: 28px; }
+}
 
