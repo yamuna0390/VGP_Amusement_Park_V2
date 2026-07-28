@@ -4,13 +4,32 @@ import Counter from "./Counter";
 export default function MealCard({ meal, qty, onChange }) {
   return (
     <div className={`bk-meal ${qty > 0 ? "bk-meal--active" : ""}`}>
-      {/* Image / emoji area */}
+      {/* Image area with food photo */}
       <div
         className="bk-meal__img"
-        style={{ background: meal.bgColor }}
+        style={{
+          background: meal.bgColor || "#1E293B",
+          position: "relative",
+          overflow: "hidden",
+          height: "140px"
+        }}
         aria-hidden="true"
       >
-        <span className="bk-meal__emoji">{meal.emoji}</span>
+        {meal.image ? (
+          <img
+            src={meal.image}
+            alt={meal.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block"
+            }}
+            loading="lazy"
+          />
+        ) : (
+          <span className="bk-meal__emoji">{meal.emoji}</span>
+        )}
       </div>
 
       {/* Body */}

@@ -1,52 +1,172 @@
 "use client";
 import Link from "next/link";
-import ScrollBanner from "@/components/ui/ScrollBanner";
+import { ExternalLink, Compass } from "lucide-react";
 
 export default function Parks() {
+  const parksData = [
+    {
+      id: "marine",
+      name: "VGP Marine Kingdom",
+      url: "https://vgpmarinekingdom.in/",
+      image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+      description: "India's first and largest underground walkthrough aquarium featuring a 70-meter underwater tunnel with sharks, stingrays, exotic marine species, and live mermaid performances.",
+      badge: "Aquarium & Underwater Tunnel"
+    },
+    {
+      id: "playy",
+      name: "VGP Playy Kingdom",
+      url: "https://vgpplayykingdom.in/",
+      image: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=800&q=80",
+      description: "Chennai's ultimate active entertainment center packed with trampoline parks, dodgeball arenas, foam pits, ninja warrior courses, and arcade adventures for all ages.",
+      badge: "Trampoline & Indoor Arena"
+    },
+    {
+      id: "cyber",
+      name: "VGP Cyber Kingdom",
+      url: "https://vgpcyberkingdom.in/",
+      image: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=800&q=80",
+      description: "Next-generation immersive virtual reality gaming zone, multiplayer esports simulators, 9D VR motion rides, and cutting-edge cyber gaming experiences.",
+      badge: "Virtual Reality & Esports"
+    },
+    {
+      id: "waghoba",
+      name: "VGP Waghoba",
+      url: "https://www.vgpwaghoba.in/",
+      image: "https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=800&q=80",
+      description: "An eco-safari and nature park experience dedicated to wildlife conservation, wild cat habitats, exotic bird aviaries, and interactive outdoor trails.",
+      badge: "Eco-Safari & Nature Park"
+    }
+  ];
+
   return (
-    <div className="page show" id="page-parks">
-      <div className="hero" style={{ padding: "46px 20px" }}>
-        <h2>Three Parks. One Kingdom. 👑</h2>
-        <p>Your Fun Pass unlocks access to all three major attractions within VGP Universal Kingdom.</p>
+    <div className="page show" id="page-parks" style={{ background: "#F4F5F7", minHeight: "100vh", paddingBottom: "60px" }}>
+      
+      {/* ── Hero Header Banner ── */}
+      <div className="hero" style={{ padding: "48px 20px 36px", textAlign: "center", background: "linear-gradient(135deg, var(--purple-deep) 0%, #2A103D 100%)", color: "#fff" }}>
+        <h1 className="contact-main-heading" style={{ color: "#FDDB00", textShadow: "3px 3px 0 var(--red)" }}>
+          FOUR PARKS . ONE KINGDOM 👑
+        </h1>
+        <p style={{ color: "#E2D6EE", fontWeight: 700, fontSize: "1.1rem", marginTop: "10px", maxWidth: "780px", margin: "10px auto 0" }}>
+          Your ultimate gateway to four world-class attraction kingdoms within VGP Universal Kingdom.
+        </p>
       </div>
+
       <div className="zigzag"></div>
 
-      <section>
-        <div className="wrap">
-          <div className="grid g3">
-            <div className="card bg-purple">
-              <div className="card-media bg-yellow">🎢</div>
-              <div className="card-body">
-                <h3>Amusement Park</h3>
-                <p>22 thrilling rides for adults, families, and children. Highlights include the Roller Coaster, Top Gun, and the giant Ferris Wheel by the beach.</p>
-                <Link href="/rides" className="pill" style={{ marginTop: "12px", display: "inline-block" }}>Explore Rides</Link>
-              </div>
-            </div>
-            
-            <div className="card bg-blue">
-              <div className="card-media bg-green">🌊</div>
-              <div className="card-body">
-                <h3>Aqua Kingdom</h3>
-                <p>11 water attractions including the Wave Pool, Tornado, River Ride, and Rain Dance. The perfect place to cool off in the Chennai heat.</p>
-                <Link href="/rides" className="pill" style={{ marginTop: "12px", display: "inline-block" }}>Explore Water Park</Link>
-              </div>
-            </div>
+      {/* ── 4 Parks Cards Grid Section (2 per row desktop) ── */}
+      <section style={{ padding: "40px 20px 60px" }}>
+        <div className="wrap" style={{ maxWidth: "1180px", margin: "0 auto" }}>
+          
+          <div className="bk-step-grid" style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "28px"
+          }}>
+            {parksData.map((park) => (
+              <div
+                key={park.id}
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "24px",
+                  overflow: "hidden",
+                  boxShadow: "0 6px 24px rgba(0, 0, 0, 0.06)",
+                  border: "1px solid #E2E8F0",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "transform 0.25s ease, box-shadow 0.25s ease"
+                }}
+              >
+                <div>
+                  {/* Card Thumbnail Image */}
+                  <div style={{ position: "relative", width: "100%", height: "240px", overflow: "hidden", background: "#1E293B" }}>
+                    <img
+                      src={park.image}
+                      alt={park.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover"
+                      }}
+                      loading="eager"
+                    />
+                    <span style={{
+                      position: "absolute",
+                      top: "16px",
+                      left: "16px",
+                      background: "rgba(15, 23, 42, 0.8)",
+                      backdropFilter: "blur(6px)",
+                      color: "#FDDB00",
+                      fontSize: "0.78rem",
+                      fontWeight: "800",
+                      padding: "5px 14px",
+                      borderRadius: "16px",
+                      letterSpacing: "0.5px"
+                    }}>
+                      {park.badge}
+                    </span>
+                  </div>
 
-            <div className="card bg-green">
-              <div className="card-body" style={{ padding: "0" }}>
-                <img src="/assets/img_5b25b363752a.jpg" alt="Petting Zoo" style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }} loading="lazy" />
+                  {/* Card Content Body */}
+                  <div style={{ padding: "26px 24px 18px" }}>
+                    <h3 style={{ fontSize: "1.45rem", fontWeight: "900", color: "#1E293B", margin: "0 0 10px 0", fontFamily: "var(--font-roboto-condensed), sans-serif", letterSpacing: "0.5px" }}>
+                      {park.name}
+                    </h3>
+                    <p style={{ fontSize: "0.92rem", color: "#475569", fontWeight: "600", lineHeight: "1.6", margin: 0 }}>
+                      {park.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card Action Link Button */}
+                <div style={{ padding: "0 24px 26px" }}>
+                  <a
+                    href={park.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cta-big cta-green"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      width: "100%",
+                      padding: "12px 20px",
+                      fontSize: "0.95rem",
+                      textDecoration: "none",
+                      borderRadius: "16px"
+                    }}
+                  >
+                    <span>Visit {park.name}</span>
+                    <ExternalLink size={17} />
+                  </a>
+                </div>
               </div>
-              <div className="card-body">
-                <h3>Petting Zoo</h3>
-                <p>Meet friendly macaws, cockatoos, emus, rabbits, and more. A gentle, engaging experience for the youngest visitors.</p>
-              </div>
-            </div>
+            ))}
           </div>
           
-          <div className="panel" style={{ marginTop: "36px", textAlign: "center" }}>
-            <h3 style={{ marginBottom: "16px" }}>Ready to explore?</h3>
-            <Link href="/book" className="cta-big cta-red">Book Your Fun Pass Now ➜</Link>
+          {/* Bottom Callout Banner */}
+          <div className="panel" style={{
+            marginTop: "44px",
+            textAlign: "center",
+            background: "#FFFFFF",
+            borderRadius: "24px",
+            padding: "36px 24px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+            border: "1px solid #E2E8F0"
+          }}>
+            <h3 style={{ fontSize: "1.45rem", fontWeight: "900", color: "#1E293B", marginBottom: "10px" }}>
+              Ready for Unlimited Park Thrills?
+            </h3>
+            <p style={{ fontSize: "0.95rem", color: "#64748B", fontWeight: "600", marginBottom: "22px" }}>
+              Pre-book your tickets online to unlock exclusive discounts and skip queue lines!
+            </p>
+            <Link href="/book" className="cta-big cta-red" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Compass size={18} />
+              <span>Book Your Kingdom Fun Pass Now ➜</span>
+            </Link>
           </div>
+
         </div>
       </section>
     </div>

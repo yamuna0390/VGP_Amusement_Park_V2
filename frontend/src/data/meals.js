@@ -1,5 +1,4 @@
 // ─── Mock Meal / Food Data ─────────────────────────────────────────────────
-// Replace with API call: GET /api/meals
 export const MEALS = [
   {
     id: "veg",
@@ -8,6 +7,7 @@ export const MEALS = [
     description: "South-Indian thali — rice, curries, poriyal & sweet.",
     price: 250,
     emoji: "🥗",
+    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=800&q=80",
     bgColor: "#8B6914",
   },
   {
@@ -17,6 +17,7 @@ export const MEALS = [
     description: "Chicken curry, flavoured rice & dessert.",
     price: 300,
     emoji: "🍗",
+    image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=800&q=80",
     bgColor: "#C73A7B",
   },
   {
@@ -26,6 +27,7 @@ export const MEALS = [
     description: "Mini meal + a treat & a little surprise.",
     price: 199,
     emoji: "😊",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
     bgColor: "#7BB8A8",
   },
   {
@@ -35,6 +37,7 @@ export const MEALS = [
     description: "Popcorn/fries + a chilled drink.",
     price: 149,
     emoji: "🍿",
+    image: "/images/snacks.png",
     bgColor: "#5A257F",
   },
 ];
