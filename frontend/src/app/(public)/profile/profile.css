@@ -1,0 +1,12 @@
+/* ================================================================
+   PROFILE PAGE — Responsive Refinements
+   ================================================================ */
+
+.profile-booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  align-items: center;
+  border-bottom: 1px solid #f3effa;
+  padding-bottom: 10px;
+}

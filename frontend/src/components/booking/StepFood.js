@@ -15,7 +15,7 @@ export default function StepFood({ onNext, onBack }) {
 
   return (
     <div className="bk-step-content">
-      <div className="bk-step-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div className="bk-step-grid">
         
         {/* ── Left Card Panel: Header & Dining Illustration (Screenshot 3 Match) ── */}
         <div className="bk-panel" style={{

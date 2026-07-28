@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import "../profile.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -145,7 +146,7 @@ export default function BookingsHistoryPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "15px", alignItems: "center", borderBottom: "1px solid #f3effa", paddingBottom: "10px" }}>
+                  <div className="profile-booking-grid">
                     <div>
                       <span style={{ fontSize: "0.75rem", color: "#888", display: "block" }}>PROMOTION</span>
                       <span style={{ fontSize: "0.85rem", fontWeight: "700", color: booking.coupon_code ? "#2e7d32" : "var(--purple-deep)" }}>

@@ -60,7 +60,7 @@ export default function StepTickets({ onNext, onBack }) {
 
   return (
     <div className="bk-step-content">
-      <div className="bk-step-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div className="bk-step-grid">
         
         {/* ── Left Card Panel: Header & Important Information (Screenshot 2 Match) ── */}
         <div className="bk-panel" style={{

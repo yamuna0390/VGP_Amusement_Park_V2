@@ -1,0 +1,13 @@
+/* ================================================================
+   CONTACT PAGE — Responsive Refinements
+   ================================================================ */
+
+/* Two-column inner form grid → single column on mobile */
+.contact-inner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .contact-inner-grid { grid-template-columns: 1fr; }
+}

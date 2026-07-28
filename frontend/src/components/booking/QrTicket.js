@@ -80,7 +80,7 @@ export default function QrTicket({ booking }) {
       {/* Ticket Details */}
       <div style={{ padding: "20px 24px", position: "relative" }}>
         
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+        <div className="qr-detail-grid">
           <div>
             <span style={{ fontSize: "0.65rem", color: "#888", display: "block", fontWeight: "800" }}>GUEST NAME</span>
             <strong style={{ fontSize: "0.95rem", color: "var(--ink)" }}>{guestName}</strong>
@@ -91,7 +91,7 @@ export default function QrTicket({ booking }) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+        <div className="qr-detail-grid">
           <div>
             <span style={{ fontSize: "0.65rem", color: "#888", display: "block", fontWeight: "800" }}>CONTACT</span>
             <strong style={{ fontSize: "0.95rem", color: "var(--ink)" }}>{guestMobile}</strong>

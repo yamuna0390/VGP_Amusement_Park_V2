@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import "./operator.css";
 import { 
   User, 
   Building2, 
@@ -201,7 +202,7 @@ function OperatorPortalContent() {
           </div>
         ) : (
           /* ── MAIN 2-COLUMN SPLIT PORTAL VIEW (MATCHING SCREENSHOT) ── */
-          <div style={{ display: "grid", gridTemplateColumns: "38% 62%", gap: "24px", minHeight: "640px" }} className="bk-step-grid">
+          <div className="op-step-grid">
             
             {/* ── LEFT COLUMN: Mascot & Partner Onboarding Graphic ── */}
             <div style={{
@@ -433,7 +434,7 @@ function OperatorPortalContent() {
                           Personal Information
                         </h3>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Name *
@@ -463,7 +464,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Password *
@@ -511,7 +512,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Mobile *
@@ -550,7 +551,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Telephone
@@ -577,7 +578,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Email *
@@ -615,7 +616,7 @@ function OperatorPortalContent() {
                           Agency Information
                         </h3>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Agency / Company Name *
@@ -645,7 +646,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Business Entity Type
@@ -693,7 +694,7 @@ function OperatorPortalContent() {
                           />
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", marginBottom: "24px" }}>
+                        <div className="op-field-grid-3">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               City *
@@ -746,7 +747,7 @@ function OperatorPortalContent() {
                           Bank &amp; KYC Verification
                         </h3>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Account Holder Name *
@@ -776,7 +777,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               Account Number *
@@ -806,7 +807,7 @@ function OperatorPortalContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+                        <div className="op-field-grid-2">
                           <div>
                             <label style={{ display: "block", fontSize: "0.82rem", fontWeight: "700", color: "#475569", marginBottom: "6px" }}>
                               IFSC Code *

@@ -1,0 +1,45 @@
+/* ================================================================
+   OPERATOR PORTAL — Responsive Refinements
+   ================================================================ */
+
+/* Operator two-panel shell (38% / 62%) */
+.op-step-grid {
+  display: grid;
+  grid-template-columns: 38% 62%;
+  gap: 24px;
+  min-height: 640px;
+}
+@media (max-width: 860px) {
+  .op-step-grid { grid-template-columns: 1fr; min-height: unset; gap: 16px; }
+}
+
+/* Form field two-column grids */
+.op-field-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 600px) {
+  .op-field-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Form field three-column grids */
+.op-field-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 700px) {
+  .op-field-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .op-field-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* KPI card grid */
+@media (max-width: 640px) {
+  .op-kpis { grid-template-columns: repeat(2, 1fr); }
+  .op-main { padding: 14px; }
+}

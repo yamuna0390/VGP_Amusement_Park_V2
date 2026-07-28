@@ -105,7 +105,7 @@ export default function Invoice({ booking }) {
       <hr className="bk-inv__hr" style={{ border: "0", borderTop: "1px dashed var(--border)", margin: "20px 0" }} />
 
       {/* Billed to / Visit details */}
-      <div className="bk-inv__two" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", fontSize: "0.85rem", marginBottom: "20px" }}>
+      <div className="bk-inv__two-auto">
         <div>
           <div className="bk-inv__section-label" style={{ fontWeight: "800", color: "#888", marginBottom: "6px", fontSize: "0.75rem", letterSpacing: "0.5px" }}>BILLED TO</div>
           <div>{customer?.name || booking.customer_name}</div>
@@ -248,7 +248,7 @@ export default function Invoice({ booking }) {
       </div>
 
       {/* QR + T&C */}
-      <div className="bk-inv__bottom" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "30px", fontSize: "0.8rem", color: "#555" }}>
+      <div className="bk-inv__bottom-auto">
         <div className="bk-inv__qr-wrap" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <div className="bk-inv__qr" aria-label={`QR code for booking ${bNumber}`} style={{ border: "2px solid var(--purple-deep)", padding: "10px", borderRadius: "8px", background: "#fff", marginBottom: "8px" }}>
             <svg viewBox="0 0 100 100" width="120" height="120">

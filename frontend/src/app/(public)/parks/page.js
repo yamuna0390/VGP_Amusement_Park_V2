@@ -1,4 +1,5 @@
 "use client";
+import "./parks.css";
 import Link from "next/link";
 import { ExternalLink, Compass } from "lucide-react";
 
@@ -57,11 +58,7 @@ export default function Parks() {
       <section style={{ padding: "40px 20px 60px" }}>
         <div className="wrap" style={{ maxWidth: "1180px", margin: "0 auto" }}>
           
-          <div className="bk-step-grid" style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "28px"
-          }}>
+          <div className="parks-grid-2">
             {parksData.map((park) => (
               <div
                 key={park.id}

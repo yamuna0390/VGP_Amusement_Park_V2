@@ -110,7 +110,7 @@ export default function StepCheckout({ onBack }) {
 
   return (
     <div className="bk-step-content">
-      <div className="bk-step-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div className="bk-step-grid">
         
         {/* ── Left Card Panel: Review Booking Summary (Screenshot 4 Match) ── */}
         <div className="bk-panel" style={{

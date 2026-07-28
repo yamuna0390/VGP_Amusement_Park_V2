@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import "./restaurant.css";
 import ScrollBanner from "@/components/ui/ScrollBanner";
 import Polaroid from "@/components/ui/Polaroid";
 import RestaurantGallerySlider from "@/components/ui/RestaurantGallerySlider";
@@ -69,7 +70,7 @@ export default function Restaurant() {
             <b>Kutti Raja&apos;s Royal Kitchen</b> is a multi-cuisine family restaurant inside the park — South-Indian thalis, chaats, pizzas, biryani, ice-creams and more. Pre-book a meal package with your tickets and skip the queue.
           </p>
 
-          <div className="meal-grid rk-menu" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "18px", marginTop: "24px" }}>
+          <div className="meal-grid rk-menu restaurant-menu-grid">
             {restaurantMeals.map((meal) => (
               <div
                 key={meal.id}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import "./contact.css";
 import { MapPin, Mail, Phone, Building, Users, Headphones, Send, Clock, CheckCircle2 } from "lucide-react";
 
 export default function ContactPage() {
@@ -52,7 +54,7 @@ export default function ContactPage() {
       <section style={{ padding: "40px 20px 60px", background: "#F4F5F7" }}>
         <div className="wrap" style={{ maxWidth: "1180px", margin: "0 auto" }}>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }} className="bk-step-grid">
+          <div className="bk-step-grid">
             
             {/* ── Left Column: Contact Cards ── */}
             <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
@@ -260,7 +262,7 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                  <div className="contact-inner-grid">
                     <div className="bk-field">
                       <label className="bk-field__label" style={{ fontWeight: "700", color: "#1E293B", marginBottom: "6px", display: "block", fontSize: "0.88rem" }}>
                         Email Address *

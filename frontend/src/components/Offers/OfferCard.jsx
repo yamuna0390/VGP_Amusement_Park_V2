@@ -1,73 +1,91 @@
+"use client";
+
 import React from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { Check } from "lucide-react";
 import "./OfferCard.css";
 
-const BG_HEX = {
-  "bg-mint": "#D8F5EF",
-  "bg-lavender": "#EAE2F8",
-  "bg-sky": "#D5EEFF",
-  "bg-cream": "#FFF8EC",
-  "bg-peach": "#FFE8DC",
-  "bg-softyellow": "#FFF6D0",
-  "bg-purple": "#EAE2F8",
+const OFFER_INDEX_MAP = {
+  "early-bird": "01",
+  "student-discount": "02",
+  "double-dhamaka": "03",
+  "aadi-offer": "04",
+  "friendship-day": "05",
+  "little-legend": "06",
+  "birthday-offer": "07",
+  "EARLYBIRD15": "01",
+  "CAMPUS20": "02",
+  "DOUBLE_DHAMAKA": "03",
+  "AADI_B2G1": "04",
+  "FRIENDSHIP_B2G1": "05",
+  "LITTLELEGEND_B1G2": "06",
+  "BIRTHDAY_BOGO": "07"
 };
 
-export default function OfferCard({ offer }) {
-  const cardBg = BG_HEX[offer.bg] || "#FFF8EC";
+export default function OfferCard({ offer, isSelected, onSelect, index }) {
+  const numBadge = typeof index === "number" ? String(index + 1).padStart(2, "0") : (OFFER_INDEX_MAP[offer.id] || "01");
+  const offerTitle = offer.title || offer.name || "Special Offer";
+  const offerDesc = offer.description || offer.desc || "";
+  const validityText = offer.validity || offer.terms || "Limited Deal";
+
+  const handleApply = (e) => {
+    e.stopPropagation();
+    if (onSelect) {
+      onSelect(offer);
+    }
+  };
 
   return (
     <div
-      className={`card ride-card offer-card ${offer.bg}`}
-      style={{ "--ride-body-bg": cardBg }}
+      className={`bk-compact-offer-card ${isSelected ? "bk-compact-offer-card--selected" : ""}`}
+      onClick={handleApply}
+      role="button"
+      tabIndex={0}
     >
-      {/* ── Image & Badge ── */}
-      <div className="card-media ride-media offer-media">
-        <Image
-          src={offer.img}
-          alt={offer.name}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="ride-photo offer-photo"
-          loading="lazy"
-        />
+      <div className="bk-compact-offer-top">
+        <div className="bk-compact-offer-header">
+          <div className="bk-compact-offer-num">{numBadge}</div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h4 className="bk-compact-offer-title">{offerTitle}</h4>
+            <span className="bk-compact-offer-validity">📅 {validityText}</span>
+          </div>
+        </div>
 
-        {/* Offer Badge over image */}
-        <span className="ride-badge offer-badge">{offer.badge}</span>
+        {offer.badge && (
+          <span className="bk-compact-offer-badge">{offer.badge}</span>
+        )}
       </div>
 
-      {/* ── Curved Wave Transition ── */}
-      <div className="ride-wave" aria-hidden="true">
-        <svg
-          viewBox="0 0 400 40"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
+      <p className="bk-compact-offer-desc">{offerDesc}</p>
+
+      <div className="bk-compact-offer-footer">
+        <div className="bk-compact-offer-tags">
+          {offer.applicableFor ? (
+            offer.applicableFor.map((tag, i) => (
+              <span key={i} className="bk-compact-offer-tag">✓ {tag}</span>
+            ))
+          ) : offer.eligibility ? (
+            offer.eligibility.map((tag, i) => (
+              <span key={i} className="bk-compact-offer-tag">✓ {tag}</span>
+            ))
+          ) : (
+            <span className="bk-compact-offer-tag">✓ All Visitors</span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className={`bk-compact-offer-btn ${isSelected ? "bk-compact-offer-btn--applied" : ""}`}
+          onClick={handleApply}
         >
-          <path
-            d="M0,40 L0,18 Q100,0 200,20 Q300,40 400,18 L400,40 Z"
-            fill={cardBg}
-          />
-        </svg>
-      </div>
-
-      {/* ── Card Body ── */}
-      <div className="card-body ride-body offer-body">
-        <div className="offer-code-tag">
-          <span>CODE:</span> <strong>{offer.code}</strong>
-        </div>
-
-        <h3 className="ride-name offer-title">{offer.name}</h3>
-        <p className="ride-desc offer-desc">{offer.desc}</p>
-
-        <div className="offer-validity-box">
-          <span>{offer.validity}</span>
-        </div>
-
-        <div className="ride-footer offer-footer">
-          <Link href="/booking" className="btn-book offer-claim-btn">
-            Book Now
-          </Link>
-        </div>
+          {isSelected ? (
+            <>
+              <Check size={15} />
+              <span>Applied ✓</span>
+            </>
+          ) : (
+            <span>Apply Offer ➔</span>
+          )}
+        </button>
       </div>
     </div>
   );

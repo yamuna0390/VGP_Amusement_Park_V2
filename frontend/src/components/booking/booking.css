@@ -1,0 +1,126 @@
+/* ================================================================
+   BOOKING MODULE — Responsive Refinements
+   Desktop (≥861px) handled entirely in globals.css .bk-* classes.
+   This file adds mobile-only polish without altering desktop layout.
+   ================================================================ */
+
+/* ── Booking page head ── */
+@media (max-width: 640px) {
+  .bk-page__head  { padding: 28px 16px 24px; }
+  .bk-body        { padding: 20px 14px 40px; }
+  .bk-panel       { padding: 20px 16px; border-radius: 18px; }
+  .bk-panel__title{ font-size: 1.1rem; }
+}
+
+/* ── Booking nav buttons ── */
+@media (max-width: 480px) {
+  .bk-nav-btns   { flex-direction: column; gap: 10px; }
+  .bk-btn-back,
+  .btn-next       { width: 100%; text-align: center; justify-content: center; }
+}
+
+/* ── Offers scroll container ── */
+@media (max-width: 640px) {
+  .bk-offers-scroll { max-height: 360px; }
+}
+
+/* ── Summary total ── */
+@media (max-width: 480px) {
+  .bk-summary__total        { font-size: 1rem; }
+  .bk-summary__total strong { font-size: 1.15rem; }
+}
+
+/* ── QrTicket detail grids ── */
+.qr-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 400px) {
+  .qr-detail-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Invoice two-column ── */
+.bk-inv__two-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+/* ── Invoice bottom auto grid ── */
+.bk-inv__bottom-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+/* ── Step panel shared card style ── */
+.bk-panel--card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 28px 26px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E2E8F0;
+}
+@media (max-width: 640px) {
+  .bk-panel--card { padding: 20px 16px; border-radius: 18px; }
+}
+
+/* ── Step back-button icon ── */
+.bk-step-back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #FDDB00;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: #1E293B; font-weight: 900;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* ── 365 Days holiday notice box ── */
+.bk-holiday-notice {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1px solid #FDE68A;
+  border-radius: 18px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.08);
+}
+@media (max-width: 480px) {
+  .bk-holiday-notice { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+/* ── Calendar modal overlay ── */
+.bk-calendar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* ── Confirm modal overlay ── */
+.bk-confirm-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* ── Calendar modal panel ── */
+.bk-calendar-modal {
+  max-width: 500px; width: 100%;
+  padding: 28px 24px;
+}
+@media (max-width: 480px) {
+  .bk-calendar-modal { padding: 20px 16px; }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useBooking } from "@/context/BookingContext";
+import "@/components/booking/booking.css";
 
 import BookingStepper from "@/components/booking/BookingStepper";
 import StepDateOffers from "@/components/booking/StepDateOffers";

@@ -51,7 +51,7 @@ export default function StepDateOffers({ onNext }) {
 
   return (
     <div className="bk-step-content">
-      <div className="bk-step1-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div className="bk-step1-grid">
         
         {/* ── Left Card Panel: Plan Your Adventure & Timings (Screenshot 1 Match) ── */}
         <div className="bk-panel" style={{
@@ -155,35 +155,47 @@ export default function StepDateOffers({ onNext }) {
 
           {/* 365 Days Holiday Notice Box */}
           <div style={{
-            background: "#F8FAFC",
-            border: "1px solid #E2E8F0",
-            borderRadius: "16px",
-            padding: "18px 20px"
+            background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+            border: "1px solid #FDE68A",
+            borderRadius: "18px",
+            padding: "18px 22px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            boxShadow: "0 2px 10px rgba(245, 158, 11, 0.08)"
           }}>
-            <h4 style={{ fontSize: "0.95rem", color: "#1E293B", fontWeight: "800", margin: "0 0 4px 0" }}>
-              Upcoming Holidays Perfect For A VGP Trip
-            </h4>
-            <p style={{ fontSize: "0.85rem", color: "#475569", fontWeight: "700", margin: "0 0 14px 0" }}>
-              We Are Open All 365 Days!
-            </p>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-              <div>
-                <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "700", display: "block" }}>Aug 14</span>
-                <span style={{ fontSize: "0.85rem", color: "#1E293B", fontWeight: "800" }}>Take Leave</span>
+            <div style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "14px",
+              background: "#FDDB00",
+              color: "#1E293B",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.4rem",
+              flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(253, 219, 0, 0.4)"
+            }}>
+              🎡
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", flexWrap: "wrap" }}>
+                <h4 style={{ fontSize: "1.02rem", color: "#1E293B", fontWeight: "900", margin: 0 }}>
+                  Upcoming Holidays Perfect For A VGP Trip
+                </h4>
+                <span style={{ background: "#B11E63", color: "#FFF", fontSize: "0.72rem", fontWeight: "800", padding: "2px 8px", borderRadius: "10px", textTransform: "uppercase" }}>
+                  Open Always
+                </span>
               </div>
-              <div>
-                <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "700", display: "block" }}>Aug 15</span>
-                <span style={{ fontSize: "0.85rem", color: "#1E293B", fontWeight: "800" }}>Independence Day</span>
-              </div>
-              <div>
-                <span style={{ fontSize: "0.75rem", color: "#94A3B8", fontWeight: "700", display: "block" }}>Aug 16</span>
-                <span style={{ fontSize: "0.85rem", color: "#1E293B", fontWeight: "800" }}>Week Off</span>
-              </div>
+              <p style={{ fontSize: "0.88rem", color: "#92400E", fontWeight: "700", margin: 0, lineHeight: "1.4" }}>
+                We Are Open All 365 Days of the Year! Plan your thrilling family adventure anytime.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* ── Right Card Panel: Offers List (Screenshot 1 Match) ── */}
+        {/* ── Right Card Panel: Offers Panel (Redesigned per Specification) ── */}
         <div className="bk-panel" style={{
           background: "#FFFFFF",
           borderRadius: "24px",
@@ -191,26 +203,50 @@ export default function StepDateOffers({ onNext }) {
           boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           border: "1px solid #E2E8F0"
         }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: "800", color: "#1E293B", margin: 0 }}>
-              Exclusive Passes &amp; Offers
-            </h3>
-            {visitDate && (
-              <span style={{ fontSize: "0.82rem", fontWeight: "700", color: "#2563EB", background: "#EFF6FF", padding: "4px 12px", borderRadius: "12px" }}>
-                Date: {visitDate}
-              </span>
-            )}
+          {/* Header & Subtitle */}
+          <div style={{ marginBottom: "18px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+              <h3 style={{
+                fontSize: "1.25rem",
+                fontWeight: "900",
+                color: "#1E293B",
+                fontFamily: "var(--font-roboto-condensed), sans-serif",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                margin: 0
+              }}>
+                EXCLUSIVE PASSES &amp; OFFERS
+              </h3>
+              {visitDate && (
+                <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#16A34A", background: "#DCFCE7", padding: "4px 12px", borderRadius: "12px" }}>
+                  Date: {visitDate}
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "#64748B", fontWeight: "600", margin: "4px 0 0 0" }}>
+              Choose the best offer before continuing your booking.
+            </p>
           </div>
 
-          <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "500px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "12px" }}>
-            {BOOKING_OFFERS.map((offer) => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                isSelected={selectedOffer?.id === offer.id}
-                onSelect={handleOfferSelectAttempt}
-              />
-            ))}
+          {/* Scrollable Offers Container */}
+          <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "540px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            {BOOKING_OFFERS && BOOKING_OFFERS.length > 0 ? (
+              BOOKING_OFFERS.map((offer) => (
+                <OfferCard
+                  key={offer.id}
+                  offer={offer}
+                  isSelected={selectedOffer?.id === offer.id}
+                  onSelect={handleOfferSelectAttempt}
+                />
+              ))
+            ) : (
+              /* Empty State */
+              <div style={{ textAlign: "center", padding: "40px 20px", background: "#F8FAFC", borderRadius: "18px", border: "1px dashed #CBD5E1" }}>
+                <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>🎟️</div>
+                <h4 style={{ fontSize: "1rem", fontWeight: "800", color: "#1E293B", margin: "0 0 4px 0" }}>No offers available today.</h4>
+                <p style={{ fontSize: "0.84rem", color: "#64748B", margin: 0 }}>Please check again later.</p>
+              </div>
+            )}
           </div>
 
           <button
