@@ -36,7 +36,7 @@ export const rides = [
 {n:"Jumping Tower",m:"Moser Rides",c:"adult",i:"tower",bg:"bg-mint",d:"Rise high above the ground before bouncing through exciting drops. Weightless moments, laughter and adventure combined.", img: "/images/rides/roller1.jpg"},
 {n:"Viking",m:"Okamoto · Japan",c:"adult",i:"ship",bg:"bg-lavender",d:"Set sail aboard a giant ship that swings higher with every movement. Exciting drops and moments of pure weightlessness.", img: "/images/rides/pirateship.jpg"},
 {n:"Flying Tiger",m:"UKD Classic",c:"adult",i:"pendulum",bg:"bg-peach",d:"Leap on the tiger's back as it swoops and circles high above the midway. A roaring adventure of speed and sweeping turns.", img: "/images/rides/roller1.jpg"},
-{n:"Wave Swinger",m:"Okamoto · Japan",c:"adult",i:"swinger",bg:"bg-sky",d:"Soar through the air as colourful chairs rise, tilt and circle gracefully. A refreshing feeling of freedom, speed and excitement.", img: "/images/rides/flyingride.jpg"},
+{n:"Wave Swinger",m:"Okamoto · Japan",c:"adult",i:"swinger",bg:"bg-sky",d:"Soar through the air as colourful chairs rise, tilt and circle gracefully. A refreshing feeling of freedom, speed and excitement.", img: "/images/vgrides/Wave Swigner.JPG"},
 {n:"Mixer",m:"Zamperla · Italy",c:"adult",i:"spinner",bg:"bg-softyellow",d:"Prepare for powerful spins and sweeping rotations on this high-energy attraction. Intense, pulse-racing fun for adventure lovers.", img: "/images/rides/roller1.jpg"},
 {n:"Roller Coaster",m:"UKD Classic",c:"adult",ph:"Roller Coaster",bg:"bg-cream",d:"Race through exciting twists, sharp turns and thrilling drops at high speed. A heart-pounding adventure riders will remember.", img: "/images/rides/roller1.jpg"},
 

@@ -1,38 +1,12 @@
 "use client";
 
-/**
- * RideVideoPreview
- * ----------------
- * Renders the existing `.video-frame` preview element.
- * On click the preview is replaced by a lazily-loaded YouTube player
- * (no iframe is created until the user interacts).
- *
- * ── HOW TO SWAP TO THE LOCAL VIDEO LATER ──────────────────────────────
- *   1. Change VIDEO_SOURCE.type  to  "local"
- *   2. Change VIDEO_SOURCE.src   to  "/assets/video/rides.mp4"
- *   3. Nothing else needs to change.
- * ──────────────────────────────────────────────────────────────────────
- *
- * VISUAL CONTRACT
- *   • The outer <div className="video-frame"> keeps every existing CSS rule:
- *       aspect-ratio, max-width, border, border-radius, shadow, hover scale,
- *       cursor, transition — all untouched.
- *   • Before click  → play button + label are shown (existing HTML).
- *   • After click   → the iframe fills the same box (no layout shift).
- */
-
 import { useState } from "react";
+import { Play } from "lucide-react";
 
 // ── VIDEO SOURCE CONFIG ────────────────────────────────────────────────
 const VIDEO_SOURCE = {
-  /** "youtube" | "local" */
   type: "youtube",
-
-  /** YouTube video ID  (used when type === "youtube") */
-  youtubeId: "kKwysjmqxJU",
-
-  /** Local file path   (used when type === "local") */
-  // src: "/assets/video/rides.mp4",
+  youtubeId: "kKwysjmqxJU", // VGP rides video
 };
 // ──────────────────────────────────────────────────────────────────────
 
@@ -42,26 +16,72 @@ export default function RideVideoPreview() {
   return (
     <div
       className="video-frame"
-      style={{ aspectRatio: "16/6", maxWidth: "640px" }}
+      style={{
+        aspectRatio: "16/8",
+        maxWidth: "760px",
+        position: "relative",
+        overflow: "hidden",
+        backgroundImage: activated ? "none" : "linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)), url('/images/rides_video_poster.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        border: "6px solid #FDDB00",
+        borderRadius: "24px",
+        boxShadow: "0 14px 34px rgba(0, 0, 0, 0.3)"
+      }}
       onClick={() => !activated && setActivated(true)}
-      /* Remove the hover-scale once the player is live so it doesn't
-         interfere with iframe mouse events. */
       data-activated={activated ? "true" : undefined}
     >
       {activated ? (
         <VideoPlayer />
       ) : (
-        /* ── PREVIEW (identical to the original markup) ── */
-        <>
-          <div className="play-btn" />
-          <span>All rides — video &amp; GIF preview</span>
-        </>
+        /* ── PREVIEW WITH USER ATTACHED BACKGROUND IMAGE & PLAY BUTTON ── */
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          height: "100%",
+          cursor: "pointer",
+          userSelect: "none"
+        }}>
+          {/* Animated Play Button */}
+          <div style={{
+            width: "68px",
+            height: "68px",
+            borderRadius: "50%",
+            background: "#B11E63",
+            border: "4px solid #FDDB00",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 8px 24px rgba(177, 30, 99, 0.6)",
+            color: "#FFFFFF",
+            paddingLeft: "4px",
+            transition: "transform 0.2s ease, background-color 0.2s ease"
+          }}>
+            <Play size={32} fill="#FFFFFF" />
+          </div>
+
+          <span style={{
+            color: "#FFFFFF",
+            fontWeight: "900",
+            fontSize: "1.1rem",
+            marginTop: "12px",
+            textShadow: "0 2px 8px rgba(0,0,0,0.8)",
+            fontFamily: "var(--font-roboto-condensed), sans-serif",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase"
+          }}>
+            Watch Kingdom Rides &amp; Thrills Video 🎥
+          </span>
+        </div>
       )}
     </div>
   );
 }
 
-/** Renders either a YouTube iframe or a <video> depending on VIDEO_SOURCE. */
+/** Renders YouTube iframe or HTML5 video */
 function VideoPlayer() {
   if (VIDEO_SOURCE.type === "local") {
     return (
@@ -80,13 +100,11 @@ function VideoPlayer() {
     );
   }
 
-  // YouTube — autoplay=1 is safe here because this only renders after a
-  // deliberate user click, satisfying browser autoplay-with-sound policies.
   const { youtubeId } = VIDEO_SOURCE;
   const params = new URLSearchParams({
-    autoplay: "1",   // auto-starts after click
-    controls: "1",   // show native YT controls
-    rel: "0",        // suppress unrelated suggestions
+    autoplay: "1",
+    controls: "1",
+    rel: "0",
     modestbranding: "1",
     enablejsapi: "0",
   });
@@ -94,7 +112,7 @@ function VideoPlayer() {
   return (
     <iframe
       src={`https://www.youtube.com/embed/${youtubeId}?${params}`}
-      title="VGP rides montage"
+      title="VGP Universal Kingdom Rides Video"
       allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
       allowFullScreen
       style={{

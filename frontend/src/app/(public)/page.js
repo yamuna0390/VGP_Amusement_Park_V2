@@ -271,7 +271,7 @@ Meet Power Surge 🎢  </div>
               <figcaption>Balloon Racer</figcaption>
             </figure></SwiperSlide>
             <SwiperSlide><figure className="shot r-r">
-              <img src="/assets/img_42fedc45c496.jpg" loading="lazy" decoding="async" alt="Flying Machine"/>
+              <img src="/assets/img_42fedc45c496.jpg" loading="lazy" decoding="async" alt="Wave Swinger"/>
               <figcaption>Wave Swinger</figcaption>
             </figure></SwiperSlide>
             <SwiperSlide><figure className="shot r-l">

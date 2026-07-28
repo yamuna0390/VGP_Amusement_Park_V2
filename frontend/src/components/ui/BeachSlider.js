@@ -39,8 +39,8 @@ const SLIDES = [
     sub: "SHORELINE ESCAPE",
     description:
       "Escape to a peaceful private shoreline on the Bay of Bengal — perfect for family outings, relaxed afternoon picnics and sun-soaked memories.",
-    cta: { label: "Host an Event", href: "/book" },
-    cta2: { label: "Know More", href: "/parks/universal" },
+    cta: { label: "Host an Event", href: "/contact" },
+    cta2: { label: "Know More", href: "/contact" },
     img: "/assets/img_57957d8c2b63.jpg",
     imgAlt: "VGP Private Beach golden shoreline",
     accent: "#B11E63",        // --red
@@ -53,8 +53,8 @@ const SLIDES = [
     sub: "TEAM CELEBRATIONS",
     description:
       "Impress your team with an award function, corporate day-out or product launch against the stunning backdrop of the Bay of Bengal — for groups of up to 3,000.",
-    cta: { label: "Plan Your Event", href: "/book" },
-    cta2: { label: "View Packages", href: "/parks/universal" },
+    cta: { label: "Plan Your Event", href: "/contact" },
+    cta2: { label: "View Packages", href: "/contact" },
     img: "/assets/img_cc82cec5afc0.jpg",
     imgAlt: "Corporate celebration at VGP",
     accent: "#5A257F",        // --purple
@@ -67,8 +67,8 @@ const SLIDES = [
     sub: "MAKE IT UNFORGETTABLE",
     description:
       "Celebrate unforgettable birthdays by the sea — rides, entertainment and a private beach setting that your family will talk about for years.",
-    cta: { label: "Book a Party", href: "/book" },
-    cta2: { label: "See the Park", href: "/parks/universal" },
+    cta: { label: "Book a Party", href: "/contact" },
+    cta2: { label: "See the Park", href: "/contact" },
     img: "/assets/img_3da7a8d8bdc1.jpg",
     imgAlt: "Birthday celebration at VGP beach",
     accent: "#B11E63",
@@ -81,8 +81,8 @@ const SLIDES = [
     sub: "GRAND VENUE · 3,000 GUESTS",
     description:
       "Host school annual days, award ceremonies and inter-school events in our sprawling open-air amphitheatre. Safe, spacious and spectacular.",
-    cta: { label: "Reserve the Venue", href: "/book" },
-    cta2: { label: "Learn More", href: "/parks/universal" },
+    cta: { label: "Reserve the Venue", href: "/contact" },
+    cta2: { label: "Learn More", href: "/contact" },
     img: "/assets/img_5b25b363752a.jpg",
     imgAlt: "School annual day event at VGP",
     accent: "#22A7B3",
@@ -95,8 +95,8 @@ const SLIDES = [
     sub: "WHERE LOVE MEETS THE SEA",
     description:
       "Exchange vows with the sound of waves and the golden Chennai sky as your backdrop. Our beach wedding venue is as romantic as it gets.",
-    cta: { label: "Enquire Now", href: "/book" },
-    cta2: { label: "See the Venue", href: "/parks/universal" },
+    cta: { label: "Enquire Now", href: "/contact" },
+    cta2: { label: "See the Venue", href: "/contact" },
     img: "/assets/img_8e05ad0b70cd.jpg",
     imgAlt: "Beach wedding ceremony at VGP",
     accent: "#B36D3C",        // --green (warm brown)
