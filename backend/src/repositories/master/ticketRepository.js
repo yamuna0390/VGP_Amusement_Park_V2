@@ -1,9 +1,9 @@
-const db = require("../config/database");
+const db = require("../../config/database");
 
-const getAllActiveMeals = async () => {
+const getAllActiveTickets = async () => {
     const [rows] = await db.query(
         `SELECT *
-         FROM meal_types
+         FROM ticket_types
          WHERE status = 'Active'
          ORDER BY display_order`
     );
@@ -11,7 +11,7 @@ const getAllActiveMeals = async () => {
     return rows;
 };
 
-const getMealsByCodes = async (codes) => {
+const getTicketsByCodes = async (codes) => {
     if (!codes.length) return [];
 
     const placeholders = codes.map(() => "?").join(",");
@@ -19,7 +19,7 @@ const getMealsByCodes = async (codes) => {
     const [rows] = await db.query(
         `
         SELECT *
-        FROM meal_types
+        FROM ticket_types
         WHERE status = 'Active'
         AND code IN (${placeholders})
         `,
@@ -30,6 +30,6 @@ const getMealsByCodes = async (codes) => {
 };
 
 module.exports = {
-    getAllActiveMeals,
-    getMealsByCodes,
+    getAllActiveTickets,
+    getTicketsByCodes,
 };

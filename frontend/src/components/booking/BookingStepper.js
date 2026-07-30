@@ -1,30 +1,31 @@
 "use client";
 
 const STEPS = [
-  { num: 1, label: "Date & Offers" },
+  { num: 1, label: "Date" },
   { num: 2, label: "Tickets" },
   { num: 3, label: "Food" },
   { num: 4, label: "Checkout" },
+  { num: 5, label: "Done" },
 ];
 
 export default function BookingStepper({ currentStep }) {
   return (
-    <div className="bk-stepper" role="navigation" aria-label="Booking steps">
+    <div className="bk-stepper" role="navigation" aria-label="Booking progress">
       {STEPS.map((s, i) => {
-        const done    = currentStep > s.num;
-        const active  = currentStep === s.num;
+        const done = currentStep > s.num;
+        const active = currentStep === s.num;
+        const isLast = i === STEPS.length - 1;
+
         return (
           <div key={s.num} className="bk-step-wrap">
             <div className={`bk-step ${active ? "bk-step--active" : ""} ${done ? "bk-step--done" : ""}`}>
-              <span className="bk-step__num">
-                {done ? "✓" : s.num}
-              </span>
+              <div className="bk-step__circle">
+                {done ? "✓" : active ? "●" : ""}
+              </div>
               <span className="bk-step__label">{s.label}</span>
             </div>
-            {i < STEPS.length - 1 && (
-              <span className={`bk-step__arrow ${done ? "bk-step__arrow--done" : ""}`} aria-hidden="true">
-                →
-              </span>
+            {!isLast && (
+              <div className={`bk-step__line ${done ? "bk-step__line--done" : ""}`}></div>
             )}
           </div>
         );

@@ -19,7 +19,7 @@ export const rides = [
   img: "/images/rides/flyingride.jpg",
   slug: "castle-jet"
 },
-{n:"Tea Cup",m:"Okamoto · Japan",c:"family",i:"teacup",bg:"bg-mint",d:"Climb into a colourful teacup and spin your way through a cheerful adventure. Gentle thrills, playful turns and plenty of laughter.", img: "/images/vgrides/Tea Cup.jpeg"},
+{n:"Tea Cup",m:"Okamoto · Japan",c:"family",i:"teacup",bg:"bg-mint",d:"Climb into a colourful teacup and spin your way through a cheerful adventure. Gentle thrills, playful turns and plenty of laughter.", img: "/images/vgrides/Tea Cup.jpeg", slug: "tea-cup"},
 {n:"Telecombat",m:"Okamoto · Japan",c:"family",ph:"Sky War on Telecombat",bg:"bg-lavender",d:"Take control of your own flying vehicle as you rise, dip and circle through the air. Every rider gets a playful aerial adventure.", img: "/images/vgrides/Tele combact.jpeg"}, //
 {n:"Merry-Go-Round",m:"Okamoto · Japan",c:"family",i:"carousel",bg:"bg-sky",d:"Ride beautifully crafted horses to gentle movement and cheerful music. A timeless, magical classic for children and families.", img: "/images/vgrides/Merry Co Round.JPG"},//
 {n:"Balloon Racer",m:"Okamoto · Japan",c:"family",ph:"Balloon Racer",bg:"bg-cream",d:"Climb into a colourful balloon-shaped gondola and gently rise into the air. Smooth circles and delightful views for the family.", img: "/images/vgrides/Ballon Racer.JPG"}, //
@@ -38,7 +38,7 @@ export const rides = [
 {n:"Flying Tiger",m:"UKD Classic",c:"adult",i:"pendulum",bg:"bg-peach",d:"Leap on the tiger's back as it swoops and circles high above the midway. A roaring adventure of speed and sweeping turns.", img: "/images/vgrides/Flying Tiger.JPG"}, //
 {n:"Wave Swinger",m:"Okamoto · Japan",c:"adult",i:"swinger",bg:"bg-sky",d:"Soar through the air as colourful chairs rise, tilt and circle gracefully. A refreshing feeling of freedom, speed and excitement.", img: "/images/vgrides/Wave Swigner.JPG"}, //
 {n:"Mixer",m:"Zamperla · Italy",c:"adult",i:"spinner",bg:"bg-softyellow",d:"Prepare for powerful spins and sweeping rotations on this high-energy attraction. Intense, pulse-racing fun for adventure lovers.", img: "/images/vgrides/Mixer.png"}, //
-{n:"Roller Coaster",m:"UKD Classic",c:"adult",ph:"Roller Coaster",bg:"bg-cream",d:"Race through exciting twists, sharp turns and thrilling drops at high speed. A heart-pounding adventure riders will remember.", img: "/images/vgrides/Roaler Coster.JPG"}, //
+{n:"Roller Coaster",m:"UKD Classic",c:"adult",ph:"Roller Coaster",bg:"bg-cream",d:"Race through exciting twists, sharp turns and thrilling drops at high speed. A heart-pounding adventure riders will remember.", img: "/images/vgrides/Roaler Coster.JPG", slug: "roller-coaster"}, //
 
 /* ---- CHILD (4) ---- */
 {n:"Fun Clown",m:"UKD Classic",c:"child",i:"clown",bg:"bg-mint",d:"Join the cheerful Fun Clown for a colourful ride filled with smiles. Gentle movement makes it perfect for young children.", img: "/images/rides/kidsRide1.jpg"},
@@ -56,7 +56,7 @@ export const rides = [
 {n:"Multi Double Slide",m:"Aqua Kingdom",c:"water",e:"🛹",bg:"bg-lavender",d:"Twin twisting slides running side by side — double the lanes, double the fun. Perfect for a friendly face-off.", img: "/images/rides/waterride.jpg"},
 {n:"Multi Body Slide (Open & Closed)",m:"Aqua Kingdom",c:"water",e:"💦",bg:"bg-sky",d:"Choose the open chute for the views or the closed tube for the thrill of the dark. Either way, you land with a mighty splash.", img: "/images/rides/waterride.jpg"},
 {n:"Kids' Water Slide",m:"Aqua Kingdom",c:"water",e:"🧒",bg:"bg-softyellow",d:"Gentle mini slides made just for the little splashers. Safe, shallow and seriously fun.", img: "/images/rides/kidsRide1.jpg"},
-{n:"Rain Dance",m:"Aqua Kingdom",c:"water",ph:"Rain Dance",bg:"bg-cream",d:"We play thumping music and we know kids dance when they see water. You'll never find a kid sing rain-rain-go-away here!", img: "/images/rides/wavepool.jpg"},
+{n:"Rain Dance",m:"Aqua Kingdom",c:"water",ph:"Rain Dance",bg:"bg-cream",d:"We play thumping music and we know kids dance when they see water. You'll never find a kid sing rain-rain-go-away here!", img: "/images/rides/wavepool.jpg",slug: "wave-pool"},
 /* ---- PETTING ZOO (8) ---- */
 {n:"Pigeon",m:"Pet Zoo",c:"zoo",e:"🕊️",bg:"bg-sky",d:"Watch fluffy fantails and homing pigeons strut and coo. Gentle enough for the smallest visitors to greet.", img: null},
 {n:"Emu",m:"Pet Zoo",c:"zoo",e:"🦤",bg:"bg-mint",d:"Meet the giant flightless wonder from Australia. Watch it stride, stare and steal the show.", img: null},

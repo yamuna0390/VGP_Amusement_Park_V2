@@ -119,7 +119,7 @@ export default function StepFood({ onNext, onBack }) {
           </div>
 
           {/* Scrollable list of meal cards */}
-          <div className="bk-meals-grid bk-meals-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px", marginBottom: "18px" }}>
+          <div className="bk-meals-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px", marginBottom: "18px" }}>
             {MEALS.map((meal) => (
               <MealCard
                 key={meal.id}

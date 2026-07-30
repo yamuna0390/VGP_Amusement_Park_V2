@@ -17,7 +17,7 @@ export default function Home() {
         <div className="hero-video" id="hero-video">
           <HeroVideoBackground />
         </div>
-        <div className="hero-scrim"></div>
+        {/* <div className="hero-scrim"></div> */}
 
         {/* Bunting */}
         <svg className="deco bunting" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
@@ -29,7 +29,7 @@ export default function Home() {
           ))}
         </svg>
 
-        {/* Ferris wheel deco */}
+        {/* Ferris wheel deco
         <svg className="deco ferris-deco" viewBox="0 0 400 400" aria-hidden="true">
           <g stroke="#FDDB00" strokeWidth="6" fill="none">
             <circle cx="200" cy="200" r="150"/>
@@ -52,9 +52,9 @@ export default function Home() {
           <circle cx="256" cy="61" r="16" fill="#FDDB00"/>
           <circle cx="338" cy="141" r="16" fill="#FDDB00"/>
           <circle cx="200" cy="200" r="18" fill="#FDDB00"/>
-        </svg>
+        </svg> */}
 
-        {/* Balloons */}
+        {/* Balloons
         <svg className="deco balloon-deco b1" viewBox="0 0 90 130" aria-hidden="true">
           <path d="M45,6 C22,6 12,28 14,46 C16,66 32,80 45,80 C58,80 74,66 76,46 C78,28 68,6 45,6 Z" fill="#E93212" stroke="#4E1261" strokeWidth="4"/>
           <path d="M32,9 C26,30 26,60 36,78 M58,9 C64,30 64,60 54,78" stroke="#4E1261" strokeWidth="3" fill="none"/>
@@ -72,7 +72,7 @@ export default function Home() {
           <path d="M32,9 C26,30 26,60 36,78 M58,9 C64,30 64,60 54,78" stroke="#4E1261" strokeWidth="3" fill="none"/>
           <path d="M34,78 L38,96 M56,78 L52,96" stroke="#4E1261" strokeWidth="3"/>
           <rect x="34" y="96" width="22" height="18" rx="4" fill="#DBB68A" stroke="#4E1261" strokeWidth="4"/>
-        </svg>
+        </svg> */}
 
         {/* Skyline */}
         <svg className="deco skyline" viewBox="0 0 1440 190" preserveAspectRatio="none" aria-hidden="true">
@@ -83,11 +83,11 @@ export default function Home() {
           <path d="M720,55 L720,36 L740,42 L720,48" fill="#E93212" stroke="none"/>
         </svg>
 
-        {/* Doodle icons */}
+        {/* Doodle icons
         <span className="doodle" style={{top:'12%',left:'6%'}}>🎠</span>
         <span className="doodle" style={{top:'30%',right:'8%',display:'none'}}>🎡</span>
         <span className="doodle" style={{bottom:'22%',left:'12%'}}>🎪</span>
-        <span className="doodle" style={{bottom:'30%',left:'28%'}}>🍦</span>
+        <span className="doodle" style={{bottom:'30%',left:'28%'}}>🍦</span> */}
 
         {/* Characters */}
         <img
@@ -296,20 +296,46 @@ Meet Power Surge 🎢  </div>
       </section>
 
       {/* ================= AWARDS ================= */}
-      <section style={{background:'var(--blue)',padding:'56px 20px'}}>
+      <section style={{background:'#b11e63',padding:'56px 20px'}}>
         <div className="wrap">
-          <div className="section-head">
-            <div className="scroll-banner sb-c0">
-              <span className="kicker">Recognised &amp; loved</span>
-              <h2>Awards</h2>
-            </div>
-          </div>
-          <div className="grid g4">
-            <div className="award"><div className="medal">🏆</div><h3>Best Amusement Park</h3><p>IAAPI Excellence Award</p></div>
-            <div className="award"><div className="medal">🎬</div><h3>500+ Film Shootings</h3><p>Bollywood, Kollywood &amp; Tollywood&rsquo;s lucky charm</p></div>
-            <div className="award"><div className="medal">🛡️</div><h3>Safety First</h3><p>Certified ride safety &amp; maintenance</p></div>
-            <div className="award"><div className="medal">🌊</div><h3>Best Beach Park</h3><p>Serenity meadows &amp; sandy beach on ECR</p></div>
-          </div>
+          <Swiper
+            modules={[Autoplay]}
+            loop={true}
+            speed={4000}
+            autoplay={{ delay: 0, disableOnInteraction: false, pauseOnMouseEnter: true }}
+            spaceBetween={20}
+            slidesPerView={1.2}
+            breakpoints={{
+              768: { slidesPerView: 2.5, spaceBetween: 24 },
+              1024: { slidesPerView: 4, spaceBetween: 24 },
+            }}
+            className="awards-carousel"
+          >
+            <SwiperSlide>
+              <div className="award">
+                <div className="medal">🏆</div>
+                <h3>Best Amusement Park</h3>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide>
+              <div className="award">
+                <div className="medal">🎬</div>
+                <h3>500+ Film Shootings</h3>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide>
+              <div className="award">
+                <div className="medal">🛡️</div>
+                <h3>Safety First</h3>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide>
+              <div className="award">
+                <div className="medal">🌊</div>
+                <h3>Best Beach Park</h3>
+              </div>
+            </SwiperSlide>
+          </Swiper>
         </div>
       </section>
 

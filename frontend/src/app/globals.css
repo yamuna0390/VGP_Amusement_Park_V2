@@ -145,12 +145,37 @@ section{padding:56px 20px}
 .pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:34px}
 .pill{background:#fff;border:3px solid var(--purple);color:var(--purple);font-weight:800;padding:8px 22px;border-radius:26px;cursor:pointer;font-family:var(--font-nunito);font-size:.95rem}
 .pill.active,.pill:hover{background:var(--purple-deep);color:#F6C33B}
-
 /* ---------- awards ---------- */
-.award{background:#fff;border-radius:18px;padding:26px 20px;text-align:center;box-shadow:0 8px 0 rgba(0,0,0,.12)}
-.award .medal{font-size:3rem}
-.award h3{font-size:1.05rem;margin-top:8px}
-.award p{font-size:.85rem;font-weight:600;color:#5a4a7a}
+.awards-carousel .swiper-wrapper {
+  transition-timing-function: linear !important;
+}
+.award {
+  background: #fff;
+  border-radius: 18px;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.award:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,.12);
+}
+.award .medal {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+.award h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--purple, #4a216b);
+}
 
 /* ---------- reviews ---------- */
 .review{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 0 rgba(0,0,0,.12);transform:rotate(-1deg)}
@@ -1240,7 +1265,7 @@ body.portal-mode{background:#EEF0F6}
 .bk-step--done{color:var(--purple-deep)}
 .bk-step__num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;font-weight:800;font-size:.85rem;flex-shrink:0}
 .bk-step--done .bk-step__num{background:var(--yellow);color:var(--purple-deep)}
-.bk-step--active .bk-step__num{background:rgba(255,255,255,.25);color:#fff}
+.bk-step--active .bk-step__num{background:rgba(255,255,255,.50);color:#fff}
 .bk-step__label{font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;text-transform:uppercase;letter-spacing:.5px}
 .bk-step__arrow{color:#c9bde0;font-size:1rem;margin:0 2px}
 .bk-step__arrow--done{color:var(--purple-deep)}
@@ -1845,3 +1870,25 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ---------- Group Page Banner ---------- */
+.group-banner-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.group-banner-wrapper:hover {
+  transform: translateY(-5px);
+}
+
+.group-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 400px;
+}

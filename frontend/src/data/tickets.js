@@ -3,6 +3,7 @@
 export const TICKETS = [
   {
     id: "adult",
+    dbId: 1,
     name: "Adult Fun Pass",
     description: "Theme Park & Beach Access",
     ageRule: "Above 130 cm",
@@ -12,6 +13,7 @@ export const TICKETS = [
   },
   {
     id: "child",
+    dbId: 2,
     name: "Child Fun Pass",
     description: "90–130 cm · Theme Park & Beach",
     ageRule: "90 cm – 130 cm",
@@ -21,6 +23,7 @@ export const TICKETS = [
   },
   {
     id: "senior",
+    dbId: 3,
     name: "Senior Citizen Fun Pass",
     description: "Age 60+ with valid ID",
     ageRule: "60 years and above",
@@ -30,6 +33,7 @@ export const TICKETS = [
   },
   {
     id: "student",
+    dbId: 4,
     name: "College Student ID Fun Pass",
     description: "Valid ONLY with college ID card display",
     ageRule: "Valid college ID required",
@@ -39,6 +43,7 @@ export const TICKETS = [
   },
   {
     id: "dfpa",
+    dbId: 5,
     name: "Double Fun Pass — Adult",
     description: "Universal Kingdom + Marine Kingdom",
     ageRule: "Above 130 cm",
@@ -48,6 +53,7 @@ export const TICKETS = [
   },
   {
     id: "dfpc",
+    dbId: 6,
     name: "Double Fun Pass — Child",
     description: "Universal Kingdom + Marine Kingdom",
     ageRule: "90 cm – 130 cm",
@@ -57,6 +63,7 @@ export const TICKETS = [
   },
   {
     id: "below90",
+    dbId: 7,
     name: "Below 90 cm Entry",
     description: "Children below 90 cm — FREE entry",
     ageRule: "Below 90 cm",

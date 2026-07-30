@@ -33,13 +33,12 @@ import "swiper/css/navigation";
 // To integrate with a CMS/API later, replace this array with a prop or fetch.
 const SLIDES = [
   {
-    id: "beach",
-    icon: "🏖️",
-    heading: "Private Beach",
-    sub: "SHORELINE ESCAPE",
+    id: "route-map",
+    heading: "Park Route Map",
+    sub: "Plan your adventure",
     description:
-      "Escape to a peaceful private shoreline on the Bay of Bengal — perfect for family outings, relaxed afternoon picnics and sun-soaked memories.",
-    cta: { label: "Host an Event", href: "/contact" },
+      "Navigate VGP Amusement Park with ease using our interactive route map. Quickly locate rides, attractions, food courts, restrooms, first aid, and other key facilities to make the most of your visit.",
+    cta: { label: "VIEW MAP", href: "/contact" },
     cta2: { label: "Know More", href: "/contact" },
     img: "/assets/img_57957d8c2b63.jpg",
     imgAlt: "VGP Private Beach golden shoreline",
@@ -54,7 +53,7 @@ const SLIDES = [
     description:
       "Impress your team with an award function, corporate day-out or product launch against the stunning backdrop of the Bay of Bengal — for groups of up to 3,000.",
     cta: { label: "Plan Your Event", href: "/contact" },
-    cta2: { label: "View Packages", href: "/contact" },
+    cta2: { label: "Contact Us", href: "/contact" },
     img: "/assets/img_cc82cec5afc0.jpg",
     imgAlt: "Corporate celebration at VGP",
     accent: "#5A257F",        // --purple
@@ -68,7 +67,7 @@ const SLIDES = [
     description:
       "Celebrate unforgettable birthdays by the sea — rides, entertainment and a private beach setting that your family will talk about for years.",
     cta: { label: "Book a Party", href: "/contact" },
-    cta2: { label: "See the Park", href: "/contact" },
+    cta2: { label: "See the Park", href: "/rides" },
     img: "/assets/img_3da7a8d8bdc1.jpg",
     imgAlt: "Birthday celebration at VGP beach",
     accent: "#B11E63",
@@ -89,16 +88,16 @@ const SLIDES = [
     accentDark: "#0E7C88",
   },
   {
-    id: "wedding",
-    icon: "💍",
-    heading: "Beach Weddings",
-    sub: "WHERE LOVE MEETS THE SEA",
+    id: "college",
+    icon: "🎉",
+    heading: "College Group Outings",
+    sub: "Adventure, Fun & Unforgettable Memories",
     description:
-      "Exchange vows with the sound of waves and the golden Chennai sky as your backdrop. Our beach wedding venue is as romantic as it gets.",
+      "Enjoy thrilling rides, fun-filled attractions, delicious dining, and dedicated group packages designed to create lasting memories with friends and faculty. Whether it's a class picnic, farewell celebration, or educational outing, VGP offers an unforgettable experience.",
     cta: { label: "Enquire Now", href: "/contact" },
     cta2: { label: "See the Venue", href: "/contact" },
     img: "/assets/img_8e05ad0b70cd.jpg",
-    imgAlt: "Beach wedding ceremony at VGP",
+    imgAlt: "College group outing at VGP",
     accent: "#B36D3C",        // --green (warm brown)
     accentDark: "#8F5426",
   },

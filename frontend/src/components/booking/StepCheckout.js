@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import BookingSummary from "@/components/booking/BookingSummary";
 import CustomerForm from "@/components/booking/CustomerForm";
 import { calcTicketSubtotal, calcOfferDiscount, fmt } from "@/utils/bookingCalc";
+import { TICKETS } from "@/data/tickets";
+import { MEALS } from "@/data/meals";
 
 function validateCustomer(c) {
   const errs = {};
@@ -77,17 +79,25 @@ export default function StepCheckout({ onBack }) {
     try {
       const tickets = Object.entries(ticketQty)
         .filter(([, quantity]) => quantity > 0)
-        .map(([ticketType, quantity]) => ({
-          ticketType,
-          quantity,
-        }));
+        .map(([ticketType, quantity]) => {
+          const ticket = TICKETS.find((t) => t.id === ticketType);
+          return {
+            ticketTypeId: ticket ? ticket.dbId : null,
+            quantity,
+          };
+        })
+        .filter((t) => t.ticketTypeId !== null);
 
       const meals = Object.entries(mealQty)
         .filter(([, quantity]) => quantity > 0)
-        .map(([mealType, quantity]) => ({
-          mealType,
-          quantity,
-        }));
+        .map(([mealType, quantity]) => {
+          const meal = MEALS.find((m) => m.id === mealType);
+          return {
+            mealTypeId: meal ? meal.dbId : null,
+            quantity,
+          };
+        })
+        .filter((m) => m.mealTypeId !== null);
 
       const payload = {
         visitDate,

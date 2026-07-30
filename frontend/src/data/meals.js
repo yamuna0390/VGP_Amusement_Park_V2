@@ -2,6 +2,7 @@
 export const MEALS = [
   {
     id: "veg",
+    dbId: 1,
     name: "Veg Meal",
     type: "veg",
     description: "South-Indian thali — rice, curries, poriyal & sweet.",
@@ -12,6 +13,7 @@ export const MEALS = [
   },
   {
     id: "nonveg",
+    dbId: 2,
     name: "Non-veg Meal",
     type: "nonveg",
     description: "Chicken curry, flavoured rice & dessert.",
@@ -22,6 +24,7 @@ export const MEALS = [
   },
   {
     id: "kids",
+    dbId: 3,
     name: "Kids Happy Meal",
     type: "veg",
     description: "Mini meal + a treat & a little surprise.",
@@ -32,6 +35,7 @@ export const MEALS = [
   },
   {
     id: "snacks",
+    dbId: 4,
     name: "Snack & Beverage Pack",
     type: "veg",
     description: "Popcorn/fries + a chilled drink.",

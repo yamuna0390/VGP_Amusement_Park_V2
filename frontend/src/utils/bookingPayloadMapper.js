@@ -3,6 +3,9 @@
  * expected by the backend.
  */
 
+import { TICKETS } from "@/data/tickets";
+import { MEALS } from "@/data/meals";
+
 export function buildBookingPayload(state) {
   const {
     visitDate,
@@ -16,17 +19,25 @@ export function buildBookingPayload(state) {
 
   const tickets = Object.entries(ticketQty)
     .filter(([, quantity]) => quantity > 0)
-    .map(([ticketType, quantity]) => ({
-      ticketType,
-      quantity,
-    }));
+    .map(([ticketType, quantity]) => {
+      const ticket = TICKETS.find((t) => t.id === ticketType);
+      return {
+        ticketTypeId: ticket ? ticket.dbId : null,
+        quantity,
+      };
+    })
+    .filter((t) => t.ticketTypeId !== null);
 
   const meals = Object.entries(mealQty)
     .filter(([, quantity]) => quantity > 0)
-    .map(([mealType, quantity]) => ({
-      mealType,
-      quantity,
-    }));
+    .map(([mealType, quantity]) => {
+      const meal = MEALS.find((m) => m.id === mealType);
+      return {
+        mealTypeId: meal ? meal.dbId : null,
+        quantity,
+      };
+    })
+    .filter((m) => m.mealTypeId !== null);
 
   return {
     visitDate,

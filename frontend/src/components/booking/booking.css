@@ -124,3 +124,187 @@
 @media (max-width: 480px) {
   .bk-calendar-modal { padding: 20px 16px; }
 }
+/* ================================================================
+   NEW BOOKING LAYOUT
+   ================================================================ */
+
+/* Booking Header */
+.bk-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.bk-header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+.bk-logo {
+  margin-bottom: 12px;
+}
+.bk-stepper-container {
+  width: 100%;
+  max-width: 600px;
+  padding-bottom: 18px; /* Room for absolute labels */
+}
+
+/* Booking Footer */
+.bk-footer {
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding: 24px 16px;
+  margin-top: 40px;
+  text-align: center;
+}
+.bk-footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.bk-copyright {
+  font-size: 0.85rem;
+  color: #64748B;
+  margin: 0;
+}
+.bk-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bk-footer-links a {
+  font-size: 0.85rem;
+  color: #475569;
+  text-decoration: none;
+  font-weight: 500;
+}
+.bk-footer-links a:hover {
+  color: var(--purple-deep);
+}
+.bk-dot-sep {
+  color: #CBD5E1;
+  font-size: 0.8rem;
+}
+
+/* ================================================================
+   NEW BOOKING STEPPER (Dots & Lines)
+   ================================================================ */
+.bk-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: nowrap; /* MUST NOT WRAP */
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.bk-step-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.bk-step-wrap:last-child {
+  flex: 0;
+}
+
+.bk-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.bk-step__circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 2px solid #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.bk-step--active .bk-step__circle {
+  border-color: var(--purple-deep);
+  background: var(--purple-deep);
+}
+
+.bk-step--done .bk-step__circle {
+  background: #10B981;
+  border-color: #10B981;
+}
+
+.bk-step__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94A3B8;
+  position: absolute;
+  top: 42px;
+  white-space: nowrap;
+}
+.bk-step--active .bk-step__label {
+  color: var(--purple-deep);
+  font-weight: 800;
+}
+.bk-step--done .bk-step__label {
+  color: #475569;
+}
+
+/* Connecting Line */
+.bk-step__line {
+  flex: 1;
+  height: 2px;
+  background: #E2E8F0;
+  margin: 0 10px;
+  transition: background 0.2s ease;
+}
+.bk-step__line--done {
+  background: #10B981;
+}
+
+/* Responsive tweaks for mobile single line */
+@media (max-width: 480px) {
+  .bk-header-inner {
+    padding: 12px 10px;
+  }
+  .bk-logo {
+    margin-bottom: 12px;
+  }
+  .bk-logo img {
+    width: 140px !important;
+    height: auto !important;
+  }
+  .bk-stepper-container {
+    padding-bottom: 24px;
+  }
+  .bk-step__circle {
+    width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+  }
+  .bk-step__label {
+    font-size: 0.65rem;
+    top: 24px;
+  }
+  .bk-step__line {
+    margin: 0 4px;
+  }
+}
