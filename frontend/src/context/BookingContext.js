@@ -9,6 +9,7 @@ const initialState = {
   // Step 1
   visitDate: null,
   selectedOffer: null,
+  bookingType: "regular",
 
   // Step 2
   ticketQty: {
@@ -58,6 +59,12 @@ function bookingReducer(state, action) {
       return {
         ...state,
         visitDate: action.payload,
+      };
+
+    case "SET_BOOKING_TYPE":
+      return {
+        ...state,
+        bookingType: action.payload,
       };
 
     case "SET_OFFER":
@@ -154,6 +161,11 @@ export function BookingProvider({ children }) {
     []
   );
 
+  const setBookingType = useCallback(
+    (type) => dispatch({ type: "SET_BOOKING_TYPE", payload: type }),
+    []
+  );
+
   const setOffer = useCallback(
     (offer) => dispatch({ type: "SET_OFFER", payload: offer }),
     []
@@ -228,6 +240,7 @@ export function BookingProvider({ children }) {
 
         setStep,
         setDate,
+        setBookingType,
         setOffer,
         setTicketQty,
         setMealQty,

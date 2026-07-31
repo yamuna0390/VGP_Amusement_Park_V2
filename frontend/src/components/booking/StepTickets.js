@@ -1,15 +1,20 @@
 "use client";
 import { useState } from "react";
-import { ChevronLeft, Info } from "lucide-react";
+import { ChevronLeft, Info, Plus, Minus } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import TicketCard from "@/components/booking/TicketCard";
+import OfferCard from "@/components/booking/OfferCard";
 import CouponForm from "@/components/booking/CouponForm";
 import { TICKETS } from "@/data/tickets";
+import { BOOKING_OFFERS } from "@/data/bookingOffers";
 import { calcTicketSubtotal, totalTicketCount, effectivePrice, fmt } from "@/utils/bookingCalc";
 
 export default function StepTickets({ onNext, onBack }) {
-  const { ticketQty, setTicketQty, selectedOffer } = useBooking();
+  const { ticketQty, setTicketQty, selectedOffer, setOffer, bookingType } = useBooking();
   const [err, setErr] = useState("");
+  
+  const [isRegularExpanded, setIsRegularExpanded] = useState(!bookingType || bookingType === 'regular');
+  const [isOfferExpanded, setIsOfferExpanded] = useState(bookingType === 'offer');
 
   const total = totalTicketCount(ticketQty);
   const subtotal = calcTicketSubtotal(ticketQty);
@@ -151,22 +156,107 @@ export default function StepTickets({ onNext, onBack }) {
           boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           border: "1px solid #E2E8F0"
         }}>
-          <div style={{ borderBottom: "2px solid #F1F5F9", paddingBottom: "12px", marginBottom: "16px" }}>
-            <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", margin: 0 }}>
-              👥 REGULAR TICKET <span style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: "600", textTransform: "none" }}>— Unlimited access to all rides</span>
+          {(!bookingType || bookingType === 'regular') && (
+            <>
+              <div 
+                onClick={() => setIsRegularExpanded(!isRegularExpanded)}
+                style={{ 
+                  borderBottom: "2px solid #F1F5F9", 
+                  paddingBottom: "12px", 
+                  marginBottom: "16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer"
+                }}
+              >
+                <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", margin: 0 }}>
+                  👥 REGULAR TICKET <span style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: "600", textTransform: "none" }}>— Unlimited access to all rides</span>
+                </h3>
+                <div style={{ color: "#64748B" }}>
+                  {isRegularExpanded ? <Minus size={20} /> : <Plus size={20} />}
+                </div>
+              </div>
+
+              {/* Scrollable list of ticket options wrapped in grid for accordion animation */}
+              <div style={{
+                display: "grid",
+                gridTemplateRows: isRegularExpanded ? "1fr" : "0fr",
+                transition: "grid-template-rows 300ms ease-out",
+                marginBottom: isRegularExpanded ? "18px" : "0"
+              }}>
+                <div style={{ overflow: "hidden" }}>
+                  <div className="bk-tickets-list bk-tickets-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {TICKETS.map((ticket) => (
+                      <TicketCard
+                        key={ticket.id}
+                        ticket={ticket}
+                        qty={ticketQty[ticket.id] || 0}
+                        onChange={(qty) => { setTicketQty(ticket.id, qty); setErr(""); }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div 
+            onClick={() => setIsOfferExpanded(!isOfferExpanded)}
+            style={{ 
+              borderBottom: "2px solid #F1F5F9", 
+              paddingBottom: "12px", 
+              marginBottom: "16px", 
+              marginTop: (!bookingType || bookingType === 'regular') ? "8px" : "0",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              cursor: "pointer"
+            }}
+          >
+            <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                background: "#2563EB",
+                color: "#FFFFFF",
+                borderRadius: "50%",
+                width: "28px",
+                height: "28px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1rem"
+              }}>%</span> 
+              OFFER TICKETS <span style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: "600", textTransform: "none" }}>— Limited-Time Deals</span>
             </h3>
+            <div style={{ color: "#64748B" }}>
+              {isOfferExpanded ? <Minus size={20} /> : <Plus size={20} />}
+            </div>
           </div>
 
-          {/* Scrollable list of ticket options */}
-          <div className="bk-tickets-list bk-tickets-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "12px", marginBottom: "18px" }}>
-            {TICKETS.map((ticket) => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                qty={ticketQty[ticket.id] || 0}
-                onChange={(qty) => { setTicketQty(ticket.id, qty); setErr(""); }}
-              />
-            ))}
+          <div style={{
+            display: "grid",
+            gridTemplateRows: isOfferExpanded ? "1fr" : "0fr",
+            transition: "grid-template-rows 300ms ease-out",
+            marginBottom: isOfferExpanded ? "18px" : "0"
+          }}>
+            <div style={{ overflow: "hidden" }}>
+              <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                {BOOKING_OFFERS && BOOKING_OFFERS.length > 0 ? (
+                  BOOKING_OFFERS.map((offer) => (
+                    <OfferCard
+                      key={offer.id}
+                      offer={offer}
+                      isSelected={selectedOffer?.id === offer.id}
+                      onSelect={(o) => { setOffer(o); setErr(""); }}
+                    />
+                  ))
+                ) : (
+                  <div style={{ textAlign: "center", padding: "40px 20px", background: "#F8FAFC", borderRadius: "18px", border: "1px dashed #CBD5E1" }}>
+                    <p style={{ fontSize: "0.84rem", color: "#64748B", margin: 0 }}>No offers available today.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Coupon Code Section */}

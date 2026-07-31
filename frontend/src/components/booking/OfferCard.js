@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Calendar } from "lucide-react";
+import Counter from "./Counter";
 
 const OFFER_INDEX_MAP = {
   "EARLYBIRD15": "01",
@@ -22,190 +23,198 @@ const OFFER_VALIDITY_MAP = {
   "BIRTHDAY_BOGO": "Birth Month Special"
 };
 
-export default function OfferCard({ offer, isSelected, onSelect, index }) {
-  const numBadge = typeof index === "number" ? String(index + 1).padStart(2, "0") : (OFFER_INDEX_MAP[offer.id] || "01");
+export default function OfferCard({ offer, isSelected, onSelect }) {
   const offerTitle = offer.title || offer.name || "Special Offer";
   const offerDesc = offer.description || offer.desc || "";
-  const validityText = offer.validity || OFFER_VALIDITY_MAP[offer.id] || offer.terms || "Limited Deal";
+  const validityText = offer.validity || offer.terms || "Limited Deal";
 
-  const handleApplyClick = (e) => {
-    e.stopPropagation();
-    onSelect(offer);
+  // Simulate pricing if present in data, otherwise just show the badge
+  const hasPrice = offer.price !== undefined || offer.adultPrice !== undefined;
+  const currentPrice = offer.price || offer.adultPrice || 0;
+  const originalPrice = currentPrice + (offer.saving || offer.adultSaving || 0);
+  const hasDiscount = originalPrice > currentPrice;
+
+  // Determine if this offer includes free tickets
+  const includesFree = offer.discountType === "bogo" || offer.discountType === "combo" || offer.discountType === "b2g1" || offer.id === "BIRTHDAY_BOGO" || offer.id === "LITTLELEGEND_B1G2";
+  
+  const handleQtyChange = (newQty) => {
+    if (newQty > 0) {
+      onSelect(offer);
+    } else {
+      onSelect(null);
+    }
   };
 
   return (
     <div
-      onClick={() => onSelect(offer)}
-      role="button"
-      tabIndex={0}
-      aria-pressed={isSelected}
-      onKeyDown={(e) => e.key === "Enter" && onSelect(offer)}
       style={{
-        background: isSelected ? "#F0F9FF" : "#FFFFFF",
-        borderRadius: "14px",
-        padding: "12px 16px",
+        background: "#FFFFFF",
+        borderRadius: "16px",
+        padding: "16px",
         border: isSelected ? "2px solid #2563EB" : "1px solid #E2E8F0",
-        borderLeft: isSelected ? "5px solid #16A34A" : "1px solid #E2E8F0",
         boxShadow: isSelected ? "0 4px 14px rgba(37, 99, 235, 0.12)" : "0 2px 8px rgba(0,0,0,0.03)",
         transition: "all 0.2s ease",
-        cursor: "pointer",
-        position: "relative",
-        margin: "0 0 10px 0"
+        marginBottom: "12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px"
       }}
-      className={`bk-compact-offer-card ${isSelected ? "bk-compact-offer-card--selected" : ""}`}
     >
-      {/* ── Top Row: Numbered Badge + Title + Badge Pill ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "4px" }}>
+      {/* ── Main Ticket Area ── */}
+      <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
         
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, flex: 1 }}>
-          {/* Compact Numbered Badge (01, 02, 03...) */}
+        {/* Left Image */}
+        {offer.image && (
           <div style={{
-            fontFamily: "var(--font-roboto-condensed), sans-serif",
-            fontSize: "1.15rem",
-            fontWeight: "900",
-            color: isSelected ? "#2563EB" : "#94A3B8",
-            background: isSelected ? "#DBEAFE" : "#F1F5F9",
-            width: "34px",
-            height: "34px",
-            borderRadius: "10px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: "80px",
+            height: "80px",
+            borderRadius: "12px",
+            overflow: "hidden",
             flexShrink: 0,
-            lineHeight: "1"
+            background: "#F1F5F9"
           }}>
-            {numBadge}
+            <img 
+              src={offer.image} 
+              alt={offerTitle} 
+              style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+            />
           </div>
-
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <h4 style={{
-              fontSize: "1.02rem",
-              fontWeight: "900",
-              color: "#1E293B",
-              margin: 0,
-              fontFamily: "var(--font-roboto-condensed), Arial, sans-serif",
-              lineHeight: "1.2",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis"
-            }}>
-              {offerTitle}
-            </h4>
-
-            {/* Compact Validity Badge */}
-            <div style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "3px",
-              background: isSelected ? "#DCFCE7" : "#EFF6FF",
-              color: isSelected ? "#15803D" : "#1D4ED8",
-              fontSize: "0.72rem",
-              fontWeight: "800",
-              padding: "1px 6px",
-              borderRadius: "6px",
-              marginTop: "2px",
-              whiteSpace: "nowrap"
-            }}>
-              <span>📅 {validityText}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Offer Discount Badge Pill */}
-        {offer.badge && (
-          <span style={{
-            background: isSelected ? "#16A34A" : (offer.badgeColor || "#B11E63"),
-            color: "#FFFFFF",
-            fontSize: "0.72rem",
-            fontWeight: "900",
-            padding: "3px 8px",
-            borderRadius: "8px",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.1)"
-          }}>
-            {offer.badge}
-          </span>
         )}
 
-      </div>
+        {/* Center Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h4 style={{
+            fontSize: "1.05rem",
+            fontWeight: "800",
+            color: "#1E293B",
+            margin: "0 0 6px 0",
+            fontFamily: "var(--font-roboto-condensed), Arial, sans-serif",
+            lineHeight: "1.2"
+          }}>
+            {offerTitle}
+          </h4>
 
-      {/* ── Middle Row: 2-Line Clamped Description ── */}
-      <p style={{
-        fontSize: "0.84rem",
-        color: "#475569",
-        fontWeight: "600",
-        lineHeight: "1.35",
-        margin: "4px 0 8px 0",
-        paddingLeft: "44px",
-        display: "-webkit-box",
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: "vertical",
-        overflow: "hidden",
-        textOverflow: "ellipsis"
-      }}>
-        {offerDesc}
-      </p>
-
-      {/* ── Bottom Action Row: Eligibility Chips & Compact Apply Button ── */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "8px",
-        paddingLeft: "44px",
-        flexWrap: "wrap"
-      }}>
-        
-        {/* Eligibility Tags */}
-        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-          {offer.eligibility && offer.eligibility.length > 0 ? (
-            offer.eligibility.map((tag, i) => (
-              <span key={i} style={{ fontSize: "0.72rem", color: "#64748B", fontWeight: "700" }}>
-                ✓ {tag}
+          {/* Pricing Row */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+            {hasPrice && (
+              <>
+                <span style={{ fontSize: "1.15rem", fontWeight: "900", color: "#1E293B" }}>
+                  ₹{currentPrice.toFixed(2)}
+                </span>
+                {hasDiscount && (
+                  <span style={{ fontSize: "0.85rem", color: "#94A3B8", textDecoration: "line-through", fontWeight: "600" }}>
+                    ₹{originalPrice.toFixed(2)}
+                  </span>
+                )}
+              </>
+            )}
+            
+            {/* Discount Badge */}
+            {offer.badge && (
+              <span style={{
+                background: "#16A34A",
+                color: "#FFFFFF",
+                fontSize: "0.72rem",
+                fontWeight: "900",
+                padding: "2px 8px",
+                borderRadius: "6px",
+                whiteSpace: "nowrap"
+              }}>
+                {offer.badge}
               </span>
-            ))
-          ) : (
-            <span style={{ fontSize: "0.72rem", color: "#64748B", fontWeight: "700" }}>
-              ✓ All Visitors
-            </span>
-          )}
+            )}
+          </div>
+
+          <p style={{
+            fontSize: "0.8rem",
+            color: "#64748B",
+            fontWeight: "600",
+            lineHeight: "1.4",
+            margin: 0
+          }}>
+            ({validityText})
+          </p>
         </div>
 
-        {/* Compact Apply Button (~38px height) */}
-        <button
-          type="button"
-          onClick={handleApplyClick}
-          style={{
-            height: "38px",
-            padding: "6px 14px",
-            borderRadius: "10px",
-            border: "none",
-            background: isSelected ? "#16A34A" : "#FDDB00",
-            color: isSelected ? "#FFFFFF" : "#1E293B",
-            fontWeight: "900",
-            fontSize: "0.82rem",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            boxShadow: isSelected ? "0 2px 8px rgba(22, 163, 74, 0.25)" : "0 2px 8px rgba(253, 219, 0, 0.3)",
-            transition: "all 0.2s ease"
-          }}
-        >
+        {/* Right Controls */}
+        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           {isSelected ? (
-            <>
-              <Check size={15} />
-              <span>Applied ✓</span>
-            </>
+            <Counter
+              value={1}
+              onDecrement={() => handleQtyChange(0)}
+              onIncrement={() => {}}
+              min={0}
+              max={1}
+            />
           ) : (
-            <>
-              <span>Apply Offer ➔</span>
-            </>
+            <button
+              onClick={() => handleQtyChange(1)}
+              style={{
+                height: "36px",
+                padding: "0 24px",
+                borderRadius: "8px",
+                border: "1px solid #2563EB",
+                background: "#FFFFFF",
+                color: "#2563EB",
+                fontWeight: "800",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#EFF6FF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#FFFFFF"; }}
+            >
+              ADD
+            </button>
           )}
-        </button>
-
+        </div>
       </div>
+
+      {/* ── Free Ticket Display ── */}
+      {includesFree && (
+        <div style={{
+          borderTop: "1px solid #F1F5F9",
+          paddingTop: "12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <h4 style={{ fontSize: "0.95rem", fontWeight: "800", color: "#1E293B", margin: 0 }}>
+              {offer.title ? offer.title + " - Free" : "Free Ticket"}
+            </h4>
+            <span style={{ background: "#FBBF24", color: "#78350F", fontSize: "0.7rem", fontWeight: "900", padding: "2px 6px", borderRadius: "12px" }}>
+              Free
+            </span>
+          </div>
+          
+          <div>
+            {isSelected ? (
+              <span style={{
+                background: "#16A34A",
+                color: "#FFFFFF",
+                fontSize: "0.75rem",
+                fontWeight: "800",
+                padding: "4px 10px",
+                borderRadius: "6px"
+              }}>
+                Free Ticket Added
+              </span>
+            ) : (
+              <span style={{
+                background: "#F1F5F9",
+                color: "#94A3B8",
+                fontSize: "0.75rem",
+                fontWeight: "800",
+                padding: "4px 10px",
+                borderRadius: "6px"
+              }}>
+                0
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
