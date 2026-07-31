@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "../auth/AuthModal";
@@ -11,6 +11,22 @@ export default function Navigation() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const { user, logout } = useAuth();
 
@@ -36,7 +52,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav aria-label="Primary navigation">
+      <nav aria-label="Primary navigation" className={isScrolled ? "scrolled" : ""}>
         <div className="nav-inner">
           <Link href="/" className="logo" id="nav-logo">
             <img

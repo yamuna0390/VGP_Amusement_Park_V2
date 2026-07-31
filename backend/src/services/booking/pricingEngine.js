@@ -1,4 +1,4 @@
-const { calculatePricing } = require("./offerEngine");
+const { calculatePricing } = require("./discountEngine");
 const couponRepository = require("../../repositories/couponRepository");
 const offerRepository = require("../../repositories/offerRepository");
 

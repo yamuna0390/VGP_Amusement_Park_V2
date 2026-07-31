@@ -1,7 +1,8 @@
 import Navigation from "@/components/layout/Navigation";
 import Ticker from "@/components/layout/Ticker";
 import Footer from "@/components/layout/Footer";
-import Mascot from "@/components/layout/Mascot";
+import WhatsAppButton from "@/components/layout/WhatsAppButton";
+
 export default function PublicLayout({ children }) {
   return (
     <>
@@ -9,7 +10,7 @@ export default function PublicLayout({ children }) {
       <Navigation />
       {children}
       <Footer />
-      <Mascot />
+      <WhatsAppButton />
     </>
   );
 }

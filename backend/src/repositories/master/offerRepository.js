@@ -1,4 +1,4 @@
-const db = require("../config/database");
+const db = require("../../config/database");
 
 const getActiveOffer = async (visitDate) => {
   const [rows] = await db.query(

@@ -12,27 +12,27 @@ export default function RideOffers() {
     {
       id: 1,
       type: "COMBO OFFER",
-      title: "Super Fun Pass",
+      title: "Double Fun Pass  Adult  ",
       subtext: "Unlimited rides + Water Park",
-      price: "₹1,299",
+      price: "₹1,313",
       save: "Save 20%",
       badgeColor: "#E65100"
     },
     {
       id: 2,
       type: "FAMILY OFFER",
-      title: "Family Fun Pack",
+      title: "Double Fun Pass– Child ",
       subtext: "4 Tickets + 1 Free",
-      price: "₹3,999",
+      price: "₹1,128",
       save: "Save 25%",
       badgeColor: "#E65100"
     },
     {
       id: 3,
       type: "LIMITED TIME",
-      title: "Weekend Special",
+      title: "College Student ID Fun Pass ",
       subtext: "Flat 30% OFF on all tickets",
-      price: "30% OFF",
+      price: "₹780",
       save: "Save 30%",
       badgeColor: "#C62828"
     }
@@ -90,10 +90,10 @@ export default function RideOffers() {
                     <span className="card-price-value">{offer.price}</span>
                   </div>
 
-                  <button className="card-book-now-btn">
+                  <Link href="/book" className="card-book-now-btn">
                     <span>BOOK NOW</span>
                     <ArrowRight size={14} />
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>

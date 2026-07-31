@@ -25,16 +25,21 @@ export default function Rides() {
     { id: "family", label: "Family Rides" },
     { id: "adult",  label: "Adult Rides" },
     { id: "child",  label: "Child Rides" },
+    { id: "90-130", label: "90 cm – 130 cm" },
     { id: "water",  label: "Water Park" },
     { id: "zoo",    label: "Petting Zoo" }
   ];
 
-  const filteredRides = filter === "all" ? rides : rides.filter(r => r.c === filter);
+  const filteredRides = filter === "all" 
+    ? rides 
+    : filter === "90-130"
+      ? rides.filter(r => r.h === "90-130")
+      : rides.filter(r => r.c === filter);
 
   return (
     <div className="page show" id="page-rides">
       <div className="hero" style={{ padding: "46px 20px" }}>
-        <h2>The Ride Timetable 🎢</h2>
+        <h2 className="gradient-heading">The Ride Timetable 🎢</h2>
         <p>22 rides + 11 water park attractions + Pet Zoo — from Okamoto, Zamperla, Moser &amp; more!</p>
         {/* RideVideoPreview: YouTube temp — swap to local MP4 via VIDEO_SOURCE config */}
         <RideVideoPreview />

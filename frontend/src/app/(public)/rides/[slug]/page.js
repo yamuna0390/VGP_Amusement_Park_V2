@@ -45,11 +45,11 @@ export default async function RideDetails({ params }) {
       <RideOverview ride={ride} />
 
       {/* 4 & 5. Ride Information & Safety Information (Side-by-side Cards) */}
-      <RideInfoSafetyWrapper 
+      {/* <RideInfoSafetyWrapper 
         rideInfo={ride.rideInfo} 
         safetyRules={ride.safety}
         locationName={ride.map?.zone}
-      />
+      /> */}
 
       {/* 6. Offers Section */}
       <RideOffers />

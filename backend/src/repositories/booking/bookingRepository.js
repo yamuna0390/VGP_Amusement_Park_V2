@@ -106,7 +106,7 @@ const updateBookingNumber = async (connection, bookingId, bookingNumber, invoice
     );
 };
 
-const pool = require("../config/database");
+const pool = require("../../config/database");
 
 const getBookingsByCustomerId = async (customerId) => {
     const [rows] = await pool.execute(

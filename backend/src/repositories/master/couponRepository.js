@@ -1,4 +1,4 @@
-const db = require("../config/database");
+const db = require("../../config/database");
 
 const getValidCoupon = async (couponCode) => {
   const [rows] = await db.query(

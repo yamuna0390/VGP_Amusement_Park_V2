@@ -19,6 +19,17 @@ export const rides = [
   img: "/images/rides/flyingride.jpg",
   slug: "castle-jet"
 },
+{
+  n: "Mini Dragon Coaster",
+  m: "Okamoto · Japan",
+  c: "family",
+  h: "90-130",
+  i: "coaster",
+  bg: "bg-mint",
+  d: "Thrill Level: Moderate. Suitable for children accompanied by adults. Duration: Approximately 2 minutes.",
+  img: "/images/rides/kidsRide1.jpg",
+  slug: "mini-dragon-coaster"
+},
 {n:"Tea Cup",m:"Okamoto · Japan",c:"family",i:"teacup",bg:"bg-mint",d:"Climb into a colourful teacup and spin your way through a cheerful adventure. Gentle thrills, playful turns and plenty of laughter.", img: "/images/vgrides/Tea Cup.jpeg", slug: "tea-cup"},
 {n:"Telecombat",m:"Okamoto · Japan",c:"family",ph:"Sky War on Telecombat",bg:"bg-lavender",d:"Take control of your own flying vehicle as you rise, dip and circle through the air. Every rider gets a playful aerial adventure.", img: "/images/vgrides/Tele combact.jpeg"}, //
 {n:"Merry-Go-Round",m:"Okamoto · Japan",c:"family",i:"carousel",bg:"bg-sky",d:"Ride beautifully crafted horses to gentle movement and cheerful music. A timeless, magical classic for children and families.", img: "/images/vgrides/Merry Co Round.JPG"},//

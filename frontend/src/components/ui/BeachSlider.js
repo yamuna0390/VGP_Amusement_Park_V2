@@ -48,7 +48,7 @@ const SLIDES = [
   {
     id: "corporate",
     icon: "🎉",
-    heading: "Corporate Events",
+    heading: "Corporate Get-Together",
     sub: "TEAM CELEBRATIONS",
     description:
       "Impress your team with an award function, corporate day-out or product launch against the stunning backdrop of the Bay of Bengal — for groups of up to 3,000.",

@@ -9,7 +9,7 @@ export default function Parks() {
       id: "marine",
       name: "VGP Marine Kingdom",
       url: "https://vgpmarinekingdom.in/",
-      image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+      image: "/images/vgp-marine-kingdom.png",
       description: "India's first and largest underground walkthrough aquarium featuring a 70-meter underwater tunnel with sharks, stingrays, exotic marine species, and live mermaid performances.",
       badge: "Aquarium & Underwater Tunnel"
     },
@@ -17,7 +17,7 @@ export default function Parks() {
       id: "playy",
       name: "VGP Playy Kingdom",
       url: "https://vgpplayykingdom.in/",
-      image: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=800&q=80",
+      image: "/images/vgp-playy-kingdom.jpg",
       description: "Chennai's ultimate active entertainment center packed with trampoline parks, dodgeball arenas, foam pits, ninja warrior courses, and arcade adventures for all ages.",
       badge: "Trampoline & Indoor Arena"
     },
@@ -25,7 +25,7 @@ export default function Parks() {
       id: "cyber",
       name: "VGP Cyber Kingdom",
       url: "https://vgpcyberkingdom.in/",
-      image: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=800&q=80",
+      image: "/images/vgp-cyber-kingdom.jpg",
       description: "Next-generation immersive virtual reality gaming zone, multiplayer esports simulators, 9D VR motion rides, and cutting-edge cyber gaming experiences.",
       badge: "Virtual Reality & Esports"
     },

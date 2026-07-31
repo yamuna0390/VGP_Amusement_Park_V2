@@ -141,12 +141,12 @@ export default function StepDateOffers({ onNext }) {
               <tbody>
                 <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
                   <td style={{ padding: "12px 0", fontWeight: "800", color: "#1E293B" }}>Weekdays</td>
-                  <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>11:00 AM to 6:00 PM</td>
+                  <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>10:00 AM to 6:00 PM</td>
                   <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
                 </tr>
                 <tr>
                   <td style={{ padding: "12px 0 0", fontWeight: "800", color: "#1E293B" }}>Weekends</td>
-                  <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>11:00 AM to 7:00 PM</td>
+                  <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>09:30 AM to 6:00 PM</td>
                   <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
                 </tr>
               </tbody>
@@ -201,7 +201,10 @@ export default function StepDateOffers({ onNext }) {
           borderRadius: "24px",
           padding: "28px 26px",
           boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          border: "1px solid #E2E8F0"
+          border: "1px solid #E2E8F0",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%"
         }}>
           {/* Header & Subtitle */}
           <div style={{ marginBottom: "18px" }}>
@@ -229,7 +232,7 @@ export default function StepDateOffers({ onNext }) {
           </div>
 
           {/* Scrollable Offers Container */}
-          <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "540px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div className="bk-offers-list bk-offers-scroll" style={{ flex: 1, minHeight: "330px", maxHeight: "calc(100vh - 450px)", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
             {BOOKING_OFFERS && BOOKING_OFFERS.length > 0 ? (
               BOOKING_OFFERS.map((offer) => (
                 <OfferCard
@@ -254,7 +257,7 @@ export default function StepDateOffers({ onNext }) {
             onClick={() => setShowCalendarModal(true)}
             style={{ width: "100%", marginTop: "18px" }}
           >
-            📅 {visitDate ? `Change Visit Date (${visitDate})` : "Select Date & Book Now →"}
+            📅 {visitDate ? `Change Visit Date (${visitDate})` : "Proceed with Regular Booking →"}
           </button>
         </div>
       </div>

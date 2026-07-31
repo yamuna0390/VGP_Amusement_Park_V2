@@ -37,8 +37,18 @@ export default function Footer() {
           <p style={{marginTop: "12px", fontSize: "0.8rem", opacity: 0.7}}>VGP Universal Kingdom is a member of IAAPA.</p>
         </div>
       </div>
-      <div className="ft-copy">
-        &copy; {new Date().getFullYear()} VGP Universal Kingdom. All rights reserved. Prices and offers subject to change.
+      <div className="ft-copy" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px'}}>
+        <span>&copy; {new Date().getFullYear()} VGP Universal Kingdom. All rights reserved. Prices and offers subject to change.</span>
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="back-to-top"
+          aria-label="Back to top"
+          title="Back to top"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="back-to-top-icon">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
+        </button>
       </div>
     </footer>
   );
