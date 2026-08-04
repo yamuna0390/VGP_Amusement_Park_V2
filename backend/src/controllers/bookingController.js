@@ -1,144 +1,83 @@
 const bookingService = require("../services/booking/bookingService");
-const pricingService = require("../services/booking/pricingService");
-const bookingRepository = require("../repositories/bookingRepository");
-const { success } = require("../utils/response");
 
-const createBooking = async (req, res, next) => {
-  try {
+/**
+ * Create Booking
+ */
+async function createBooking(req, res, next) {
+    try {
+        // Request body has already been validated
+        // by validationMiddleware.js
+    const response = await bookingService.createBooking(req.body);
 
-//     console.log("===== req.body =====");
-// console.log(JSON.stringify(req.body, null, 2));
-//   console.log("===== req.body END =====");
+        return res.status(201).json(response);
 
-
-    const booking = await bookingService.createBooking(req.body, req.user);
-    return success(
-      res,
-      "Booking created successfully",
-      booking,
-      201
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getMyBookings = async (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized. Please log in."
-      });
+    } catch (err) {
+        next(err);
     }
+}
 
-    const bookings = await bookingService.getCustomerBookings(req.user.id);
-    return success(
-      res,
-      "Bookings retrieved successfully",
-      bookings
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+/**
+ * Get Customer Bookings
+ */
+async function getCustomerBookings(req, res, next) {
+    try {
+        const customerId = Number(req.params.customerId);
 
-const findBooking = async (req, res, next) => {
-  try {
-    const { bookingNumber, mobileNumber, email } = req.body;
+        const bookings = await bookingService.getCustomerBookings(customerId);
 
-    if (!bookingNumber || (!mobileNumber && !email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Booking number and either mobile number or email address are required."
-      });
+        return res.json({
+            success: true,
+            data: bookings
+        });
+
+    } catch (err) {
+        next(err);
     }
+}
 
-    const booking = await bookingService.findBooking({ bookingNumber, mobileNumber, email });
-    return success(
-      res,
-      "Booking details retrieved successfully",
-      booking
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+/**
+ * Get Booking by Booking Number + Customer Details
+ */
+async function getBooking(req, res, next) {
+    try {
+        const booking = await bookingService.getBookingForCustomer({
+            bookingNumber: req.body.bookingNumber,
+            mobileNumber: req.body.mobileNumber,
+            email: req.body.email
+        });
 
-const calculateBooking = async (req, res, next) => {
-  try {
-    const { tickets, meals, visitDate, couponCode, offerCode } = req.body;
-    const pricing = await pricingService.calculateBookingPrice({
-      tickets,
-      meals,
-      visitDate,
-      couponCode,
-      offerCode,
-    });
-    return success(res, "Booking calculation successful", pricing);
-  } catch (error) {
-    next(error);
-  }
-};
+        return res.json({
+            success: true,
+            data: booking
+        });
 
-const getBookingDetails = async (req, res, next) => {
-  try {
-    const { bookingNumber } = req.params;
-    const { email, mobile } = req.query;
-
-    const dbBooking = await bookingRepository.getBookingByNumber(bookingNumber);
-    if (!dbBooking) {
-      return res.status(404).json({
-        success: false,
-        message: "Booking not found"
-      });
+    } catch (err) {
+        next(err);
     }
+}
 
-    // Auth check: Admin always allowed, owner always allowed
-    const isOwner = req.user && dbBooking.customer_id === req.user.id;
-    const isAdmin = req.user && req.user.role === "admin";
+/**
+ * Validate Visit Date & Get Valid Offers
+ * POST /api/bookings/validate-date
+ */
+async function validateVisitDate(req, res, next) {
+    try {
+        const data = await bookingService.validateVisitDate(req.body.visitDate);
 
-    // Guest check: allow if booking has no customer_id and email/mobile matches
-    const isGuestMatch = !dbBooking.customer_id && (
-      (email && dbBooking.customer_email.toLowerCase() === email.toLowerCase()) ||
-      (mobile && dbBooking.customer_mobile === mobile)
-    );
+        return res.status(200).json({
+            success: true,
+            message: "Visit date is available.",
+            data
+        });
 
-    // If booking doesn't have an owner (guest), we can also allow if they access with the correct token (booking number acts as secure key)
-    const isSecureToken = !dbBooking.customer_id;
-
-    if (!isOwner && !isAdmin && !isGuestMatch && !isSecureToken) {
-      return res.status(403).json({
-        success: false,
-        message: "Forbidden. You do not have permission to view this booking."
-      });
+    } catch (err) {
+        next(err);
     }
-
-    const tickets = await bookingRepository.getBookingItems(dbBooking.id);
-    const meals = await bookingRepository.getBookingMeals(dbBooking.id);
-
-    let visitorCount = 0;
-    tickets.forEach(item => {
-      if (item.ticket_type.toLowerCase().includes("ticket")) {
-        visitorCount += item.quantity;
-      }
-    });
-
-    return success(res, "Booking details retrieved successfully", {
-      ...dbBooking,
-      tickets,
-      meals,
-      visitor_count: visitorCount || 1
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+}
 
 module.exports = {
-  createBooking,
-  getMyBookings,
-  findBooking,
-  calculateBooking,
-  getBookingDetails,
+    createBooking,
+    getCustomerBookings,
+    getBooking,
+    validateVisitDate
 };

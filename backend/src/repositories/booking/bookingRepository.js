@@ -1,170 +1,259 @@
-const createBooking = async (connection, bookingData) => {
-    const [result] = await connection.query(
+const db = require("../../config/database");
+
+/**
+ * Create a booking.
+ *
+ * @param {Object} connection MySQL connection/transaction
+ * @param {Object} booking Booking object
+ * @returns {Promise<number>} Newly created booking ID
+ */
+async function createBooking(connection = db, booking) {
+
+    const [result] = await connection.execute(
         `
-        INSERT INTO bookings
-        (
+        INSERT INTO bookings (
             booking_number,
-            invoice_number,
-            customer_id,
-            customer_name,
-            customer_email,
-            customer_mobile,
+            user_id,
+            guest_name,
+            guest_email,
+            guest_mobile,
             visit_date,
-            offer_id,
-            offer_name,
+
+            ticket_subtotal,
+            meal_subtotal,
             subtotal,
-            discount,
-            tax,
+
+            offer_discount,
+            coupon_discount,
+            total_discount,
+
+            ticket_tax,
+            food_tax,
+            total_tax,
+
+            convenience_fee,
             grand_total,
+
+            paid_visitors,
+            free_visitors,
+            total_visitors,
+
+            offer_id,
+            offer_code,
+            offer_name,
+
+            coupon_id,
             coupon_code,
+
+            booking_status,
             payment_status,
-            booking_status
+            remarks
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (
+            ?,?,?,?,?,?,
+            ?,?,?,
+            ?,?,?,
+            ?,?,?,
+            ?,?,
+            ?,?,?,
+            ?,?,?,
+            ?,?,
+            ?,?,?
+        )
         `,
         [
-            bookingData.bookingNumber,
-            bookingData.invoiceNumber,
-            bookingData.customerId,
-            bookingData.customerName,
-            bookingData.customerEmail,
-            bookingData.customerMobile,
-            bookingData.visitDate,
-            bookingData.offerId,
-            bookingData.offerName,
-            bookingData.subtotal,
-            bookingData.discount,
-            bookingData.tax,
-            bookingData.grandTotal,
-            bookingData.couponCode,
-            bookingData.paymentStatus,
-            bookingData.bookingStatus,
+            booking.bookingNumber,
+            booking.userId,
+
+            booking.guestName,
+            booking.guestEmail,
+            booking.guestMobile,
+
+            booking.visitDate,
+
+            booking.ticketSubtotal,
+            booking.mealSubtotal,
+            booking.subtotal,
+
+            booking.offerDiscount,
+            booking.couponDiscount,
+            booking.totalDiscount,
+
+            booking.ticketTax,
+            booking.foodTax,
+            booking.totalTax,
+
+            booking.convenienceFee,
+            booking.grandTotal,
+
+            booking.paidVisitors,
+            booking.freeVisitors,
+            booking.totalVisitors,
+
+            booking.offerId,
+            booking.offerCode,
+            booking.offerName,
+
+            booking.couponId,
+            booking.couponCode,
+
+            booking.bookingStatus,
+            booking.paymentStatus,
+
+            booking.remarks || null
         ]
     );
 
     return result.insertId;
-};
+}
 
-const createBookingItems = async (connection, bookingId, items) => {
-    for (const item of items) {
-        await connection.query(
-            `
-            INSERT INTO booking_items
-            (
-                booking_id,
-                ticket_type,
-                quantity,
-                unit_price,
-                total_price
-            )
-            VALUES (?, ?, ?, ?, ?)
-            `,
-            [
-                bookingId,
-                item.ticketType,
-                item.quantity,
-                item.unitPrice,
-                item.totalPrice,
-            ]
-        );
-    }
-};
+/**
+ * Find booking by ID.
+ */
+async function findById(connection = db, bookingId) {
 
-const createBookingMeals = async (connection, bookingId, meals) => {
-    for (const meal of meals) {
-        await connection.query(
-            `
-            INSERT INTO booking_meals
-            (
-                booking_id,
-                meal_type,
-                quantity,
-                unit_price,
-                total_price
-            )
-            VALUES (?, ?, ?, ?, ?)
-            `,
-            [
-                bookingId,
-                meal.mealType,
-                meal.quantity,
-                meal.unitPrice,
-                meal.totalPrice,
-            ]
-        );
-    }
-};
-
-const updateBookingNumber = async (connection, bookingId, bookingNumber, invoiceNumber) => {
-    await connection.query(
+    const [rows] = await connection.execute(
         `
-        UPDATE bookings
-        SET booking_number = ?, invoice_number = ?
+        SELECT *
+        FROM bookings
         WHERE id = ?
+        LIMIT 1
         `,
-        [bookingNumber, invoiceNumber, bookingId]
+        [bookingId]
     );
-};
 
-const pool = require("../../config/database");
+    return rows.length ? rows[0] : null;
+}
 
-const getBookingsByCustomerId = async (customerId) => {
-    const [rows] = await pool.execute(
-        "SELECT * FROM bookings WHERE customer_id = ? ORDER BY id DESC",
-        [customerId]
-    );
-    return rows;
-};
+/**
+ * Find booking by booking number.
+ */
+async function findByBookingNumber(connection = db, bookingNumber) {
 
-const getBookingByNumber = async (bookingNumber) => {
-    const [rows] = await pool.execute(
-        "SELECT * FROM bookings WHERE booking_number = ?",
+    const [rows] = await connection.execute(
+        `
+        SELECT *
+        FROM bookings
+        WHERE booking_number = ?
+        LIMIT 1
+        `,
         [bookingNumber]
     );
-    return rows[0];
-};
 
-const getBookingItems = async (bookingId) => {
-    const [rows] = await pool.execute(
-        "SELECT * FROM booking_items WHERE booking_id = ?",
-        [bookingId]
+    return rows.length ? rows[0] : null;
+}
+
+/**
+ * Update booking status.
+ */
+async function updateBookingStatus(
+    connection = db,
+    bookingId,
+    bookingStatus
+) {
+
+    await connection.execute(
+        `
+        UPDATE bookings
+        SET
+            booking_status = ?,
+            updated_at = NOW()
+        WHERE id = ?
+        `,
+        [
+            bookingStatus,
+            bookingId
+        ]
     );
+
+}
+
+/**
+ * Update payment status.
+ */
+async function updatePaymentStatus(
+    connection = db,
+    bookingId,
+    paymentStatus
+) {
+
+    await connection.execute(
+        `
+        UPDATE bookings
+        SET
+            payment_status = ?,
+            updated_at = NOW()
+        WHERE id = ?
+        `,
+        [
+            paymentStatus,
+            bookingId
+        ]
+    );
+
+}
+
+/**
+ * Find booking by payment status.
+ */
+async function findByPaymentStatus(
+    connection = db,
+    paymentStatus
+) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT *
+        FROM bookings
+        WHERE payment_status = ?
+        ORDER BY created_at DESC
+        `,
+        [paymentStatus]
+    );
+
     return rows;
-};
 
-const getBookingMeals = async (bookingId) => {
-    const [rows] = await pool.execute(
-        "SELECT * FROM booking_meals WHERE booking_id = ?",
-        [bookingId]
+}
+/**
+ * Get all bookings for a user.
+ *
+ * @param {Object} connection
+ * @param {number} userId
+ * @returns {Promise<Array>}
+ */
+async function findByUserId(
+    connection = db,
+    userId
+) {
+
+    const [rows] = await connection.execute(
+        `
+        SELECT *
+        FROM bookings
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        `,
+        [userId]
     );
+
     return rows;
-};
 
-const updateBookingStatus = async (connection, bookingId, bookingStatus, paymentStatus) => {
-    const conn = connection || pool;
-    await conn.query(
-        `UPDATE bookings SET booking_status = ?, payment_status = ? WHERE id = ?`,
-        [bookingStatus, paymentStatus, bookingId]
-    );
-};
-
-const getBookingById = async (bookingId) => {
-    const [rows] = await pool.execute(
-        "SELECT * FROM bookings WHERE id = ?",
-        [bookingId]
-    );
-    return rows[0];
-};
+}
 
 module.exports = {
+
     createBooking,
-    createBookingItems,
-    createBookingMeals,
-    updateBookingNumber,
+    findByUserId,
+
+    findById,
+    getBookingById: (connection, bookingId) => bookingId === undefined ? findById(undefined, connection) : findById(connection, bookingId),
+
+    findByBookingNumber,
+
     updateBookingStatus,
-    getBookingById,
-    getBookingsByCustomerId,
-    getBookingByNumber,
-    getBookingItems,
-    getBookingMeals,
+
+    updatePaymentStatus,
+
+    findByPaymentStatus
+
 };

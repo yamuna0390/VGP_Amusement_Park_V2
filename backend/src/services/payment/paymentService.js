@@ -1,4 +1,4 @@
-const bookingRepository = require("../../repositories/bookingRepository");
+const bookingRepository = require("../../repositories/booking/bookingRepository");
 
 /**
  * Payment Service — Simulated payment flow

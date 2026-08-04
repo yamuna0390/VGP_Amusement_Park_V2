@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
-import { Clock, Calendar, ChevronLeft, MapPin, Users, BadgePercent, Info } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Clock, Calendar, ChevronLeft, MapPin, Users, BadgePercent, Info, Plus, Minus } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import OfferCard from "@/components/booking/OfferCard";
-import { BOOKING_OFFERS } from "@/data/bookingOffers";
+import { validateVisitDate } from "@/services/bookingApi";
 
 export default function StepDateOffers({ onNext }) {
   const { 
@@ -13,7 +13,9 @@ export default function StepDateOffers({ onNext }) {
     selectedOffer, 
     setOffer, 
     couponCode,
-    setBookingType
+    setBookingType,
+    masterData,
+    setMasterData
   } = useBooking();
   
   const [err, setErr] = useState("");
@@ -23,6 +25,27 @@ export default function StepDateOffers({ onNext }) {
   
   // Track which flow the user selected (regular or offer)
   const [selectedFlow, setSelectedFlow] = useState(null);
+
+  // Accordion state for Park Information
+  const [isParkInfoExpanded, setIsParkInfoExpanded] = useState(true);
+  
+  // Mobile check state for hiding elements
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Run once on mount to set initial states
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
+    setIsParkInfoExpanded(!mobile); // true for desktop, false for mobile/tablet
+
+    // Handle subsequent resizes for hiding the header
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleCardClick = (flowType) => {
     setSelectedFlow(flowType);
@@ -47,26 +70,54 @@ export default function StepDateOffers({ onNext }) {
     setShowOfferConfirm(false);
     setShowCalendarModal(true);
   };
+const handleConfirmDateAndProceed = async () => {
 
-  const handleConfirmDateAndProceed = () => {
-    if (!visitDate) { 
-      setErr("Please select a visit date to continue."); 
-      return; 
-    }
-    setErr("");
+  if (!visitDate) {
+    setErr("Please select a visit date to continue.");
+    return;
+  }
+
+  setErr("");
+
+  try {
+
+    const result = await validateVisitDate(visitDate);
+
+    // Debug
+    console.log("Validate Result:", result);
+
+    // Save master data from backend
+    setMasterData({
+      allowOffers: result.allowOffers || false,
+      regularTickets: result.regularTickets || [],
+      offerTickets: result.offerTickets || []
+    });
+
     setShowCalendarModal(false);
-    
-    if (selectedFlow === 'regular') {
-      setOffer(null); // Clear any offer if they chose regular
+
+    // Regular booking selected
+    if (selectedFlow === "regular") {
+      setOffer(null);
     }
-    
+
+    // Save booking flow
     if (selectedFlow) {
       setBookingType(selectedFlow);
     }
-    
-    onNext();
-  };
 
+    onNext();
+
+  } catch (error) {
+
+    console.error(error);
+
+    setErr(
+      error.message ||
+      "Unable to validate visit date."
+    );
+
+  }
+};
   return (
     <div className="bk-step-content">
       <div className="bk-step1-grid">
@@ -80,135 +131,199 @@ export default function StepDateOffers({ onNext }) {
           border: "1px solid #E2E8F0"
         }}>
           {/* Header row with back icon + Title & Chennai pill badge */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "#FDDB00",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#1E293B",
-                fontWeight: "900"
-              }}>
-                <ChevronLeft size={22} />
-              </div>
-              <h2 style={{
-                fontSize: "1.45rem",
-                fontWeight: "900",
-                color: "#1E293B",
-                fontFamily: "var(--font-roboto-condensed), sans-serif",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                margin: 0
-              }}>
-                PLAN YOUR ADVENTURE
-              </h2>
-            </div>
+          {!isMobile && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "#FDDB00",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#1E293B",
+                    fontWeight: "900"
+                  }}>
+                    <ChevronLeft size={22} />
+                  </div>
+                  <h2 style={{
+                    fontSize: "1.45rem",
+                    fontWeight: "900",
+                    color: "#1E293B",
+                    fontFamily: "var(--font-roboto-condensed), sans-serif",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    margin: 0
+                  }}>
+                    PLAN YOUR ADVENTURE
+                  </h2>
+                </div>
 
-            <span style={{
-              background: "#FDDB00",
-              color: "#1E293B",
-              fontWeight: "800",
-              fontSize: "0.82rem",
-              padding: "5px 18px",
-              borderRadius: "20px",
-              letterSpacing: "0.5px"
-            }}>
-              Chennai
-            </span>
-          </div>
-
-          <p style={{ fontSize: "0.92rem", color: "#64748B", fontWeight: "600", marginBottom: "24px" }}>
-            7 hours of non-stop thrills, twists, and unforgettable excitement!
-          </p>
-
-          {/* Timings Section */}
-          <div style={{
-            background: "#F8FAFC",
-            border: "1px solid #E2E8F0",
-            borderRadius: "16px",
-            padding: "20px 22px",
-            marginBottom: "20px"
-          }}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              color: "#1E293B",
-              fontWeight: "800",
-              fontSize: "0.92rem",
-              marginBottom: "16px",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px"
-            }}>
-              <Clock size={18} color="#3B82F6" />
-              <span>PARK TIMINGS / WATER TIMINGS</span>
-            </div>
-
-            <table style={{ width: "100%", fontSize: "0.88rem", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid #E2E8F0", textAlign: "left", color: "#64748B" }}>
-                  <th style={{ paddingBottom: "10px", fontWeight: "700", width: "35%" }}></th>
-                  <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Park Timings</th>
-                  <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Water Timings</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
-                  <td style={{ padding: "12px 0", fontWeight: "800", color: "#1E293B" }}>Weekdays</td>
-                  <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>10:00 AM to 6:00 PM</td>
-                  <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: "12px 0 0", fontWeight: "800", color: "#1E293B" }}>Weekends</td>
-                  <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>09:30 AM to 6:00 PM</td>
-                  <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* 365 Days Holiday Notice Box */}
-          <div style={{
-            background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-            border: "1px solid #FDE68A",
-            borderRadius: "18px",
-            padding: "18px 22px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            boxShadow: "0 2px 10px rgba(245, 158, 11, 0.08)"
-          }}>
-            <div style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "14px",
-              background: "#FDDB00",
-              color: "#1E293B",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.4rem",
-              flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(253, 219, 0, 0.4)"
-            }}>
-              🎡
-            </div>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", flexWrap: "wrap" }}>
-                <h4 style={{ fontSize: "1.02rem", color: "#1E293B", fontWeight: "900", margin: 0 }}>
-                  Upcoming Holidays Perfect For A VGP Trip
-                </h4>
-                <span style={{ background: "#B11E63", color: "#FFF", fontSize: "0.72rem", fontWeight: "800", padding: "2px 8px", borderRadius: "10px", textTransform: "uppercase" }}>
-                  Open Always
+                <span style={{
+                  background: "#FDDB00",
+                  color: "#1E293B",
+                  fontWeight: "800",
+                  fontSize: "0.82rem",
+                  padding: "5px 18px",
+                  borderRadius: "20px",
+                  letterSpacing: "0.5px"
+                }}>
+                  Chennai
                 </span>
               </div>
-              <p style={{ fontSize: "0.88rem", color: "#92400E", fontWeight: "700", margin: 0, lineHeight: "1.4" }}>
-                We Are Open All 365 Days of the Year! Plan your thrilling family adventure anytime.
+
+              <p style={{ fontSize: "0.92rem", color: "#64748B", fontWeight: "600", marginBottom: "24px" }}>
+                7 hours of non-stop thrills, twists, and unforgettable excitement!
               </p>
+            </>
+          )}
+
+          {/* ── Park Information & Timings Accordion ── */}
+          <div style={{
+            background: "#FFFFFF",
+            border: "1px solid #E2E8F0",
+            borderRadius: "16px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+            overflow: "hidden"
+          }}>
+            {/* Accordion Header */}
+            <div 
+              onClick={() => setIsParkInfoExpanded(!isParkInfoExpanded)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                background: "#F8FAFC",
+                cursor: "pointer",
+                borderBottom: isParkInfoExpanded ? "1px solid #E2E8F0" : "none",
+                transition: "background 0.2s ease"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#F1F5F9"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#F8FAFC"; }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "#DBEAFE",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#2563EB"
+                }}>
+                  <Info size={18} />
+                </div>
+                <h3 style={{ fontSize: "1.05rem", fontWeight: "800", color: "#1E293B", margin: 0 }}>
+                  Park Information & Timings
+                </h3>
+              </div>
+              <div style={{ color: "#64748B" }}>
+                {isParkInfoExpanded ? <Minus size={20} /> : <Plus size={20} />}
+              </div>
+            </div>
+
+            {/* Accordion Body */}
+            <div style={{
+              display: "grid",
+              gridTemplateRows: isParkInfoExpanded ? "1fr" : "0fr",
+              transition: "grid-template-rows 300ms ease-out"
+            }}>
+              <div style={{ overflow: "hidden" }}>
+                <div style={{ padding: "20px" }}>
+                  
+                  {/* Timings Section */}
+                  <div style={{
+                    background: "#F8FAFC",
+                    border: "1px solid #E2E8F0",
+                    borderRadius: "16px",
+                    padding: "20px 22px",
+                    marginBottom: "20px"
+                  }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      color: "#1E293B",
+                      fontWeight: "800",
+                      fontSize: "0.92rem",
+                      marginBottom: "16px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px"
+                    }}>
+                      <Clock size={18} color="#3B82F6" />
+                      <span>PARK TIMINGS / WATER TIMINGS</span>
+                    </div>
+
+                    <table style={{ width: "100%", fontSize: "0.88rem", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "1px solid #E2E8F0", textAlign: "left", color: "#64748B" }}>
+                          <th style={{ paddingBottom: "10px", fontWeight: "700", width: "35%" }}></th>
+                          <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Park Timings</th>
+                          <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Water Timings</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
+                          <td style={{ padding: "12px 0", fontWeight: "800", color: "#1E293B" }}>Weekdays</td>
+                          <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>10:00 AM to 6:00 PM  -</td>
+                          <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM  -</td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "12px 0 0", fontWeight: "800", color: "#1E293B" }}>Weekends</td>
+                          <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>09:30 AM to 6:00 PM</td>
+                          <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* 365 Days Holiday Notice Box */}
+                  <div style={{
+                    background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+                    border: "1px solid #FDE68A",
+                    borderRadius: "18px",
+                    padding: "18px 22px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    boxShadow: "0 2px 10px rgba(245, 158, 11, 0.08)"
+                  }}>
+                    <div style={{
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "14px",
+                      background: "#FDDB00",
+                      color: "#1E293B",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1.4rem",
+                      flexShrink: 0,
+                      boxShadow: "0 4px 12px rgba(253, 219, 0, 0.4)"
+                    }}>
+                      🎡
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", flexWrap: "wrap" }}>
+                        <h4 style={{ fontSize: "1.02rem", color: "#1E293B", fontWeight: "900", margin: 0 }}>
+                          Upcoming Holidays Perfect For A VGP Trip
+                        </h4>
+                        <span style={{ background: "#B11E63", color: "#FFF", fontSize: "0.72rem", fontWeight: "800", padding: "2px 8px", borderRadius: "10px", textTransform: "uppercase" }}>
+                          Open Always
+                        </span>
+                      </div>
+                      <p style={{ fontSize: "0.88rem", color: "#92400E", fontWeight: "700", margin: 0, lineHeight: "1.4" }}>
+                        We Are Open All 365 Days of the Year! Plan your thrilling family adventure anytime.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -283,7 +398,14 @@ export default function StepDateOffers({ onNext }) {
 
           {/* Offer Tickets Card */}
           <div 
-            onClick={() => handleCardClick('offer')}
+           onClick={() => {
+  if (masterData.allowOffers === false && visitDate) {
+    setErr("Offers are not available for the selected date.");
+    return;
+  }
+
+  handleCardClick("offer");
+}}
             style={{
               background: "#FFFFFF",
               borderRadius: "20px",
@@ -414,12 +536,24 @@ export default function StepDateOffers({ onNext }) {
 
             {selectedOffer ? (
               <div style={{ textAlign: "center", marginBottom: "16px" }}>
-                <span className="bk-offer__badge" style={{ background: selectedOffer.badgeColor || "#2563EB", padding: "4px 12px", borderRadius: "14px" }}>
-                  {selectedOffer.badge}
-                </span>
-                <p style={{ fontSize: "0.9rem", color: "#1E293B", fontWeight: "800", marginTop: "6px" }}>
-                  Selected: {selectedOffer.title}
-                </p>
+             <span className="bk-offer__badge"
+style={{
+  background:"#2563EB"
+}}
+>
+  {selectedOffer.offerLabel}
+</span>
+
+<p
+style={{
+  fontSize:"0.9rem",
+  color:"#1E293B",
+  fontWeight:"800",
+  marginTop:"6px"
+}}
+>
+  Selected: {selectedOffer.displayName}
+</p>
               </div>
             ) : (
               <p style={{ fontSize: "0.88rem", color: "#64748B", textAlign: "center", marginBottom: "16px", fontWeight: "600" }}>

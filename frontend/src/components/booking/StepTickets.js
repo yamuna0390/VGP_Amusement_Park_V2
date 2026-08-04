@@ -5,12 +5,19 @@ import { useBooking } from "@/context/BookingContext";
 import TicketCard from "@/components/booking/TicketCard";
 import OfferCard from "@/components/booking/OfferCard";
 import CouponForm from "@/components/booking/CouponForm";
-import { TICKETS } from "@/data/tickets";
-import { BOOKING_OFFERS } from "@/data/bookingOffers";
 import { calcTicketSubtotal, totalTicketCount, effectivePrice, fmt } from "@/utils/bookingCalc";
 
 export default function StepTickets({ onNext, onBack }) {
-  const { ticketQty, setTicketQty, selectedOffer, setOffer, bookingType } = useBooking();
+  const {
+  ticketQty,
+  setTicketQty,
+  selectedOffer,
+  setOffer,
+  bookingType,
+  masterData
+} = useBooking();
+const tickets = masterData.regularTickets || [];
+const offers = masterData.offerTickets || [];
   const [err, setErr] = useState("");
   
   const [isRegularExpanded, setIsRegularExpanded] = useState(!bookingType || bookingType === 'regular');
@@ -25,7 +32,7 @@ export default function StepTickets({ onNext, onBack }) {
   if (selectedOffer) {
     const code = selectedOffer.code || selectedOffer.id;
     if (code === "BIRTHDAY_BOGO" || code === "BIRTHDAYBOGO" || selectedOffer.discountType === "bogo") {
-      TICKETS.forEach((tk) => {
+      tickets.forEach((tk) => {
         if (["adult", "child", "senior", "student"].includes(tk.id)) {
           const qty = ticketQty[tk.id] || 0;
           freeTicketsCount += qty;
@@ -33,7 +40,7 @@ export default function StepTickets({ onNext, onBack }) {
         }
       });
     } else if (code === "AADI_B2G1" || code === "FRIENDSHIP_B2G1" || selectedOffer.discountType === "b2g1") {
-      TICKETS.forEach((tk) => {
+      tickets.forEach((tk) => {
         if (["adult", "child", "senior", "student"].includes(tk.id)) {
           const qty = ticketQty[tk.id] || 0;
           const free = Math.floor(qty / 2);
@@ -42,13 +49,13 @@ export default function StepTickets({ onNext, onBack }) {
         }
       });
     } else if (code === "CAMPUS20") {
-      const studentTk = TICKETS.find((tk) => tk.id === "student");
+      const studentTk = tickets.find((tk) => tk.id === "student");
       if (studentTk) {
         const qty = ticketQty[studentTk.id] || 0;
         savings = qty * effectivePrice(studentTk) * 0.2;
       }
     } else if (code === "EARLYBIRD15") {
-      TICKETS.forEach((tk) => {
+      tickets.forEach((tk) => {
         const qty = ticketQty[tk.id] || 0;
         savings += qty * effectivePrice(tk) * 0.15;
       });
@@ -62,7 +69,7 @@ export default function StepTickets({ onNext, onBack }) {
     setErr("");
     onNext();
   };
-
+console.log("Offers in StepTickets:", offers);
   return (
     <div className="bk-step-content">
       <div className="bk-step-grid">
@@ -187,7 +194,7 @@ export default function StepTickets({ onNext, onBack }) {
               }}>
                 <div style={{ overflow: "hidden" }}>
                   <div className="bk-tickets-list bk-tickets-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {TICKETS.map((ticket) => (
+                    {tickets.map((ticket) => (
                       <TicketCard
                         key={ticket.id}
                         ticket={ticket}
@@ -241,14 +248,17 @@ export default function StepTickets({ onNext, onBack }) {
           }}>
             <div style={{ overflow: "hidden" }}>
               <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                {BOOKING_OFFERS && BOOKING_OFFERS.length > 0 ? (
-                  BOOKING_OFFERS.map((offer) => (
-                    <OfferCard
-                      key={offer.id}
-                      offer={offer}
-                      isSelected={selectedOffer?.id === offer.id}
-                      onSelect={(o) => { setOffer(o); setErr(""); }}
-                    />
+                {offers && offers.length > 0 ? (
+                  offers.map((offer) => (
+                  <OfferCard
+  key={offer.offerTicketId}
+  offer={offer}
+  isSelected={selectedOffer?.offerTicketId === offer.offerTicketId}
+  onSelect={(o) => {
+    setOffer(o);
+    setErr("");
+  }}
+/>
                   ))
                 ) : (
                   <div style={{ textAlign: "center", padding: "40px 20px", background: "#F8FAFC", borderRadius: "18px", border: "1px dashed #CBD5E1" }}>

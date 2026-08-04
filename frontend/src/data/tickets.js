@@ -10,6 +10,7 @@ export const TICKETS = [
     originalPrice: 975,
     discountPrice: 828.75,
     category: "theme",
+    image: "/images/Thumbnail/Adult.png",
   },
   {
     id: "child",
@@ -20,6 +21,7 @@ export const TICKETS = [
     originalPrice: 763,
     discountPrice: 648.55,
     category: "theme",
+    image: "/images/Thumbnail/child.png",
   },
   {
     id: "senior",
@@ -30,6 +32,7 @@ export const TICKETS = [
     originalPrice: 763,
     discountPrice: 648.55,
     category: "theme",
+    image: "/images/Thumbnail/senior.png",
   },
   {
     id: "student",
@@ -40,6 +43,7 @@ export const TICKETS = [
     originalPrice: 780,
     discountPrice: null,
     category: "theme",
+    image: "/images/Thumbnail/students.png",
   },
   {
     id: "dfpa",

@@ -1,25 +1,56 @@
-function validate(schema) {
-  return (req, res, next) => {
-    const { error, value } = schema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+/**
+ * Generic Joi Validation Middleware
+ *
+ * @param {Object} schema Joi schema
+ * @param {String} property Request property to validate
+ *                          body | query | params
+ */
+function validate(schema, property = "body") {
 
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: error.details.map((item) => ({
-          field: item.path.join("."),
-          message: item.message,
-        })),
-      });
-    }
+    return (req, res, next) => {
 
-    req.body = value;
+        try {
 
-    next();
-  };
+            const { error, value } = schema.validate(req[property], {
+
+                abortEarly: false,
+
+                stripUnknown: true
+
+            });
+
+            if (error) {
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message: "Validation failed.",
+
+                    errors: error.details.map(detail => ({
+
+                        field: detail.path.join("."),
+
+                        message: detail.message
+
+                    }))
+
+                });
+
+            }
+
+            req[property] = value;
+
+            next();
+
+        } catch (err) {
+
+            next(err);
+
+        }
+
+    };
+
 }
 
 module.exports = validate;

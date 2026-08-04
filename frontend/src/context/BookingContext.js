@@ -11,6 +11,13 @@ const initialState = {
   selectedOffer: null,
   bookingType: "regular",
 
+  masterData: {
+    tickets: [],
+    meals: [],
+    offers: [],
+    parkSettings: {},
+  },
+
   // Step 2
   ticketQty: {
     adult: 0,
@@ -87,7 +94,6 @@ function bookingReducer(state, action) {
     case "SET_MEAL_QTY":
       return {
         ...state,
-        role: undefined, // ensure state remains clean
         mealQty: {
           ...state.mealQty,
           [action.id]: Math.max(0, action.payload),
@@ -133,6 +139,15 @@ function bookingReducer(state, action) {
         tickets: action.payload.tickets,
         offer_name: action.payload.offerName,
         step: 5,
+      };
+
+    case "SET_MASTER_DATA":
+      return {
+        ...state,
+        masterData: {
+          ...state.masterData,
+          ...action.payload,
+        },
       };
 
     case "RESET":
@@ -228,6 +243,15 @@ export function BookingProvider({ children }) {
     []
   );
 
+  const setMasterData = useCallback(
+    (data) =>
+      dispatch({
+        type: "SET_MASTER_DATA",
+        payload: data,
+      }),
+    []
+  );
+
   const resetBooking = useCallback(
     () => dispatch({ type: "RESET" }),
     []
@@ -241,6 +265,7 @@ export function BookingProvider({ children }) {
         setStep,
         setDate,
         setBookingType,
+        setMasterData,
         setOffer,
         setTicketQty,
         setMealQty,

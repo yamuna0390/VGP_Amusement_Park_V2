@@ -1,29 +1,63 @@
 const express = require("express");
+
 const router = express.Router();
 
 const bookingController = require("../controllers/bookingController");
 const validate = require("../middleware/validationMiddleware");
-const authMiddleware = require("../middleware/authMiddleware");
-const { bookingSchema } = require("../validations/bookingValidation");
 
-// POST /api/bookings/calculate (Calculate pricing/discounts in real-time)
-router.post("/calculate", authMiddleware, bookingController.calculateBooking);
+const {
+    bookingSchema,
+    validateDateSchema
+} = require("../validations/bookingRequestValidator");
 
-// GET /api/bookings/:bookingNumber (Get booking details, invoice items & guest info)
-router.get("/:bookingNumber", authMiddleware, bookingController.getBookingDetails);
+/**
+ * ==========================================
+ * Public Booking APIs
+ * ==========================================
+ */
 
-// POST /api/bookings/find (Guest booking lookup)
-router.post("/find", bookingController.findBooking);
-
-// GET /api/bookings/my (Logged-in user bookings)
-router.get("/my", authMiddleware, bookingController.getMyBookings);
-
-// POST /api/bookings (Create booking - optional auth)
+/**
+ * Validate Visit Date & Return Valid Offers
+ *
+ * POST /api/bookings/validate-date
+ */
 router.post(
-  "/",
-  authMiddleware,
-  validate(bookingSchema),
-  bookingController.createBooking
+    "/validate-date",
+    validate(validateDateSchema),
+    bookingController.validateVisitDate
+);
+
+/**
+ * Create Booking
+ *
+ * POST /api/bookings
+ */
+router.post(
+    "/",
+    validate(bookingSchema),
+    bookingController.createBooking
+);
+
+/**
+ * Find Booking
+ *
+ * POST /api/bookings/find
+ *
+ * Used by customers to retrieve an existing booking.
+ */
+router.post(
+    "/find",
+    bookingController.getBooking
+);
+
+/**
+ * Customer Booking History
+ *
+ * GET /api/bookings/customer/:customerId
+ */
+router.get(
+    "/customer/:customerId",
+    bookingController.getCustomerBookings
 );
 
 module.exports = router;

@@ -1,13 +1,33 @@
-const offerRepository = require("../repositories/offerRepository");
+const offerRepository = require("../repositories/catalog/offerRepository");
 const { success } = require("../utils/response");
+const OfferResponseDTO = require("../dto/OfferResponseDTO");
 
+/**
+ * Get Active Offers
+ */
 const getOffers = async (req, res, next) => {
-  try {
-    const offers = await offerRepository.getAllOffers();
-    return success(res, "Offers retrieved successfully", offers);
-  } catch (error) {
-    next(error);
-  }
+    try {
+
+        const visitDate =
+            req.query.visitDate ||
+            new Date().toISOString().split("T")[0];
+
+        const rawOffers = await offerRepository.getActiveOffers(
+            undefined,
+            visitDate
+        );
+
+        const offers = OfferResponseDTO.fromList(rawOffers);
+
+        return success(
+            res,
+            "Offers retrieved successfully.",
+            offers
+        );
+
+    } catch (error) {
+        next(error);
+    }
 };
 
 const createOffer = async (req, res, next) => {
