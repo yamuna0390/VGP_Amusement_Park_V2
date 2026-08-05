@@ -1,5 +1,4 @@
 const db = require("../../config/database");
-const ticketRepository = require("../catalog/ticketRepository");
 const mealRepository = require("../catalog/mealRepository");
 const parkSettingsRepository = require("../catalog/parkSettingsRepository");
 
@@ -21,17 +20,15 @@ const DEFAULT_SETTING_KEYS = [
  *
  * @param {Object} [connection=db] - Database connection or pool
  * @param {string[]} [settingKeys=DEFAULT_SETTING_KEYS] - Park setting keys to retrieve
- * @returns {Promise<{ tickets: Array, meals: Array, parkSettings: Object }>}
+ * @returns {Promise<{ meals: Array, parkSettings: Object }>}
  */
 async function getInitData(connection = db, settingKeys = DEFAULT_SETTING_KEYS) {
-    const [tickets, meals, parkSettings] = await Promise.all([
-        ticketRepository.getActiveTickets(connection),
+    const [meals, parkSettings] = await Promise.all([
         mealRepository.getActiveMeals(connection),
         parkSettingsRepository.getSettings(connection, settingKeys)
     ]);
 
     return {
-        tickets,
         meals,
         parkSettings
     };

@@ -57,18 +57,14 @@ export default function StepDateOffers({ onNext }) {
       setPendingOffer(offer);
       setShowOfferConfirm(true);
     } else {
-      setOffer(offer);
       setShowCalendarModal(true);
     }
   };
 
   const confirmApplyOffer = () => {
-    if (pendingOffer) {
-      setOffer(pendingOffer);
-    }
-    setPendingOffer(null);
-    setShowOfferConfirm(false);
-    setShowCalendarModal(true);
+   setPendingOffer(null);
+  setShowOfferConfirm(false);
+  setShowCalendarModal(true);
   };
 const handleConfirmDateAndProceed = async () => {
 
@@ -88,17 +84,12 @@ const handleConfirmDateAndProceed = async () => {
 
     // Save master data from backend
     setMasterData({
-      allowOffers: result.allowOffers || false,
-      regularTickets: result.regularTickets || [],
-      offerTickets: result.offerTickets || []
+      allowOffers: result.data?.allowOffers || false,
+      regularTickets: result.data?.regularTickets || [],
+      offerTickets: result.data?.offerTickets || []
     });
 
     setShowCalendarModal(false);
-
-    // Regular booking selected
-    if (selectedFlow === "regular") {
-      setOffer(null);
-    }
 
     // Save booking flow
     if (selectedFlow) {

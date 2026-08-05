@@ -1,12 +1,12 @@
 "use client";
 
-export default function Counter({ value, onDecrement, onIncrement, min = 0, max = 99 }) {
+export default function Counter({ value, onDecrement, onIncrement, min = 0, max = 99, disabled = false }) {
   return (
     <div className="bk-counter" role="group" aria-label="Quantity selector">
       <button
         className="bk-counter__btn bk-counter__btn--minus"
         onClick={onDecrement}
-        disabled={value <= min}
+        disabled={disabled || value <= min}
         aria-label="Decrease quantity"
       >
         −
@@ -17,7 +17,7 @@ export default function Counter({ value, onDecrement, onIncrement, min = 0, max 
       <button
         className="bk-counter__btn bk-counter__btn--plus"
         onClick={onIncrement}
-        disabled={value >= max}
+        disabled={disabled || value >= max}
         aria-label="Increase quantity"
       >
         +

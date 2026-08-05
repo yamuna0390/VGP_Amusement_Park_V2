@@ -6,6 +6,8 @@ const bookingItemRepository = require("../../repositories/booking/bookingItemRep
 const bookingPaymentRepository = require("../../repositories/booking/bookingPaymentRepository");
 const bookingSequenceRepository = require("../../repositories/booking/bookingSequenceRepository");
 const couponRepository = require("../../repositories/catalog/couponRepository");
+const ticketRepository = require("../../repositories/catalog/ticketRepository");
+const mealRepository = require("../../repositories/catalog/mealRepository");
 
 // Business Services & Engines
 const pricingEngine = require("./pricingEngine");
@@ -427,9 +429,177 @@ return {
 };
 }
 
+/**
+ * Validate a coupon code and verify eligibility (Phase 1)
+ * POST /api/booking/validate-coupon
+ */
+async function validateCouponRequest(payload = {}) {
+    const { visitDate, couponCode } = payload;
+    
+    if (!couponCode || typeof couponCode !== "string" || !couponCode.trim()) {
+        return { success: false, message: "Invalid or expired coupon." };
+    }
+    
+    const cleanCode = couponCode.trim().toUpperCase();
+    const connection = db;
+    
+    const coupon = await couponRepository.getCouponByCode(connection, cleanCode);
+    if (!coupon || coupon.status !== 'Active') {
+        return { success: false, message: "Invalid or expired coupon." };
+    }
+    
+    if (coupon.usage_limit !== null && coupon.usage_limit !== undefined && Number(coupon.used_count) >= Number(coupon.usage_limit)) {
+        return { success: false, message: "Invalid or expired coupon." };
+    }
+    
+    if (coupon.valid_from && coupon.valid_to) {
+        const checkDateStr = visitDate || new Date().toISOString().split("T")[0];
+        const checkDate = new Date(checkDateStr).setHours(12, 0, 0, 0);
+        const fromDate = new Date(coupon.valid_from).setHours(0, 0, 0, 0);
+        const toDate = new Date(coupon.valid_to).setHours(23, 59, 59, 999);
+        if (!isNaN(checkDate) && (!isNaN(fromDate) && checkDate < fromDate || !isNaN(toDate) && checkDate > toDate)) {
+            return { success: false, message: "Invalid or expired coupon." };
+        }
+    }
+    
+    return {
+        success: true,
+        message: "Coupon is valid.",
+        data: {
+            couponId: coupon.id,
+            couponCode: coupon.coupon_code,
+            couponName: coupon.coupon_name,
+            discountType: (coupon.discount_type || "").toUpperCase(),
+            discountValue: Number(coupon.discount_value || 0)
+        }
+    };
+}
+
+/**
+ * Calculate final review totals and discounts before checkout
+ * POST /api/booking/finalreview
+ */
+async function getFinalReview(payload = {}) {
+    const { visitDate, regularTickets = [], offerTickets = [], foods = [], couponCode } = payload;
+    const connection = db;
+    
+    const dbTickets = await ticketRepository.getRegularTickets(connection);
+    let ticketSubtotal = 0;
+    
+    for (const item of (regularTickets || [])) {
+        const qty = Number(item.quantity || 0);
+        if (qty <= 0) continue;
+        const matched = dbTickets.find(t => t.id === item.ticketId || t.id === item.ticketTypeId || t.code === item.ticketId || t.code === item.code || t.id === item.id);
+        if (matched) {
+            ticketSubtotal += Number(matched.price || 0) * qty;
+        }
+    }
+    
+    let offerSubtotal = 0;
+    if (offerTickets && offerTickets.length > 0) {
+        const targetDate = visitDate || new Date().toISOString().split("T")[0];
+        const dbOffers = await ticketRepository.getOfferTickets(connection, targetDate);
+        for (const item of offerTickets) {
+            const qty = Number(item.quantity || 0);
+            if (qty <= 0) continue;
+            const matched = dbOffers.find(o => o.offerTicketId === item.offerTicketId || o.offerTicketId === item.id || o.offerId === item.offerId);
+            if (matched) {
+                const price = Number(matched.unitPrice !== undefined ? matched.unitPrice : (matched.originalPrice || 0));
+                offerSubtotal += price * qty;
+            }
+        }
+    }
+    
+    const combinedTicketTotal = Number((ticketSubtotal + offerSubtotal).toFixed(2));
+
+    const dbMeals = await mealRepository.getActiveMeals(connection);
+    let foodTotal = 0;
+    
+    for (const item of (foods || [])) {
+        const qty = Number(item.quantity || 0);
+        if (qty <= 0) continue;
+        const matched = dbMeals.find(m => m.id === item.mealTypeId || m.id === item.foodId || m.code === item.foodId || m.code === item.code || m.id === item.id);
+        if (matched) {
+            foodTotal += Number(matched.price || 0) * qty;
+        }
+    }
+    foodTotal = Number(foodTotal.toFixed(2));
+    
+    let discountAmount = 0;
+    let appliedCouponObj = null;
+    
+    if (couponCode && typeof couponCode === "string" && couponCode.trim() && (!offerTickets || offerTickets.length === 0 || !offerTickets.some(o => Number(o.quantity) > 0))) {
+        const cleanCode = couponCode.trim().toUpperCase();
+        const coupon = await couponRepository.getCouponByCode(connection, cleanCode);
+        
+        if (coupon && coupon.status === 'Active') {
+            let valid = true;
+            if (coupon.usage_limit !== null && coupon.usage_limit !== undefined && Number(coupon.used_count) >= Number(coupon.usage_limit)) {
+                valid = false;
+            }
+            if (valid && coupon.minimum_amount && combinedTicketTotal < Number(coupon.minimum_amount)) {
+                valid = false;
+            }
+            if (valid && coupon.valid_from && coupon.valid_to) {
+                const checkDateStr = visitDate || new Date().toISOString().split("T")[0];
+                const checkDate = new Date(checkDateStr).setHours(12, 0, 0, 0);
+                const fromDate = new Date(coupon.valid_from).setHours(0, 0, 0, 0);
+                const toDate = new Date(coupon.valid_to).setHours(23, 59, 59, 999);
+                if (!isNaN(checkDate) && (!isNaN(fromDate) && checkDate < fromDate || !isNaN(toDate) && checkDate > toDate)) {
+                    valid = false;
+                }
+            }
+            if (valid) {
+                appliedCouponObj = coupon;
+                const discountType = (coupon.discount_type || "").toUpperCase();
+                const discountValue = Number(coupon.discount_value || 0);
+                if (discountType === "PERCENTAGE") {
+                    discountAmount = (combinedTicketTotal * discountValue) / 100;
+                } else if (discountType === "FLAT") {
+                    discountAmount = discountValue;
+                }
+                discountAmount = Math.max(0, Math.min(discountAmount, combinedTicketTotal));
+                discountAmount = Number(discountAmount.toFixed(2));
+            }
+        }
+    }
+    
+    const ticketAfterDiscount = Math.max(0, Number((combinedTicketTotal - discountAmount).toFixed(2)));
+    const grandTotalBeforeTaxes = Number((ticketAfterDiscount + foodTotal).toFixed(2));
+    
+    const parkSettings = await parkSettingsService.getParkSettings(connection);
+    const ticketGstPct = Number(parkSettings?.ticketGstPercentage ?? 18);
+    const foodGstPct = Number(parkSettings?.foodGstPercentage ?? 5);
+    const convenienceFee = (combinedTicketTotal > 0 || foodTotal > 0) ? Number(parkSettings?.convenienceFee ?? 40) : 0;
+    
+    const ticketGST = Number((ticketAfterDiscount * (ticketGstPct / 100)).toFixed(2));
+    const foodGST = Number((foodTotal * (foodGstPct / 100)).toFixed(2));
+    const finalPayableAmount = Number((grandTotalBeforeTaxes + ticketGST + foodGST + convenienceFee).toFixed(2));
+    
+    return {
+        success: true,
+        data: {
+            ticketTotal: ticketAfterDiscount,
+            originalTicketTotal: combinedTicketTotal,
+            foodTotal,
+            grandTotal: grandTotalBeforeTaxes,
+            discountAmount,
+            couponName: appliedCouponObj ? appliedCouponObj.coupon_name : null,
+            couponCode: appliedCouponObj ? appliedCouponObj.coupon_code : null,
+            ticketGST,
+            foodGST,
+            convenienceFee,
+            finalPayableAmount,
+            payableAmount: finalPayableAmount
+        }
+    };
+}
+
 module.exports = {
     createBooking,
     getCustomerBookings,
     getBookingForCustomer,
-    validateVisitDate
+    validateVisitDate,
+    validateCouponRequest,
+    getFinalReview
 };

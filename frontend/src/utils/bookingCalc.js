@@ -1,6 +1,5 @@
 // ─── Booking Price Calculator ──────────────────────────────────────────────
-import { TICKETS, GST, CONVENIENCE_FEE } from "@/data/tickets";
-import { MEALS } from "@/data/meals";
+import { GST, CONVENIENCE_FEE } from "@/data/tickets";
 import { COUPONS } from "@/data/bookingOffers";
 
 /**
@@ -9,30 +8,35 @@ import { COUPONS } from "@/data/bookingOffers";
  * @returns {number}
  */
 export function effectivePrice(ticket) {
-  return ticket.discountPrice !== null ? ticket.discountPrice : ticket.originalPrice;
+  return Number(ticket.discountPrice !== null && ticket.discountPrice !== undefined ? ticket.discountPrice : (ticket.price !== undefined ? ticket.price : ticket.originalPrice)) || 0;
 }
 
 /**
  * Calculate ticket subtotal (before tax)
  * @param {object} ticketQty  { ticketId: quantity }
+ * @param {Array} regularTickets
  * @returns {number}
  */
-export function calcTicketSubtotal(ticketQty) {
-  return TICKETS.reduce((sum, t) => {
-    const qty = ticketQty[t.id] || 0;
+export function calcTicketSubtotal(ticketQty = {}, regularTickets = []) {
+  return (regularTickets || []).reduce((sum, t) => {
+    const id = t.id || t.code || t.ticketId;
+    const qty = Number(ticketQty[id] || ticketQty[t.code] || 0);
     return sum + effectivePrice(t) * qty;
   }, 0);
 }
 
 /**
  * Calculate food subtotal (before tax)
- * @param {object} mealQty  { mealId: quantity }
+ * @param {object} foodQty  { foodId: quantity }
+ * @param {Array} foods
  * @returns {number}
  */
-export function calcFoodSubtotal(mealQty) {
-  return MEALS.reduce((sum, m) => {
-    const qty = mealQty[m.id] || 0;
-    return sum + m.price * qty;
+export function calcFoodSubtotal(foodQty = {}, foods = []) {
+  return (foods || []).reduce((sum, m) => {
+    const id = m.id || m.code || m.foodId;
+    const qty = Number(foodQty[id] || foodQty[m.code] || 0);
+    const price = Number(m.price !== undefined ? m.price : m.unitPrice) || 0;
+    return sum + price * qty;
   }, 0);
 }
 
@@ -41,9 +45,10 @@ export function calcFoodSubtotal(mealQty) {
  * @param {object|null} offer
  * @param {number} ticketSubtotal
  * @param {object} ticketQty
+ * @param {Array} regularTickets
  * @returns {number}
  */
-export function calcOfferDiscount(offer, ticketSubtotal, ticketQty) {
+export function calcOfferDiscount(offer, ticketSubtotal, ticketQty = {}, regularTickets = []) {
   if (!offer) return 0;
 
   // Handle Online Booking Offer (already baked into displayed prices)
@@ -54,9 +59,10 @@ export function calcOfferDiscount(offer, ticketSubtotal, ticketQty) {
   // Handle Birthday Buddy (BOGO same category: Adult, Child, Senior, Student)
   if (offer.id === "BIRTHDAY" || offer.id === "BIRTHDAYBOGO" || offer.code === "BIRTHDAYBOGO") {
     let discount = 0;
-    TICKETS.forEach((tk) => {
-      if (["adult", "child", "senior", "student"].includes(tk.id)) {
-        const qty = ticketQty[tk.id] || 0;
+    (regularTickets || []).forEach((tk) => {
+      const id = tk.id || tk.code;
+      if (["adult", "child", "senior", "student", "ADULT", "CHILD", "SENIOR", "STUDENT"].includes(String(id).toLowerCase())) {
+        const qty = Number(ticketQty[id] || ticketQty[tk.code] || 0);
         discount += qty * effectivePrice(tk);
       }
     });
@@ -71,9 +77,10 @@ export function calcOfferDiscount(offer, ticketSubtotal, ticketQty) {
     offer.code === "FRIENDTRIO"
   ) {
     let discount = 0;
-    TICKETS.forEach((tk) => {
-      if (["adult", "child", "senior", "student"].includes(tk.id)) {
-        const qty = ticketQty[tk.id] || 0;
+    (regularTickets || []).forEach((tk) => {
+      const id = tk.id || tk.code;
+      if (["adult", "child", "senior", "student", "ADULT", "CHILD", "SENIOR", "STUDENT"].includes(String(id).toLowerCase())) {
+        const qty = Number(ticketQty[id] || ticketQty[tk.code] || 0);
         const free = Math.floor(qty / 2);
         discount += free * effectivePrice(tk);
       }
@@ -83,18 +90,20 @@ export function calcOfferDiscount(offer, ticketSubtotal, ticketQty) {
 
   // Handle Campus Thrill Deal (20% off Student passes)
   if (offer.id === "CAMPUS20" || offer.code === "CAMPUS20") {
-    const studentTk = TICKETS.find((tk) => tk.id === "student");
+    const studentTk = (regularTickets || []).find((tk) => String(tk.id || tk.code).toLowerCase() === "student");
     if (studentTk) {
-      const qty = ticketQty[studentTk.id] || 0;
+      const id = studentTk.id || studentTk.code;
+      const qty = Number(ticketQty[id] || 0);
       return parseFloat((qty * effectivePrice(studentTk) * 0.2).toFixed(2));
     }
   }
 
   // Handle Freedom Fun Fest (Flat 175.00 off per adult ticket)
   if (offer.id === "FREEDOM800" || offer.code === "FREEDOM800") {
-    const adultTk = TICKETS.find((tk) => tk.id === "adult");
+    const adultTk = (regularTickets || []).find((tk) => String(tk.id || tk.code).toLowerCase() === "adult");
     if (adultTk) {
-      const qty = ticketQty[adultTk.id] || 0;
+      const id = adultTk.id || adultTk.code;
+      const qty = Number(ticketQty[id] || 0);
       return parseFloat((qty * 175.00).toFixed(2));
     }
   }
@@ -145,15 +154,17 @@ export function calcCouponDiscount(code, baseAmount) {
  * Formula: (ticketSubtotal + foodSubtotal) - offerDiscount - couponDiscount + ticketGST + foodGST + convenienceFee
  *
  * @param {object} ticketQty
- * @param {object} mealQty
+ * @param {object} foodQty
  * @param {object|null} offer
  * @param {string} couponCode
+ * @param {Array} regularTickets
+ * @param {Array} foods
  * @returns {object} totals
  */
-export function calcTotals(ticketQty, mealQty, offer, couponCode) {
-  const ticketSubtotal = calcTicketSubtotal(ticketQty);
-  const foodSubtotal = calcFoodSubtotal(mealQty);
-  const offerDiscount = calcOfferDiscount(offer, ticketSubtotal, ticketQty);
+export function calcTotals(ticketQty = {}, foodQty = {}, offer = null, couponCode = "", regularTickets = [], foods = []) {
+  const ticketSubtotal = calcTicketSubtotal(ticketQty, regularTickets);
+  const foodSubtotal = calcFoodSubtotal(foodQty, foods);
+  const offerDiscount = calcOfferDiscount(offer, ticketSubtotal, ticketQty, regularTickets);
 
   const taxableTickets = ticketSubtotal - offerDiscount;
   const { discount: couponDiscount } = calcCouponDiscount(

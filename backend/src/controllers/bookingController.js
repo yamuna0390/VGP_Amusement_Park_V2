@@ -75,9 +75,43 @@ async function validateVisitDate(req, res, next) {
     }
 }
 
+/**
+ * Validate Coupon Code
+ * POST /api/booking/validate-coupon
+ */
+async function validateCoupon(req, res, next) {
+    try {
+        const result = await bookingService.validateCouponRequest(req.body);
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+        return res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+/**
+ * Final Review Before Checkout
+ * POST /api/booking/finalreview
+ */
+async function finalReview(req, res, next) {
+    try {
+        const result = await bookingService.getFinalReview(req.body);
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+        return res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     createBooking,
     getCustomerBookings,
     getBooking,
-    validateVisitDate
+    validateVisitDate,
+    validateCoupon,
+    finalReview
 };

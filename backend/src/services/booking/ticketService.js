@@ -89,7 +89,8 @@ function getOfferLabel(row) {
             switch (row.discount_type) {
 
                 case "PERCENTAGE":
-                    return `${row.discount_value}% OFF`;
+                    
+                  return `${Number(row.discount_value)}% OFF`;
 
                 case "FLAT":
                     return `₹${row.discount_value} OFF`;

@@ -1,7 +1,6 @@
 "use client";
+import { useBooking } from "@/context/BookingContext";
 import { calcTotals, fmt } from "@/utils/bookingCalc";
-import { TICKETS } from "@/data/tickets";
-import { MEALS } from "@/data/meals";
 
 export default function Invoice({ booking }) {
   const {
@@ -12,7 +11,7 @@ export default function Invoice({ booking }) {
     visitDate, 
     customer,
     ticketQty, 
-    mealQty,
+    foodQty,
     selectedOffer, 
     couponCode,
     offer_name,
@@ -73,10 +72,18 @@ export default function Invoice({ booking }) {
     item.ticketType.toLowerCase().includes("discount")
   );
 
-  // Fallback for older bookings (not itemized)
-  const t = !isItemized ? calcTotals(ticketQty || {}, mealQty || {}, selectedOffer, couponCode) : null;
-  const selectedTickets = !isItemized ? TICKETS.filter((tk) => (ticketQty?.[tk.id] || 0) > 0) : [];
-  const selectedMeals   = !isItemized ? MEALS.filter((m) => (mealQty?.[m.id] || 0) > 0) : [];
+  let contextMasterData = { regularTickets: [], foods: [] };
+  try {
+    const context = useBooking();
+    if (context?.masterData) contextMasterData = context.masterData;
+  } catch (e) {}
+
+  const regularTickets = booking.masterData?.regularTickets || contextMasterData.regularTickets || [];
+  const foods = booking.masterData?.foods || contextMasterData.foods || [];
+
+  const t = !isItemized ? calcTotals(ticketQty || {}, foodQty || {}, selectedOffer, couponCode) : null;
+  const selectedRegularTickets = !isItemized ? regularTickets.filter((tk) => Number(ticketQty?.[tk.id] || ticketQty?.[tk.code] || 0) > 0) : [];
+  const selectedFoods   = !isItemized ? foods.filter((m) => Number(foodQty?.[m.id] || foodQty?.[m.code] || 0) > 0) : [];
 
   const handlePrint = () => window.print();
 
@@ -190,11 +197,11 @@ export default function Invoice({ booking }) {
           ) : (
             // Fallback rendering for older non-itemized bookings
             <>
-              {selectedTickets.map((tk) => {
-                const rate = tk.discountPrice !== null ? tk.discountPrice : tk.originalPrice;
-                const qty  = ticketQty[tk.id];
+              {selectedRegularTickets.map((tk) => {
+                const rate = tk.price !== undefined ? tk.price : (tk.discountPrice !== null ? tk.discountPrice : tk.originalPrice) || 0;
+                const qty  = Number(ticketQty[tk.id] || ticketQty[tk.code] || 0);
                 return (
-                  <tr key={tk.id} style={{ borderBottom: "1px solid #f3effa" }}>
+                  <tr key={tk.id || tk.code} style={{ borderBottom: "1px solid #f3effa" }}>
                     <td style={{ padding: "10px 0" }}>{tk.name}</td>
                     <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
                     <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(rate)}</td>
@@ -202,14 +209,15 @@ export default function Invoice({ booking }) {
                   </tr>
                 );
               })}
-              {selectedMeals.map((m) => {
-                const qty = mealQty[m.id];
+              {selectedFoods.map((m) => {
+                const qty = Number(foodQty?.[m.id] || foodQty?.[m.code] || 0);
+                const price = Number(m.price || m.unitPrice || 0);
                 return (
-                  <tr key={m.id} style={{ borderBottom: "1px solid #f3effa" }}>
+                  <tr key={m.id || m.code} style={{ borderBottom: "1px solid #f3effa" }}>
                     <td style={{ padding: "10px 0" }}>{m.name}</td>
                     <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(m.price)}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(m.price * qty)}</td>
+                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price)}</td>
+                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price * qty)}</td>
                   </tr>
                 );
               })}

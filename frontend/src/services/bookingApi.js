@@ -47,25 +47,55 @@ export async function createBooking(payload) {
 }
 
 /**
- * Validate a coupon code against the backend DB
- * @param {string} couponCode
- * @param {number} subtotal  — ticket subtotal for minimum-order check
- * @returns {Promise<{ code, name, discountType, discountValue, description, discount }>}
+ * Validate a coupon code against the backend
+ * POST /booking/validate-coupon
+ *
+ * @param {Object} params - { visitDate, couponCode }
  */
-export async function validateCoupon(couponCode, subtotal) {
-  const response = await fetch(`${API_BASE_URL}/coupons/validate`, {
+export async function validateCoupon({ visitDate, couponCode } = {}) {
+  const response = await fetch(`${API_BASE_URL}/booking/validate-coupon`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ couponCode, subtotal }),
+    body: JSON.stringify({
+      visitDate,
+      couponCode,
+    }),
   });
 
   const result = await response.json();
 
   if (!response.ok || !result.success) {
-    throw new Error(result.message || "Invalid coupon code.");
+    throw new Error(result.message || "Invalid or expired coupon.");
   }
 
-  return result.data;
+  return result.appliedCoupon || result.data?.appliedCoupon || result.data || result;
+}
+
+/**
+ * Retrieve final booking review from backend (includes couponCode for server-side discount calculation)
+ * POST /booking/finalreview
+ *
+ * @param {Object} payload - Checkout payload containing couponCode, visitDate, regularTickets, foods, etc.
+ */
+export async function getBookingFinalReview(payload) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/booking/finalreview`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to fetch booking final review.");
+    }
+
+    return result.data || result;
+  } catch (error) {
+    console.error("Booking Final Review API Error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -89,7 +119,7 @@ export async function confirmPayment(bookingId) {
 }
 
 /**
- * Load booking initialization master data (tickets, meals, park settings)
+ * Load booking initialization master data (meals, park settings)
  * GET /booking/init
  */
 export async function getBookingInit() {
@@ -102,7 +132,7 @@ export async function getBookingInit() {
       throw new Error(result.message || "Unable to load booking initialization data.");
     }
 
-    return result.data;
+    return result;
   } catch (error) {
     console.error("Booking Init API Error:", error);
     throw error;
@@ -110,7 +140,7 @@ export async function getBookingInit() {
 }
 
 /**
- * Validate visit date and retrieve valid offers for that date
+ * Validate visit date and retrieve regularTickets and offerTickets for that date
  * POST /bookings/validate-date
  *
  * @param {string} visitDate - Date string in YYYY-MM-DD format
@@ -129,7 +159,7 @@ export async function validateVisitDate(visitDate) {
       throw new Error(result.message || "Unable to validate visit date.");
     }
 
-    return result.data;
+    return result;
   } catch (error) {
     console.error("Validate Visit Date API Error:", error);
     throw error;

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useReducer, useCallback } from "react";
+import { getTicketTotal, getFoodTotal, getGrandTotal, calculateTemporaryCouponUiDiscount } from "@/utils/bookingSummary";
 
 // ─── Initial State ─────────────────────────────────────────────────────────
 const initialState = {
@@ -8,38 +9,27 @@ const initialState = {
 
   // Step 1
   visitDate: null,
-  selectedOffer: null,
   bookingType: "regular",
 
   masterData: {
-    tickets: [],
-    meals: [],
-    offers: [],
+    regularTickets: [],
+    offerTickets: [],
+    foods: [],
     parkSettings: {},
   },
 
   // Step 2
-  ticketQty: {
-    adult: 0,
-    child: 0,
-    senior: 0,
-    student: 0,
-    dfpa: 0,
-    dfpc: 0,
-    below90: 0,
-  },
+  ticketQty: {},
+  offerQty: {},
 
   // Step 3
-  mealQty: {
-    veg: 0,
-    nonveg: 0,
-    kids: 0,
-    snacks: 0,
-  },
+  foodQty: {},
 
   // Step 4
   couponCode: "",
   appliedCoupon: null,
+  couponApplied: false,
+  finalReviewData: null,
 
   customer: {
     name: "",
@@ -74,14 +64,6 @@ function bookingReducer(state, action) {
         bookingType: action.payload,
       };
 
-    case "SET_OFFER":
-      return {
-        ...state,
-        selectedOffer: action.payload,
-        couponCode: "",
-        appliedCoupon: null,
-      };
-
     case "SET_TICKET_QTY":
       return {
         ...state,
@@ -89,23 +71,59 @@ function bookingReducer(state, action) {
           ...state.ticketQty,
           [action.id]: Math.max(0, action.payload),
         },
+        finalReviewData: null,
       };
 
-    case "SET_MEAL_QTY":
+    case "SET_OFFER_QTY": {
+      if (action.payload <= 0) {
+        const { [action.id]: _, ...restOfferQty } = state.offerQty;
+        return {
+          ...state,
+          offerQty: restOfferQty,
+          finalReviewData: null,
+        };
+      }
       return {
         ...state,
-        mealQty: {
-          ...state.mealQty,
+        couponCode: "",
+        appliedCoupon: null,
+        couponApplied: false,
+        finalReviewData: null,
+        offerQty: action.resetOthers
+          ? { [action.id]: Math.max(0, action.payload) }
+          : {
+              ...state.offerQty,
+              [action.id]: Math.max(0, action.payload),
+            },
+      };
+    }
+
+    case "SET_FOOD_QTY":
+      return {
+        ...state,
+        foodQty: {
+          ...state.foodQty,
           [action.id]: Math.max(0, action.payload),
         },
+        finalReviewData: null,
       };
 
-    case "SET_COUPON":
+    case "SET_COUPON": {
+      const isApplied = Boolean(action.payload && action.coupon);
       return {
         ...state,
-        couponCode: action.payload,
+        couponCode: action.payload || "",
         appliedCoupon: action.coupon || null,
-        selectedOffer: null,
+        couponApplied: isApplied,
+        offerQty: isApplied ? {} : state.offerQty,
+        finalReviewData: null,
+      };
+    }
+
+    case "SET_FINAL_REVIEW_DATA":
+      return {
+        ...state,
+        finalReviewData: action.payload || null,
       };
 
     case "SET_CUSTOMER":
@@ -166,6 +184,37 @@ const BookingContext = createContext(null);
 export function BookingProvider({ children }) {
   const [state, dispatch] = useReducer(bookingReducer, initialState);
 
+  const { ticketQty, offerQty, foodQty, masterData, appliedCoupon, couponApplied } = state;
+
+  const ticketTotal = getTicketTotal(
+    ticketQty,
+    masterData.regularTickets || [],
+    offerQty,
+    masterData.offerTickets || []
+  );
+
+  const foodTotal = getFoodTotal(
+    foodQty,
+    masterData.foods || []
+  );
+
+  const calculatedGrandTotal = getGrandTotal(
+    ticketQty,
+    masterData.regularTickets || [],
+    offerQty,
+    masterData.offerTickets || [],
+    foodQty,
+    masterData.foods || []
+  );
+
+  const { discountAmount: couponDiscount, adjustedGrandTotal } = calculateTemporaryCouponUiDiscount(
+    ticketTotal,
+    foodTotal,
+    couponApplied ? appliedCoupon : null
+  );
+
+  const grandTotal = couponApplied ? adjustedGrandTotal : calculatedGrandTotal;
+
   const setStep = useCallback(
     (step) => dispatch({ type: "SET_STEP", payload: step }),
     []
@@ -181,11 +230,6 @@ export function BookingProvider({ children }) {
     []
   );
 
-  const setOffer = useCallback(
-    (offer) => dispatch({ type: "SET_OFFER", payload: offer }),
-    []
-  );
-
   const setTicketQty = useCallback(
     (id, qty) =>
       dispatch({
@@ -196,10 +240,21 @@ export function BookingProvider({ children }) {
     []
   );
 
-  const setMealQty = useCallback(
+  const setOfferQty = useCallback(
+    (id, qty, resetOthers = false) =>
+      dispatch({
+        type: "SET_OFFER_QTY",
+        id,
+        payload: qty,
+        resetOthers,
+      }),
+    []
+  );
+
+  const setFoodQty = useCallback(
     (id, qty) =>
       dispatch({
-        type: "SET_MEAL_QTY",
+        type: "SET_FOOD_QTY",
         id,
         payload: qty,
       }),
@@ -212,6 +267,15 @@ export function BookingProvider({ children }) {
         type: "SET_COUPON",
         payload: code,
         coupon,
+      }),
+    []
+  );
+
+  const setFinalReviewData = useCallback(
+    (data) =>
+      dispatch({
+        type: "SET_FINAL_REVIEW_DATA",
+        payload: data,
       }),
     []
   );
@@ -262,14 +326,21 @@ export function BookingProvider({ children }) {
       value={{
         ...state,
 
+        foodQty,
+        ticketTotal,
+        foodTotal,
+        grandTotal,
+        couponDiscount,
+
         setStep,
         setDate,
         setBookingType,
         setMasterData,
-        setOffer,
         setTicketQty,
-        setMealQty,
+        setOfferQty,
+        setFoodQty,
         setCoupon,
+        setFinalReviewData,
         setCustomer,
         setTerms,
 

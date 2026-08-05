@@ -56,24 +56,6 @@ function formatParkSettings(rawSettings = {}) {
 }
 
 /**
- * Formats ticket rows from database for frontend rendering.
- * Removes internal ordering fields (display_order) while preserving order, and converts price strings to numeric values.
- *
- * @param {Array} rawTickets - Raw ticket array from repository
- * @returns {Array} Formatted ticket array
- */
-function formatTickets(rawTickets = []) {
-    return (rawTickets || []).map(ticket => {
-        const { display_order, ...publicFields } = ticket;
-        return {
-            ...publicFields,
-            id: publicFields.id !== undefined && publicFields.id !== null ? Number(publicFields.id) : null,
-            price: publicFields.price !== undefined && publicFields.price !== null ? Number(publicFields.price) : 0
-        };
-    });
-}
-
-/**
  * Formats meal rows from database for frontend rendering.
  * Removes internal ordering fields (display_order) while preserving order, and converts price strings to numeric values.
  *
@@ -92,15 +74,14 @@ function formatMeals(rawMeals = []) {
 }
 
 /**
- * Retrieves booking initialization data including active tickets, active meals, and frontend-friendly park settings.
+ * Retrieves booking initialization data including active meals and frontend-friendly park settings.
  *
- * @returns {Promise<{ tickets: Array, meals: Array, parkSettings: Object }>}
+ * @returns {Promise<{ meals: Array, parkSettings: Object }>}
  */
 async function getBookingInitData() {
-    const { tickets, meals, parkSettings } = await bookingInitRepository.getInitData();
+    const { meals, parkSettings } = await bookingInitRepository.getInitData();
 
     return {
-        tickets: formatTickets(tickets),
         meals: formatMeals(meals),
         parkSettings: formatParkSettings(parkSettings)
     };
@@ -109,6 +90,5 @@ async function getBookingInitData() {
 module.exports = {
     getBookingInitData,
     formatParkSettings,
-    formatTickets,
     formatMeals
 };

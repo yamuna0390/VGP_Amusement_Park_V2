@@ -26,15 +26,14 @@ export default function BookPage() {
   useEffect(() => {
     const loadBookingInit = async () => {
       try {
-        const data = await getBookingInit();
+        const result = await getBookingInit();
 
         setMasterData({
-          tickets: data.tickets,
-          meals: data.meals,
-          parkSettings: data.parkSettings,
+          foods: result.data.meals,
+          parkSettings: result.data.parkSettings,
         });
 
-        console.log("Booking Init Loaded:", data);
+        console.log("Booking Init Loaded:", result.data);
       } catch (error) {
         console.error("Failed to load booking initialization:", error);
       }

@@ -60,4 +60,24 @@ router.get(
     bookingController.getCustomerBookings
 );
 
+/**
+ * Validate Coupon Code
+ *
+ * POST /api/bookings/validate-coupon
+ */
+router.post(
+    "/validate-coupon",
+    bookingController.validateCoupon
+);
+
+/**
+ * Final Booking Review
+ *
+ * POST /api/bookings/finalreview
+ */
+router.post(
+    "/finalreview",
+    bookingController.finalReview
+);
+
 module.exports = router;

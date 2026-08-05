@@ -6,9 +6,7 @@ import { useBooking } from "@/context/BookingContext";
 import { useAuth } from "@/context/AuthContext";
 import BookingSummary from "@/components/booking/BookingSummary";
 import CustomerForm from "@/components/booking/CustomerForm";
-import { calcTicketSubtotal, calcOfferDiscount, fmt } from "@/utils/bookingCalc";
-import { TICKETS } from "@/data/tickets";
-import { MEALS } from "@/data/meals";
+import { fmt } from "@/utils/bookingCalc";
 
 function validateCustomer(c) {
   const errs = {};
@@ -23,20 +21,15 @@ function validateCustomer(c) {
 export default function StepCheckout({ onBack }) {
   const {
     visitDate,
-    selectedOffer,
-    setOffer,
-
+    offerQty,
     ticketQty,
-    mealQty,
-
+    foodQty,
+    masterData,
     couponCode,
-
     customer,
     setCustomer,
-
     agreedToTerms,
     setTerms,
-
     setStep,
     setBookingResult,
   } = useBooking();
@@ -57,9 +50,6 @@ export default function StepCheckout({ onBack }) {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  const ticketBase = calcTicketSubtotal(ticketQty);
-  const offerSavings = calcOfferDiscount(selectedOffer, ticketBase, ticketQty);
-
   const handlePay = async () => {
     const errs = validateCustomer(customer);
 
@@ -77,23 +67,23 @@ export default function StepCheckout({ onBack }) {
     setSubmitting(true);
 
     try {
-      const tickets = Object.entries(ticketQty)
+      const tickets = Object.entries(ticketQty || {})
         .filter(([, quantity]) => quantity > 0)
         .map(([ticketType, quantity]) => {
-          const ticket = TICKETS.find((t) => t.id === ticketType);
+          const ticket = (masterData.regularTickets || []).find((t) => (t.id === ticketType || t.code === ticketType || t.ticketId === ticketType));
           return {
-            ticketTypeId: ticket ? ticket.dbId : null,
+            ticketTypeId: ticket ? (ticket.id || ticket.dbId || ticket.ticketTypeId) : null,
             quantity,
           };
         })
         .filter((t) => t.ticketTypeId !== null);
 
-      const meals = Object.entries(mealQty)
+      const meals = Object.entries(foodQty || {})
         .filter(([, quantity]) => quantity > 0)
-        .map(([mealType, quantity]) => {
-          const meal = MEALS.find((m) => m.id === mealType);
+        .map(([foodType, quantity]) => {
+          const foodItem = (masterData.foods || []).find((m) => (m.id === foodType || m.code === foodType || m.foodId === foodType));
           return {
-            mealTypeId: meal ? meal.dbId : null,
+            mealTypeId: foodItem ? (foodItem.id || foodItem.dbId || foodItem.mealTypeId) : null,
             quantity,
           };
         })
@@ -103,7 +93,7 @@ export default function StepCheckout({ onBack }) {
         visitDate,
         customer,
         couponCode: couponCode || null,
-        offerCode: selectedOffer ? (selectedOffer.code || selectedOffer.id) : null,
+        offerCode: null,
         tickets,
         meals,
         agreedToTerms,
@@ -165,8 +155,8 @@ export default function StepCheckout({ onBack }) {
 
           <BookingSummary
             ticketQty={ticketQty}
-            mealQty={mealQty}
-            offer={selectedOffer}
+            foodQty={foodQty}
+            offerQty={offerQty}
             couponCode={couponCode}
             visitDate={visitDate}
           />
