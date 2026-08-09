@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
-import { getBookingFinalReview } from "@/services/bookingApi";
+// import { getBookingFinalReview } from "@/services/bookingApi";
 import MealCard from "@/components/booking/MealCard";
 import { fmt } from "@/utils/bookingCalc";
 

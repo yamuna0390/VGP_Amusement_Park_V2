@@ -13,7 +13,6 @@ export default function Header() {
   const pageTitle = useMemo(() => {
     const titles = {
       "/admin/dashboard": "Dashboard",
-      "/admin/bookings": "Bookings",
       "/admin/users": "Users",
       "/admin/attractions": "Attractions",
       "/admin/ticket-types": "Ticket Types",
@@ -21,7 +20,6 @@ export default function Header() {
       "/admin/offers": "Offers",
       "/admin/events": "Events",
       "/admin/gallery": "Gallery",
-      "/admin/payments": "Payments",
       "/admin/contact": "Contact",
       "/admin/settings": "Settings",
     };

@@ -107,7 +107,6 @@ export default function Home() {
 {/* 
         <h1>A New Time Table!</h1>
         <div className="hero-ctas">
-          <Link href="/book" className="cta-big cta-red" id="home-book-btn">Book Tickets</Link>
           <Link href="/rides" className="cta-big cta-green" id="home-rides-btn">Explore Rides</Link>
         </div> */}
       </div>

@@ -155,9 +155,6 @@ export default function Navigation() {
             <Link href="/profile" onClick={() => toggleDrawer(false)}>
               👤 My Profile
             </Link>
-            <Link href="/profile/bookings" onClick={() => toggleDrawer(false)}>
-              🎟️ My Bookings
-            </Link>
             <a
               onClick={() => {
                 toggleDrawer(false);

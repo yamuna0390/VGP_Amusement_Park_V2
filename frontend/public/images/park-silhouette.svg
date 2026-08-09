@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" height="100%" preserveAspectRatio="xMidYMax slice">
+  <g fill="none" stroke="#6B1B82" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Background Silhouettes (Filled) -->
+    <g fill="#6B1B82" stroke="none" opacity="0.4">
+      <!-- Castle / Towers -->
+      <path d="M 100 400 L 100 280 L 120 240 L 140 280 L 140 400 Z" />
+      <path d="M 140 400 L 140 320 L 160 290 L 180 320 L 180 400 Z" />
+      <path d="M 450 400 L 450 250 L 480 200 L 510 250 L 510 400 Z" />
+      <rect x="520" y="320" width="60" height="80" />
+      <rect x="590" y="280" width="45" height="120" />
+      <path d="M 800 400 L 800 220 L 830 180 L 860 220 L 860 400 Z" />
+      <rect x="740" y="340" width="50" height="60" />
+    </g>
+
+    <!-- Roller Coaster -->
+    <!-- Track 1 -->
+    <path d="M -50 350 Q 150 350 250 180 T 500 120 T 700 280 T 950 150 T 1250 350" />
+    <!-- Track 2 -->
+    <path d="M -50 365 Q 150 365 250 195 T 500 135 T 700 295 T 950 165 T 1250 365" />
+    
+    <!-- Coaster Supports -->
+    <line x1="250" y1="180" x2="250" y2="400" />
+    <line x1="375" y1="150" x2="375" y2="400" />
+    <line x1="500" y1="120" x2="500" y2="400" />
+    <line x1="600" y1="200" x2="600" y2="400" />
+    <line x1="700" y1="280" x2="700" y2="400" />
+    <line x1="825" y1="215" x2="825" y2="400" />
+    <line x1="950" y1="150" x2="950" y2="400" />
+    <line x1="1100" y1="250" x2="1100" y2="400" />
+
+    <!-- Ferris Wheel -->
+    <g transform="translate(150, -30)">
+      <circle cx="950" cy="180" r="110" />
+      <circle cx="950" cy="180" r="12" fill="#6B1B82" stroke="none" />
+      <!-- Spokes -->
+      <line x1="950" y1="70" x2="950" y2="290" />
+      <line x1="840" y1="180" x2="1060" y2="180" />
+      <line x1="872.2" y1="102.2" x2="1027.8" y2="257.8" />
+      <line x1="1027.8" y1="102.2" x2="872.2" y2="257.8" />
+      <!-- Wheel Base -->
+      <path d="M 950 180 L 890 400 M 950 180 L 1010 400" stroke-width="6" />
+    </g>
+  </g>
+</svg>

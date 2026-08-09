@@ -1,630 +1,395 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Clock, Calendar, ChevronLeft, MapPin, Users, BadgePercent, Info, Plus, Minus } from "lucide-react";
+
+import { useState, useMemo } from "react";
+import { CheckCircle2, Lock, Tag, AlertCircle, Calendar as CalendarIcon, X, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import BookingCalendar from "@/components/booking/BookingCalendar";
-import OfferCard from "@/components/booking/OfferCard";
+import BookingSummary from "@/components/booking/BookingSummary";
 import { validateVisitDate } from "@/services/bookingApi";
 
+function getDaysArray(startDateIso, daysCount) {
+  const arr = [];
+  const start = new Date(startDateIso);
+  for (let i = 0; i < daysCount; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    arr.push({
+      iso: d.toISOString().split("T")[0],
+      dayName: d.toLocaleString("en-US", { weekday: "short" }),
+      dayNumber: d.getDate(),
+      isPast: d.toISOString().split("T")[0] < new Date().toISOString().split("T")[0],
+    });
+  }
+  return arr;
+}
+
 export default function StepDateOffers({ onNext }) {
-  const { 
-    visitDate, 
-    setDate, 
-    selectedOffer, 
-    setOffer, 
+  const {
+    visitDate,
+    setDate,
+    selectedOffer,
+    setOffer,
     couponCode,
+    bookingType,
     setBookingType,
     masterData,
-    setMasterData
+    setMasterData,
   } = useBooking();
-  
+
   const [err, setErr] = useState("");
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [showOfferConfirm, setShowOfferConfirm] = useState(false);
   const [pendingOffer, setPendingOffer] = useState(null);
-  
-  // Track which flow the user selected (regular or offer)
-  const [selectedFlow, setSelectedFlow] = useState(null);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
 
-  // Accordion state for Park Information
-  const [isParkInfoExpanded, setIsParkInfoExpanded] = useState(true);
-  
-  // Mobile check state for hiding elements
-  const [isMobile, setIsMobile] = useState(false);
+  // Available offers mock list or from masterData
+  const availableOffers = masterData?.offerTickets?.length > 0
+    ? masterData.offerTickets
+    : [
+        {
+          id: "early_bird",
+          offerTicketId: "early_bird",
+          title: "Early Bird Offer",
+          badge: "15% OFF",
+          badgeColor: "booking-offer-badge--promo",
+          desc: "Book at least 1 day in advance and save 15% on eligible tickets.",
+          validity: "Valid through Aug 2026",
+          advanceRequired: true,
+        },
+        {
+          id: "birthday",
+          offerTicketId: "birthday",
+          title: "Birthday Offer",
+          badge: "BOGO",
+          badgeColor: "booking-offer-badge--promo",
+          desc: "Celebrate your birthday month! Buy 1 ticket and get 1 free.",
+          validity: "Valid during birth month with DOB ID",
+          advanceRequired: false,
+        },
+        {
+          id: "aadi",
+          offerTicketId: "aadi",
+          title: "Aadi Offer",
+          badge: "B2G1",
+          badgeColor: "booking-offer-badge--promo",
+          desc: "Buy 2 tickets and get 1 ticket absolutely FREE during Aadi.",
+          validity: "Valid for group bookings of 3+",
+          advanceRequired: true,
+        },
+        {
+          id: "friendship",
+          offerTicketId: "friendship",
+          title: "Friendship Day Offer",
+          badge: "B2G1",
+          badgeColor: "booking-offer-badge--promo",
+          desc: "Two besties book, the third friend goes FREE! Plan now.",
+          validity: "Special Friendship Day Offer",
+          advanceRequired: false,
+        },
+      ];
 
-  useEffect(() => {
-    // Run once on mount to set initial states
-    const mobile = window.innerWidth <= 768;
-    setIsMobile(mobile);
-    setIsParkInfoExpanded(!mobile); // true for desktop, false for mobile/tablet
+  const todayIso = new Date().toISOString().split("T")[0];
+  const isTodayDate = visitDate === todayIso;
 
-    // Handle subsequent resizes for hiding the header
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+  // Initialize rolling window start. If mounting with a future visitDate, use it if it's > 6 days away.
+  const initialStripStart = useMemo(() => {
+    if (visitDate && visitDate > todayIso) {
+      const diffTime = Math.abs(new Date(visitDate) - new Date(todayIso));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays >= 7) {
+        return visitDate;
+      }
+    }
+    return todayIso;
+  }, [todayIso]); 
+  // We specifically don't want this to re-evaluate on every visitDate change, 
+  // we just need it for initial state. (Safe to ignore react-hooks/exhaustive-deps warning for this pattern, or just use useState initializer).
+
+  const [stripStartIso, setStripStartIso] = useState(() => {
+    let start = todayIso;
+    if (visitDate && visitDate > todayIso) {
+      const diffDays = Math.ceil(Math.abs(new Date(visitDate) - new Date(todayIso)) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 7) start = visitDate;
+    }
+    return start;
+  });
+
+  // Determine strip dates (Rolling 7-day window)
+  const stripDays = useMemo(() => {
+    return getDaysArray(stripStartIso, 7);
+  }, [stripStartIso]);
+
+  const handleDateSelect = async (d) => {
+    setDate(d);
+    setErr("");
+    setShowCalendarModal(false);
+
+    // Shift the rolling 7-day window if the selected date is outside the currently visible range
+    const selectedDateObj = new Date(d);
+    const stripStartObj = new Date(stripStartIso);
+    const stripEndObj = new Date(stripStartIso);
+    stripEndObj.setDate(stripStartObj.getDate() + 6);
     
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (selectedDateObj < stripStartObj || selectedDateObj > stripEndObj) {
+      setStripStartIso(d);
+    }
 
-  const handleCardClick = (flowType) => {
-    setSelectedFlow(flowType);
-    setShowCalendarModal(true);
+    try {
+      const result = await validateVisitDate(d);
+      setMasterData({
+        allowOffers: result.data?.allowOffers ?? true,
+        regularTickets: result.data?.regularTickets || masterData.regularTickets || [],
+        offerTickets: result.data?.offerTickets || masterData.offerTickets || [],
+      });
+    } catch (error) {
+      console.error("Date validation error:", error);
+    }
   };
 
-  const handleOfferSelectAttempt = (offer) => {
+  const handleSelectRegularBooking = () => {
+    setBookingType("regular");
+    setOffer(null);
+  };
+
+  const handleSelectOffer = (offer) => {
     if (offer && couponCode) {
       setPendingOffer(offer);
       setShowOfferConfirm(true);
     } else {
-      setShowCalendarModal(true);
+      setBookingType("offer");
+      setOffer(offer);
     }
   };
 
   const confirmApplyOffer = () => {
-   setPendingOffer(null);
-  setShowOfferConfirm(false);
-  setShowCalendarModal(true);
-  };
-const handleConfirmDateAndProceed = async () => {
-
-  if (!visitDate) {
-    setErr("Please select a visit date to continue.");
-    return;
-  }
-
-  setErr("");
-
-  try {
-
-    const result = await validateVisitDate(visitDate);
-
-    // Debug
-    console.log("Validate Result:", result);
-
-    // Save master data from backend
-    setMasterData({
-      allowOffers: result.data?.allowOffers || false,
-      regularTickets: result.data?.regularTickets || [],
-      offerTickets: result.data?.offerTickets || []
-    });
-
-    setShowCalendarModal(false);
-
-    // Save booking flow
-    if (selectedFlow) {
-      setBookingType(selectedFlow);
+    if (pendingOffer) {
+      setBookingType("offer");
+      setOffer(pendingOffer);
     }
+    setPendingOffer(null);
+    setShowOfferConfirm(false);
+  };
 
-    onNext();
+  const handleProceed = () => {
+    if (!visitDate) {
+      setErr("Please select a visit date to continue.");
+      return;
+    }
+    setErr("");
+    if (onNext) onNext();
+  };
 
-  } catch (error) {
-
-    console.error(error);
-
-    setErr(
-      error.message ||
-      "Unable to validate visit date."
-    );
-
-  }
-};
   return (
-    <div className="bk-step-content">
-      <div className="bk-step1-grid">
+    <div className="booking-page">
+      <div className="booking-layout">
         
-        {/* ── Left Card Panel: Plan Your Adventure & Timings (Screenshot 1 Match) ── */}
-        <div className="bk-panel" style={{
-          background: "#FFFFFF",
-          borderRadius: "24px",
-          padding: "28px 26px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          border: "1px solid #E2E8F0"
-        }}>
-          {/* Header row with back icon + Title & Chennai pill badge */}
-          {!isMobile && (
-            <>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    background: "#FDDB00",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#1E293B",
-                    fontWeight: "900"
-                  }}>
-                    <ChevronLeft size={22} />
-                  </div>
-                  <h2 style={{
-                    fontSize: "1.45rem",
-                    fontWeight: "900",
-                    color: "#1E293B",
-                    fontFamily: "var(--font-roboto-condensed), sans-serif",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    margin: 0
-                  }}>
-                    PLAN YOUR ADVENTURE
-                  </h2>
-                </div>
+        {/* MAIN CONTENT — 70% */}
+        <div className="booking-main">
+          
+          {/* ROW 1: PAGE HEADING */}
+          <div className="booking-page-heading">
+            <h1 className="booking-page-heading__title">
+              Choose Visit Date & <span className="booking-page-heading__accent">Royal Offer</span>
+            </h1>
+            <p className="booking-page-heading__subtitle">
+              Select your visit date, then choose one applicable Royal Offer
+              or continue with regular online tickets.
+            </p>
+          </div>
 
-                <span style={{
-                  background: "#FDDB00",
-                  color: "#1E293B",
-                  fontWeight: "800",
-                  fontSize: "0.82rem",
-                  padding: "5px 18px",
-                  borderRadius: "20px",
-                  letterSpacing: "0.5px"
-                }}>
-                  Chennai
-                </span>
-              </div>
-
-              <p style={{ fontSize: "0.92rem", color: "#64748B", fontWeight: "600", marginBottom: "24px" }}>
-                7 hours of non-stop thrills, twists, and unforgettable excitement!
-              </p>
-            </>
+          {err && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{err}</span>
+            </div>
           )}
 
-          {/* ── Park Information & Timings Accordion ── */}
-          <div style={{
-            background: "#FFFFFF",
-            border: "1px solid #E2E8F0",
-            borderRadius: "16px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-            overflow: "hidden"
-          }}>
-            {/* Accordion Header */}
+          {/* ROW 2: DATE SELECTOR */}
+          <div className="booking-date-selector">
+            <div className="booking-date-selector__strip">
+              {stripDays.map((day) => {
+                const isSelected = visitDate === day.iso;
+                const isToday = day.iso === todayIso;
+                
+                let dayClass = "booking-date-selector__day";
+                if (isSelected) dayClass += " booking-date-selector__day--selected";
+                if (isToday && !isSelected) dayClass += " booking-date-selector__day--today";
+                if (day.isPast) dayClass += " booking-date-selector__day--disabled";
+
+                return (
+                  <div
+                    key={day.iso}
+                    onClick={() => !day.isPast && handleDateSelect(day.iso)}
+                    className={dayClass}
+                  >
+                    <span className="booking-date-selector__day-name">{day.dayName}</span>
+                    <span className="booking-date-selector__day-number">{day.dayNumber}</span>
+                  </div>
+                );
+              })}
+              
+              <button 
+                type="button" 
+                className="booking-date-selector__calendar"
+                onClick={() => setShowCalendarModal(true)}
+                aria-label="Choose another date"
+              >
+                <CalendarIcon className="w-5 h-5 mb-1" />
+                <span>More dates</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ROW 3: BOOKING/OFFERS */}
+          <div className="booking-offers-section">
+            
+            {/* Regular Booking */}
             <div 
-              onClick={() => setIsParkInfoExpanded(!isParkInfoExpanded)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                background: "#F8FAFC",
-                cursor: "pointer",
-                borderBottom: isParkInfoExpanded ? "1px solid #E2E8F0" : "none",
-                transition: "background 0.2s ease"
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#F1F5F9"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#F8FAFC"; }}
+              className={`booking-regular-card ${bookingType === "regular" && !selectedOffer ? "booking-regular-card--selected" : ""}`}
+              onClick={handleSelectRegularBooking}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  background: "#DBEAFE",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#2563EB"
-                }}>
-                  <Info size={18} />
-                </div>
-                <h3 style={{ fontSize: "1.05rem", fontWeight: "800", color: "#1E293B", margin: 0 }}>
-                  Park Information & Timings
-                </h3>
+              <div className={`booking-radio-indicator ${bookingType === "regular" && !selectedOffer ? "booking-radio-indicator--active" : ""}`}>
+                <div className="booking-radio-indicator__dot" />
               </div>
-              <div style={{ color: "#64748B" }}>
-                {isParkInfoExpanded ? <Minus size={20} /> : <Plus size={20} />}
+              <div className="booking-regular-card__content">
+                <div className="booking-regular-card__header">
+                  <h3 className="booking-regular-card__title">Regular Booking</h3>
+                  <span className="booking-offer-badge booking-offer-badge--green">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Available Every Day
+                  </span>
+                </div>
+                <p className="booking-regular-card__desc">Standard online pricing. No promotional offer applied.</p>
               </div>
             </div>
 
-            {/* Accordion Body */}
-            <div style={{
-              display: "grid",
-              gridTemplateRows: isParkInfoExpanded ? "1fr" : "0fr",
-              transition: "grid-template-rows 300ms ease-out"
-            }}>
-              <div style={{ overflow: "hidden" }}>
-                <div style={{ padding: "20px" }}>
-                  
-                  {/* Timings Section */}
-                  <div style={{
-                    background: "#F8FAFC",
-                    border: "1px solid #E2E8F0",
-                    borderRadius: "16px",
-                    padding: "20px 22px",
-                    marginBottom: "20px"
-                  }}>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      color: "#1E293B",
-                      fontWeight: "800",
-                      fontSize: "0.92rem",
-                      marginBottom: "16px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px"
-                    }}>
-                      <Clock size={18} color="#3B82F6" />
-                      <span>PARK TIMINGS / WATER TIMINGS</span>
-                    </div>
-
-                    <table style={{ width: "100%", fontSize: "0.88rem", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ borderBottom: "1px solid #E2E8F0", textAlign: "left", color: "#64748B" }}>
-                          <th style={{ paddingBottom: "10px", fontWeight: "700", width: "35%" }}></th>
-                          <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Park Timings</th>
-                          <th style={{ paddingBottom: "10px", fontWeight: "700" }}>Water Timings</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
-                          <td style={{ padding: "12px 0", fontWeight: "800", color: "#1E293B" }}>Weekdays</td>
-                          <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>10:00 AM to 6:00 PM  -</td>
-                          <td style={{ padding: "12px 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM  -</td>
-                        </tr>
-                        <tr>
-                          <td style={{ padding: "12px 0 0", fontWeight: "800", color: "#1E293B" }}>Weekends</td>
-                          <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>09:30 AM to 6:00 PM</td>
-                          <td style={{ padding: "12px 0 0", fontWeight: "600", color: "#475569" }}>12:00 PM to 6:00 PM</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* 365 Days Holiday Notice Box */}
-                  <div style={{
-                    background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-                    border: "1px solid #FDE68A",
-                    borderRadius: "18px",
-                    padding: "18px 22px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    boxShadow: "0 2px 10px rgba(245, 158, 11, 0.08)"
-                  }}>
-                    <div style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "14px",
-                      background: "#FDDB00",
-                      color: "#1E293B",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "1.4rem",
-                      flexShrink: 0,
-                      boxShadow: "0 4px 12px rgba(253, 219, 0, 0.4)"
-                    }}>
-                      🎡
-                    </div>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", flexWrap: "wrap" }}>
-                        <h4 style={{ fontSize: "1.02rem", color: "#1E293B", fontWeight: "900", margin: 0 }}>
-                          Upcoming Holidays Perfect For A VGP Trip
-                        </h4>
-                        <span style={{ background: "#B11E63", color: "#FFF", fontSize: "0.72rem", fontWeight: "800", padding: "2px 8px", borderRadius: "10px", textTransform: "uppercase" }}>
-                          Open Always
-                        </span>
-                      </div>
-                      <p style={{ fontSize: "0.88rem", color: "#92400E", fontWeight: "700", margin: 0, lineHeight: "1.4" }}>
-                        We Are Open All 365 Days of the Year! Plan your thrilling family adventure anytime.
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
+            {/* Available Offers Grid */}
+            <div className="booking-offers">
+              <div className="booking-offers-header">
+                <h2 className="booking-offers-header__title">
+                  <Tag className="booking-offers-header__icon" />
+                  Available Offers
+                </h2>
+                <p className="booking-offers-header__subtitle">Promotional offers available for your visit date.</p>
               </div>
+
+              <div className="booking-offers-grid">
+                {availableOffers.map((offer) => {
+                  const isSelected = selectedOffer?.id === offer.id || selectedOffer?.offerTicketId === offer.offerTicketId;
+                  const isDisabled = isTodayDate && offer.advanceRequired;
+
+                  let cardClass = "booking-offer-card";
+                  if (isSelected) cardClass += " booking-offer-card--selected";
+                  if (isDisabled) cardClass += " booking-offer-card--disabled";
+
+                  return (
+                    <div
+                      key={offer.id || offer.offerTicketId}
+                      onClick={() => !isDisabled && handleSelectOffer(offer)}
+                      className={cardClass}
+                    >
+                      <div className="booking-offer-card__header">
+                        <div className="booking-offer-card__title-group">
+                          <div className={`booking-radio-indicator ${isSelected ? "booking-radio-indicator--active" : ""}`}>
+                            <div className="booking-radio-indicator__dot" />
+                          </div>
+                          <h4 className="booking-offer-card__title">{offer.title || offer.displayName || offer.name}</h4>
+                        </div>
+                        {offer.badge && (
+                          <span className={`booking-offer-badge ${offer.badgeColor || "booking-offer-badge--promo"}`}>
+                            {offer.badge}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <p className="booking-offer-card__desc">
+                        {offer.desc || offer.instruction || offer.shortDescription}
+                      </p>
+
+                      <div className="booking-offer-card__footer">
+                        <span className="booking-offer-validity">
+                          📅 {offer.validity || "Valid through Aug 2026"}
+                        </span>
+                        {isDisabled && (
+                          <span className="booking-offer-notice">Advance required</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                className="booking-offers-cta"
+                onClick={handleProceed}
+                disabled={!Boolean(visitDate)}
+              >
+                Choose Tickets
+                <ArrowRight className="booking-offers-cta__icon" />
+              </button>
+
+              <div className="booking-promo-notice">
+                <Lock className="w-4 h-4 text-[#681B81] inline-block mb-1 mr-2" />
+                Promotional offers are available when you book at least 1 day before your visit. 
+                <br />
+                <strong>Regular Booking is available for today.</strong>
+              </div>
+
             </div>
           </div>
         </div>
 
-        {/* ── Right Card Panel: Ticket Selection Cards ── */}
-        <div className="bk-panel" style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          height: "100%",
-          justifyContent: "center"
-        }}>
-          {/* Regular Tickets Card */}
-          <div 
-            onClick={() => handleCardClick('regular')}
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "20px",
-              padding: "24px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-              border: "1px solid #E2E8F0",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "20px",
-              transition: "transform 0.2s, box-shadow 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.04)";
-            }}
-          >
-            <div style={{
-              width: "70px",
-              height: "70px",
-              borderRadius: "50%",
-              background: "#EEF2FF",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0
-            }}>
-              <Users size={32} color="#1E293B" />
-            </div>
-            <div>
-              <h3 style={{
-                fontSize: "1.4rem",
-                fontWeight: "900",
-                color: "#1E293B",
-                fontFamily: "var(--font-roboto-condensed), sans-serif",
-                margin: "0 0 4px 0",
-                letterSpacing: "0.5px"
-              }}>
-                REGULAR TICKETS
-              </h3>
-              <p style={{
-                fontSize: "0.95rem",
-                color: "#475569",
-                fontWeight: "600",
-                margin: 0,
-                lineHeight: "1.4"
-              }}>
-                Unlimited Access to Land Rides Till 10 PM <br/>
-                <span style={{ color: "#64748B" }}>+ Water Rides Till 6 PM</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Offer Tickets Card */}
-          <div 
-           onClick={() => {
-  if (masterData.allowOffers === false && visitDate) {
-    setErr("Offers are not available for the selected date.");
-    return;
-  }
-
-  handleCardClick("offer");
-}}
-            style={{
-              background: "#FFFFFF",
-              borderRadius: "20px",
-              padding: "24px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-              border: "1px solid #E2E8F0",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "20px",
-              transition: "transform 0.2s, box-shadow 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.04)";
-            }}
-          >
-            <div style={{
-              width: "70px",
-              height: "70px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              background: "#2563EB",
-            }}>
-              <BadgePercent size={36} color="#FFFFFF" />
-            </div>
-            <div>
-              <h3 style={{
-                fontSize: "1.4rem",
-                fontWeight: "900",
-                color: "#1E293B",
-                fontFamily: "var(--font-roboto-condensed), sans-serif",
-                margin: "0 0 4px 0",
-                letterSpacing: "0.5px"
-              }}>
-                OFFER TICKETS
-              </h3>
-              <p style={{
-                fontSize: "0.95rem",
-                color: "#475569",
-                fontWeight: "600",
-                margin: 0,
-                lineHeight: "1.4"
-              }}>
-                Limited-Time Deals. Book Before They're Gone
-              </p>
-            </div>
-          </div>
-
-          {/* Info Text Banner */}
-          <div style={{
-            background: "#F5F3FF",
-            borderRadius: "12px",
-            padding: "16px 20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            marginTop: "8px"
-          }}>
-            <Info size={18} color="#7C3AED" />
-            <p style={{
-              fontSize: "0.9rem",
-              color: "#5B21B6",
-              fontWeight: "600",
-              margin: 0
-            }}>
-              Select a ticket type above to choose your visit date.
-            </p>
-          </div>
+        {/* SUMMARY — 30% */}
+        <div className="booking-summary-column">
+          <BookingSummary
+            onNext={handleProceed}
+            canProceed={Boolean(visitDate)}
+          />
         </div>
       </div>
 
-      {/* ── Date Selection Calendar Popup Modal ── */}
+      {/* Calendar Modal */}
       {showCalendarModal && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(15, 23, 42, 0.65)",
-          backdropFilter: "blur(6px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 9999,
-          padding: "20px"
-        }}>
-          <div className="bk-panel" style={{
-            maxWidth: "500px",
-            width: "100%",
-            padding: "28px 24px",
-            background: "#FFFFFF",
-            borderRadius: "24px",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            position: "relative"
-          }}>
-            <button
+        <div className="booking-calendar-modal-backdrop">
+          <div className="booking-calendar-modal-content">
+            <button 
+              className="booking-calendar-modal-close"
               onClick={() => setShowCalendarModal(false)}
-              style={{
-                position: "absolute",
-                top: "18px",
-                right: "18px",
-                background: "#F1F5F9",
-                border: "none",
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                fontSize: "1.1rem",
-                fontWeight: "800",
-                color: "#64748B",
-                cursor: "pointer"
-              }}
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
-
-            <h3 style={{ color: "#1E293B", fontSize: "1.35rem", marginBottom: "4px", fontWeight: "900", textAlign: "center" }}>
-              📅 Select Your Visit Date
-            </h3>
-
-            {selectedOffer ? (
-              <div style={{ textAlign: "center", marginBottom: "16px" }}>
-             <span className="bk-offer__badge"
-style={{
-  background:"#2563EB"
-}}
->
-  {selectedOffer.offerLabel}
-</span>
-
-<p
-style={{
-  fontSize:"0.9rem",
-  color:"#1E293B",
-  fontWeight:"800",
-  marginTop:"6px"
-}}
->
-  Selected: {selectedOffer.displayName}
-</p>
-              </div>
-            ) : (
-              <p style={{ fontSize: "0.88rem", color: "#64748B", textAlign: "center", marginBottom: "16px", fontWeight: "600" }}>
-                Select a visit date to confirm ticket availability.
-              </p>
-            )}
-
             <BookingCalendar
               selectedDate={visitDate}
-              onSelectDate={(d) => { setDate(d); setErr(""); }}
+              onSelectDate={handleDateSelect}
             />
-
-            {err && <p className="bk-err" role="alert" style={{ textAlign: "center", marginTop: "10px", color: "#DC2626", fontWeight: "700" }}>{err}</p>}
-
-            <div style={{ display: "flex", gap: "12px", marginTop: "20px" }}>
-              <button
-                className="bk-btn-back"
-                onClick={() => setShowCalendarModal(false)}
-                style={{ flex: 1, margin: 0 }}
-              >
-                Cancel
-              </button>
-              <button
-                className="cta-big cta-red"
-                onClick={handleConfirmDateAndProceed}
-                style={{ flex: 2, padding: "10px 16px", fontSize: "0.95rem" }}
-              >
-                Confirm Date &amp; Proceed →
-              </button>
-            </div>
           </div>
         </div>
       )}
 
-      {/* ── Reverse Rule Modal ── */}
+      {/* Confirmation Modal when switching Offer over Coupon */}
       {showOfferConfirm && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 9999,
-          padding: "20px"
-        }}>
-          <div className="bk-panel" style={{
-            maxWidth: "460px",
-            padding: "30px",
-            background: "#fff",
-            borderRadius: "20px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            textAlign: "center"
-          }}>
-            <h3 style={{ color: "#1E293B", fontSize: "1.35rem", marginBottom: "12px", fontWeight: "900" }}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-xl border border-purple-100">
+            <h3 className="text-lg font-black text-gray-900 mb-2">
               Coupon Already Applied
             </h3>
-            <p style={{ fontSize: "0.95rem", color: "#475569", marginBottom: "24px", lineHeight: "1.5", fontWeight: "600" }}>
-              Coupon <strong>{couponCode}</strong> is currently applied. <br />
-              Applying this Offer will remove the coupon. <br /><br />
-              Continue?
+            <p className="text-xs sm:text-sm text-gray-600 mb-6 leading-relaxed">
+              Coupon <strong>{couponCode}</strong> is currently applied. Applying this offer will remove the coupon.
             </p>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <div className="flex gap-3 justify-center">
               <button
-                className="bk-btn-back"
+                type="button"
                 onClick={() => {
                   setPendingOffer(null);
                   setShowOfferConfirm(false);
                 }}
-                style={{ margin: 0, padding: "8px 24px", height: "45px" }}
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs sm:text-sm hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
-                className="cta-big cta-red"
+                type="button"
                 onClick={confirmApplyOffer}
-                style={{ padding: "8px 24px", fontSize: "0.9rem", height: "45px" }}
+                className="px-5 py-2.5 rounded-xl bg-[#681B81] text-white font-bold text-xs sm:text-sm hover:bg-[#5A257F] shadow-sm"
               >
                 Apply Offer
               </button>

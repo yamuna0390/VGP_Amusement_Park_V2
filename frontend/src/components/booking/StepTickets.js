@@ -1,31 +1,22 @@
 "use client";
+
 import { useState } from "react";
-import { ChevronLeft, Info, Plus, Minus } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import TicketCard from "@/components/booking/TicketCard";
-import OfferCard from "@/components/booking/OfferCard";
-import CouponForm from "@/components/booking/CouponForm";
-import { fmt } from "@/utils/bookingCalc";
+import BookingSummary from "@/components/booking/BookingSummary";
 
 export default function StepTickets({ onNext, onBack }) {
-const {
-  masterData,
-  ticketQty = {},
-  offerQty = {},
-  grandTotal,
-  setTicketQty,
-  setOfferQty,
-  bookingType,
-  couponApplied
-} = useBooking();
+  const {
+    masterData,
+    ticketQty = {},
+    setTicketQty,
+    visitDate,
+    bookingType,
+  } = useBooking();
 
   const regularTickets = masterData.regularTickets || [];
-  const offerTickets = masterData.offerTickets || [];
   const [err, setErr] = useState("");
-
-  const [isRegularExpanded, setIsRegularExpanded] = useState(!bookingType || bookingType === 'regular');
-  const [rawOfferExpanded, setIsOfferExpanded] = useState(bookingType === 'offer');
-  const isOfferExpanded = rawOfferExpanded && !couponApplied;
 
   const handleTicketChange = (code, qty) => {
     setErr("");
@@ -37,9 +28,8 @@ const {
   };
 
   const handleNext = () => {
-    const hasRegular = Object.values(ticketQty).some((q) => Number(q) > 0);
-    const hasOffer = Object.values(offerQty).some((q) => Number(q) > 0);
-    if (!hasRegular && !hasOffer) {
+    const hasTickets = Object.values(ticketQty).some((q) => Number(q) > 0);
+    if (!hasTickets) {
       setErr("Please select at least 1 ticket to continue.");
       return;
     }
@@ -47,265 +37,76 @@ const {
     onNext();
   };
 
+  const hasTickets = Object.values(ticketQty).some((q) => Number(q) > 0);
+
   return (
-    <div className="bk-step-content">
-      <div className="bk-step-grid">
+    <div className="booking-page">
+      <div className="booking-layout">
         
-        {/* ── Left Card Panel: Header & Important Information ── */}
-        <div className="bk-panel" style={{
-          background: "#FFFFFF",
-          borderRadius: "24px",
-          padding: "28px 26px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          border: "1px solid #E2E8F0"
-        }}>
-          {/* Header row with back button + Title & Chennai pill badge */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <button
-                onClick={onBack}
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "#FDDB00",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#1E293B",
-                  fontWeight: "900",
-                  cursor: "pointer"
-                }}
-              >
-                <ChevronLeft size={22} />
-              </button>
-              <h2 style={{
-                fontSize: "1.45rem",
-                fontWeight: "900",
-                color: "#1E293B",
-                fontFamily: "var(--font-roboto-condensed), sans-serif",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                margin: 0
-              }}>
-                GRAB YOUR TICKETS
-              </h2>
+        {/* MAIN CONTENT — 70% */}
+        <div className="booking-main">
+          
+          <div className="booking-step-header-container">
+            <button className="booking-step-back" onClick={onBack}>
+              <ArrowLeft className="w-4 h-4" /> Back to Date & Offer
+            </button>
+            
+            <div className="booking-step-heading">
+              <span className="booking-step-heading__number">02</span>
+              <div className="booking-step-heading__content">
+                <h2 className="booking-step-heading__title">CHOOSE YOUR TICKETS</h2>
+                <p className="booking-step-heading__subtitle">
+                  Build your party. Final pricing and eligibility are checked on the server.
+                </p>
+              </div>
             </div>
-
-            <span style={{
-              background: "#FDDB00",
-              color: "#1E293B",
-              fontWeight: "800",
-              fontSize: "0.82rem",
-              padding: "5px 18px",
-              borderRadius: "20px",
-              letterSpacing: "0.5px"
-            }}>
-              Chennai
-            </span>
           </div>
 
-          <p style={{ fontSize: "0.88rem", color: "#64748B", fontWeight: "600", lineHeight: "1.5", marginBottom: "22px" }}>
-            VGP Universal Kingdom provides regular tickets, fast track tickets for queue skipping, and Special Offer tickets designed exclusively for students, Birthday Celebrations, and families.
-          </p>
-
-          {/* Important Information Box */}
-          <div style={{
-            background: "#F8FAFC",
-            border: "1px solid #CBD5E1",
-            borderRadius: "16px",
-            padding: "18px 20px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#2563EB", fontWeight: "800", fontSize: "0.95rem", marginBottom: "12px" }}>
-              <Info size={18} />
-              <span>Important Information</span>
+          {err && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2">
+              <span>{err}</span>
             </div>
-
-            <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "0.85rem", color: "#475569", fontWeight: "600", display: "flex", flexDirection: "column", gap: "10px", lineHeight: "1.5" }}>
-              <li>Free entry for children under 85 cm in height.</li>
-              <li>Offer tickets are available only online on the website, and tickets purchased after 9 AM cannot be redeemed on the same day.</li>
-              <li>Only 100% nylon or polyester attire is permitted for water rides.</li>
-              <li>Height restrictions apply to all rides, and weight restrictions apply to select rides for safety reasons.</li>
-              <li>Outside food, beverages, and snacks are not permitted inside park premises.</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* ── Right Card Panel: Ticket Selector List & Summary ── */}
-        <div className="bk-panel" style={{
-          background: "#FFFFFF",
-          borderRadius: "24px",
-          padding: "28px 26px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          border: "1px solid #E2E8F0"
-        }}>
-          {(!bookingType || bookingType === 'regular') && (
-            <>
-              <div 
-                onClick={() => setIsRegularExpanded(!isRegularExpanded)}
-                style={{ 
-                  borderBottom: "2px solid #F1F5F9", 
-                  paddingBottom: "12px", 
-                  marginBottom: "16px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  cursor: "pointer"
-                }}
-              >
-                <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", margin: 0 }}>
-                  👥 REGULAR TICKET <span style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: "600", textTransform: "none" }}>— Unlimited access to all rides</span>
-                </h3>
-                <div style={{ color: "#64748B" }}>
-                  {isRegularExpanded ? <Minus size={20} /> : <Plus size={20} />}
-                </div>
-              </div>
-
-              {/* Scrollable list of ticket options wrapped in grid for accordion animation */}
-              <div style={{
-                display: "grid",
-                gridTemplateRows: isRegularExpanded ? "1fr" : "0fr",
-                transition: "grid-template-rows 300ms ease-out",
-                marginBottom: isRegularExpanded ? "18px" : "0"
-              }}>
-                <div style={{ overflow: "hidden" }}>
-                  <div className="bk-tickets-list bk-tickets-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {regularTickets.map((ticket) => {
-                      const code = ticket.code || ticket.id;
-                      const currentQty = ticketQty[code] || 0;
-                      return (
-                        <TicketCard
-                          key={ticket.id || code}
-                          ticket={ticket}
-                          qty={currentQty}
-                          quantity={currentQty}
-                          onChange={(qty) => handleTicketChange(code, qty)}
-                          onQuantityChange={(qty) => handleTicketChange(code, qty)}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </>
           )}
 
-          <div 
-            onClick={() => !couponApplied && setIsOfferExpanded(!isOfferExpanded)}
-            style={{ 
-              borderBottom: "2px solid #F1F5F9", 
-              paddingBottom: "12px", 
-              marginBottom: "16px", 
-              marginTop: (!bookingType || bookingType === 'regular') ? "8px" : "0",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              cursor: couponApplied ? "not-allowed" : "pointer",
-              opacity: couponApplied ? 0.5 : 1
-            }}
-          >
-            <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{
-                background: "#2563EB",
-                color: "#FFFFFF",
-                borderRadius: "50%",
-                width: "28px",
-                height: "28px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1rem"
-              }}>%</span> 
-              OFFER TICKETS{" "}
-              {couponApplied ? (
-                <span
-                  style={{
-                    background: "#FEE2E2",
-                    color: "#DC2626",
-                    border: "1px solid #FECACA",
-                    fontSize: "0.75rem",
-                    fontWeight: "800",
-                    padding: "3px 10px",
-                    borderRadius: "12px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    marginLeft: "6px",
-                  }}
-                >
-                  Coupon Applied
-                </span>
-              ) : (
-                <span style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: "600", textTransform: "none" }}>— Limited-Time Deals</span>
-              )}
-            </h3>
-            <div style={{ color: "#64748B" }}>
-              {isOfferExpanded ? <Minus size={20} /> : <Plus size={20} />}
+          <div className="booking-tickets-panel">
+            <div className="booking-tickets-grid">
+              {regularTickets.map((ticket) => {
+                const code = ticket.code || ticket.id;
+                const currentQty = ticketQty[code] || 0;
+                return (
+                  <TicketCard
+                    key={ticket.id || code}
+                    ticket={ticket}
+                    qty={currentQty}
+                    onChange={(qty) => handleTicketChange(code, qty)}
+                    bookingType={bookingType}
+                  />
+                );
+              })}
+            </div>
+            
+            <div className="booking-ticket-navigation">
+              <button className="booking-ticket-navigation__back" onClick={onBack}>
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+              <button className="booking-ticket-navigation__next" onClick={handleNext}>
+                Add-ons <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="booking-ticket-notice">
+              You may mix regular and offer-eligible ticket categories. The selected offer applies only to qualifying tickets; all other tickets retain the regular online price.
             </div>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateRows: (isOfferExpanded && !couponApplied) ? "1fr" : "0fr",
-            transition: "grid-template-rows 300ms ease-out",
-            marginBottom: (isOfferExpanded && !couponApplied) ? "18px" : "0",
-            pointerEvents: couponApplied ? "none" : "auto",
-            opacity: couponApplied ? 0.5 : 1
-          }}>
-            <div style={{ overflow: "hidden" }}>
-              <div className="bk-offers-list bk-offers-scroll" style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "6px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                {offerTickets && offerTickets.length > 0 ? (
-                  offerTickets.map((offer) => {
-                    const currentOfferQty = offerQty[offer.offerTicketId] || 0;
-                    return (
-                      <OfferCard
-                        key={offer.offerTicketId}
-                        offer={offer}
-                        quantity={currentOfferQty}
-                        onQuantityChange={(qty) => {
-                          setErr("");
-                          setOfferQty(offer.offerTicketId, qty);
-                        }}
-                        isSelected={currentOfferQty > 0}
-                        disabled={couponApplied}
-                      />
-                    );
-                  })
-                ) : (
-                  <div style={{ textAlign: "center", padding: "40px 20px", background: "#F8FAFC", borderRadius: "18px", border: "1px dashed #CBD5E1" }}>
-                    <p style={{ fontSize: "0.84rem", color: "#64748B", margin: 0 }}>No offers available today.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        </div>
 
-          {/* Coupon Code Section */}
-          <div style={{ marginBottom: "18px" }}>
-            <CouponForm />
-          </div>
-
-          {err && <p className="bk-err" role="alert" style={{ marginBottom: "12px", color: "#DC2626", fontWeight: "700" }}>{err}</p>}
-
-          {/* Bottom Sticky Action Row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", paddingTop: "14px", borderTop: "2px solid #F1F5F9" }}>
-            <div>
-              <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#64748B", letterSpacing: "0.5px", textTransform: "uppercase", display: "block" }}>
-                Ticket Total
-              </span>
-              <span style={{ fontSize: "1.4rem", fontWeight: "900", color: "#1E293B", display: "block" }}>
-                {fmt(grandTotal || 0)}
-              </span>
-            </div>
-
-            <button
-              className="cta-big cta-red"
-              onClick={handleNext}
-              style={{ flex: 1, padding: "12px 24px", fontSize: "1rem" }}
-            >
-              Confirm &amp; Proceed →
-            </button>
-          </div>
+        {/* SUMMARY — 30% */}
+        <div className="booking-summary-column">
+          <BookingSummary
+            onNext={handleNext}
+            canProceed={hasTickets}
+          />
         </div>
       </div>
     </div>

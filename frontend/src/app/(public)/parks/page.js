@@ -158,10 +158,6 @@ export default function Parks() {
             <p style={{ fontSize: "0.95rem", color: "#64748B", fontWeight: "600", marginBottom: "22px" }}>
               Pre-book your tickets online to unlock exclusive discounts and skip queue lines!
             </p>
-            <Link href="/book" className="cta-big cta-red" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-              <Compass size={18} />
-              <span>Book Your Kingdom Fun Pass Now ➜</span>
-            </Link>
           </div>
 
         </div>

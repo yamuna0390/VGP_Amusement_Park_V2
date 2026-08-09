@@ -1,14 +1,18 @@
+@import "tailwindcss";
+
 :root{
   /* Premium palette — VGP refresh */
-  --yellow:#F6C33B; --yellow-deep:#F2B233;
-  --red:#B11E63; --red-dark:#922152;
-  --purple:#5A257F; --purple-deep:#4A216B;
+  --purple:#681B81; --purple-deep:#4B0F61;
+  --yellow:#F5D400; --yellow-deep:#F2B233;
+  --red:#ED3212; --red-dark:#922152;
+  --cream:#FFF9E9; --white:#FFFFFF;
+  --muted-purple:#806B87;
+  --green:#187B45; --green-deep:#8F5426;
   --blue:#C5E3DB; --blue-deep:#9CC8BC;
-  --green:#B36D3C; --green-deep:#8F5426;
   --tan:#DBB68A; --brown-dark:#3C2950;
-  --ink:#3C2950; --white:#fff;
+  --ink:#3C2950;
   /* extended */
-  --cream:#FFF7E7; --light-cream:#FDF4DE;
+  --light-cream:#FDF4DE;
   --pattern:#F2DDB4; --border:#EAD7B4;
 }
 *{margin:0;padding:0;box-sizing:border-box}

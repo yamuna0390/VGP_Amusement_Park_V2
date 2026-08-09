@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
-import { createBooking } from "@/services/bookingApi";
+// import { createBooking } from "@/services/bookingApi";
 import { useBooking } from "@/context/BookingContext";
 import { useAuth } from "@/context/AuthContext";
 import BookingSummary from "@/components/booking/BookingSummary";
@@ -170,15 +170,7 @@ export default function StepCheckout({ onBack }) {
           boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           border: "1px solid #E2E8F0"
         }}>
-          <h3 style={{ fontSize: "1.1rem", fontWeight: "900", color: "#1E293B", textTransform: "uppercase", marginBottom: "18px" }}>
-            ADD YOUR BILLING INFORMATION
-          </h3>
-
-          <CustomerForm
-            customer={customer}
-            onChange={(key, val) => setCustomer({ [key]: val })}
-            errors={errors}
-          />
+          {/* We rely on customer info populated via Step 4 (Traveller Info). */}
 
           {/* Terms & Conditions Checkbox */}
           <div className="bk-terms" style={{ marginTop: "20px" }}>

@@ -5,11 +5,8 @@ const morgan = require("morgan");
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
-const bookingRoutes = require("./routes/bookingRoutes");
-const bookingInitRoutes = require("./routes/bookingInitRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 const couponRoutes = require("./routes/couponRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const mealRoutes = require("./routes/mealRoutes");
 
@@ -65,7 +62,7 @@ app.use(
 app.get("/", (req, res) => {
     res.status(200).json({
         success: true,
-        application: "VGP Amusement Park Booking API",
+        application: "VGP Amusement Park API",
         version: "1.0.0",
     });
 });
@@ -89,11 +86,8 @@ app.get("/api/health", (req, res) => {
  * ==========================================
  */
 app.use("/api/auth", authRoutes);
-app.use("/api/booking", bookingInitRoutes);
-app.use("/api/bookings", bookingRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/coupons", couponRoutes);
-app.use("/api/payments", paymentRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/meals", mealRoutes);
 /**

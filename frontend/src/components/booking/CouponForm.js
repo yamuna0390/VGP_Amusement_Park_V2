@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { validateCoupon } from "@/services/bookingApi";
+// import { validateCoupon } from "@/services/bookingApi";
 import { useBooking } from "@/context/BookingContext";
 import { calculateTemporaryCouponUiDiscount } from "@/utils/bookingSummary";
 

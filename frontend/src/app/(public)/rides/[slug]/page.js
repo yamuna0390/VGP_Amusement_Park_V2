@@ -7,7 +7,6 @@ import RideOverview from "@/components/rides/RideOverview";
 import RideInfoSafetyWrapper from "@/components/rides/RideInfoSafetyWrapper";
 import RideOffers from "@/components/rides/RideOffers";
 import RideLocation from "@/components/rides/RideLocation";
-import BottomCTA from "@/components/rides/BottomCTA";
 
 export async function generateStaticParams() {
   return singleRide.map((ride) => ({
@@ -56,9 +55,6 @@ export default async function RideDetails({ params }) {
 
       {/* 7. Ride Location */}
       <RideLocation rideName={ride.n} mapInfo={ride.map} />
-
-      {/* 8. Bottom CTA */}
-      <BottomCTA rideName={ride.n} />
     </main>
   );
 }

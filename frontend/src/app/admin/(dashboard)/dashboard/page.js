@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  CalendarCheck,
   IndianRupee,
   Users,
-  Clock,
 } from "lucide-react";
 
 import StatCard from "@/components/admin/Dashboard/StatCard";
@@ -16,14 +14,6 @@ export default function DashboardPage() {
  return (
   <>
     <div className="dashboard-grid">
-
-      <StatCard
-        title="Today's Bookings"
-        value="245"
-        subtitle="+12% from yesterday"
-        color="#2563eb"
-        icon={<CalendarCheck size={30} />}
-      />
 
       <StatCard
         title="Revenue Today"
@@ -39,14 +29,6 @@ export default function DashboardPage() {
         subtitle="Park Entry"
         color="#ea580c"
         icon={<Users size={30} />}
-      />
-
-      <StatCard
-        title="Pending Payments"
-        value="8"
-        subtitle="Awaiting Confirmation"
-        color="#dc2626"
-        icon={<Clock size={30} />}
       />
 
     </div>

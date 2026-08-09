@@ -4,7 +4,7 @@ import { useBooking } from "@/context/BookingContext";
 import Invoice from "@/components/booking/Invoice";
 import QrTicket from "@/components/booking/QrTicket";
 import Link from "next/link";
-import { confirmPayment } from "@/services/bookingApi";
+// import { confirmPayment } from "@/services/bookingApi";
 
 export default function StepSuccess() {
   const booking = useBooking();

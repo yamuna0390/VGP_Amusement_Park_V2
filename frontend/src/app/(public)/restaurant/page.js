@@ -114,10 +114,6 @@ export default function Restaurant() {
               </div>
             ))}
           </div>
-
-          <p style={{ textAlign: "center", marginTop: "32px" }}>
-            <Link href="/book" className="cta-big cta-red">🍽️ Add Meal Packages While Booking ➜</Link>
-          </p>
         </div>
       </section>
 

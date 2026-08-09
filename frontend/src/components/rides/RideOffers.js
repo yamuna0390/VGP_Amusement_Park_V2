@@ -89,11 +89,6 @@ export default function RideOffers() {
                   <div className="card-price-row">
                     <span className="card-price-value">{offer.price}</span>
                   </div>
-
-                  <Link href="/book" className="card-book-now-btn">
-                    <span>BOOK NOW</span>
-                    <ArrowRight size={14} />
-                  </Link>
                 </div>
               ))}
             </div>

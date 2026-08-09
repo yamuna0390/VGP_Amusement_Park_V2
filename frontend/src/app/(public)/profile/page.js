@@ -80,9 +80,6 @@ export default function ProfilePage() {
           <Link href="/profile" style={{ fontWeight: "800", color: "var(--purple-deep)", borderBottom: "3px solid var(--purple-deep)", padding: "8px 16px" }}>
             👤 My Profile
           </Link>
-          <Link href="/profile/bookings" style={{ fontWeight: "800", color: "var(--purple)", padding: "8px 16px" }}>
-            🎟️ My Bookings
-          </Link>
         </div>
 
         <div className="bk-panel" style={{ padding: "34px", background: "#fff", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>

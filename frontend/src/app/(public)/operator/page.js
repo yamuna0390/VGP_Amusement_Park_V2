@@ -167,9 +167,6 @@ function OperatorPortalContent() {
                 <p style={{ fontSize: "0.85rem", color: "#64748B", fontWeight: "600", marginBottom: "16px" }}>
                   Book individual or small-group passes at contracted operator rates.
                 </p>
-                <Link href="/book" className="cta-big cta-red" style={{ display: "inline-block", padding: "8px 18px", fontSize: "0.88rem" }}>
-                  Start Operator Booking →
-                </Link>
               </div>
 
               <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: "18px", padding: "22px" }}>

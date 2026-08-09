@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 import {
   LayoutDashboard,
-  CalendarCheck,
   Users,
   FerrisWheel,
   Ticket,
@@ -14,7 +13,6 @@ import {
   BadgePercent,
   CalendarDays,
   Image as ImageIcon,
-  CreditCard,
   MessageSquare,
   Settings,
 } from "lucide-react";
@@ -29,11 +27,6 @@ export default function Sidebar() {
       name: "Dashboard",
       href: "/admin/dashboard",
       icon: LayoutDashboard,
-    },
-    {
-      name: "Bookings",
-      href: "/admin/bookings",
-      icon: CalendarCheck,
     },
     {
       name: "Users",
@@ -69,11 +62,6 @@ export default function Sidebar() {
       name: "Gallery",
       href: "/admin/gallery",
       icon: ImageIcon,
-    },
-    {
-      name: "Payments",
-      href: "/admin/payments",
-      icon: CreditCard,
     },
     {
       name: "Contact",

@@ -54,8 +54,7 @@ export default function Offers() {
                     style={{ "--ride-body-bg": cardBg }}
                   >
                     {/* ── Image Media ── */}
-                    <Link
-                      href="/book"
+                    <div
                       className="card-media ride-media"
                       aria-label={`Apply ${offer.name}`}
                     >
@@ -72,7 +71,7 @@ export default function Offers() {
                     
                       {/* Category badge */}
                       {offer.badge && <span className="ride-badge">{offer.badge}</span>}
-                    </Link>
+                    </div>
 
                     {/* ── Curved Wave Transition ── */}
                     <div className="ride-wave" aria-hidden="true">
@@ -95,25 +94,6 @@ export default function Offers() {
                       <p className="ride-desc">{offer.desc}</p>
                       <div className="ride-footer">
                         <p className="ride-mfr">{offer.validity || "Apply Online"}</p>
-                        <Link
-                          href="/book"
-                          className="ride-arrow"
-                          aria-label={`Apply ${offer.name}`}
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                          </svg>
-                        </Link>
                       </div>
                     </div>
                   </div>
@@ -140,10 +120,6 @@ export default function Offers() {
                 Exclusive online discounts are automatically applied when you pre-book your park passes.
               </p>
             </div>
-
-            <Link href="/book" className="cta-big cta-yellow">
-              Book Tickets Now ➔
-            </Link>
           </div>
 
         </div>
