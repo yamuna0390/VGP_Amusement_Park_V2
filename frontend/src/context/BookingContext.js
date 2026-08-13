@@ -10,6 +10,7 @@ const initialState = {
   // Step 1
   visitDate: null,
   bookingType: "regular",
+  selectedOffer: null,
 
   masterData: {
     regularTickets: [],
@@ -56,12 +57,33 @@ function bookingReducer(state, action) {
       return {
         ...state,
         visitDate: action.payload,
+        ticketQty: {},
+        offerQty: {},
+        foodQty: {},
+        finalReviewData: null,
       };
 
     case "SET_BOOKING_TYPE":
       return {
         ...state,
         bookingType: action.payload,
+        ticketQty: {},
+        offerQty: {},
+        foodQty: {},
+        finalReviewData: null,
+      };
+
+    case "SET_OFFER":
+      return {
+        ...state,
+        selectedOffer: action.payload,
+        ticketQty: {},
+        offerQty: {},
+        foodQty: {},
+        finalReviewData: null,
+        couponCode: action.payload ? "" : state.couponCode,
+        appliedCoupon: action.payload ? null : state.appliedCoupon,
+        couponApplied: action.payload ? false : state.couponApplied,
       };
 
     case "SET_TICKET_QTY":
@@ -156,7 +178,7 @@ function bookingReducer(state, action) {
         savings: action.payload.savings,
         tickets: action.payload.tickets,
         offer_name: action.payload.offerName,
-        step: 5,
+        step: 6,
       };
 
     case "SET_MASTER_DATA":
@@ -184,13 +206,15 @@ const BookingContext = createContext(null);
 export function BookingProvider({ children }) {
   const [state, dispatch] = useReducer(bookingReducer, initialState);
 
-  const { ticketQty, offerQty, foodQty, masterData, appliedCoupon, couponApplied } = state;
+  const { ticketQty, offerQty, foodQty, masterData, appliedCoupon, couponApplied, bookingType, selectedOffer } = state;
 
   const ticketTotal = getTicketTotal(
     ticketQty,
     masterData.regularTickets || [],
     offerQty,
-    masterData.offerTickets || []
+    masterData.offerTickets || [],
+    bookingType,
+    selectedOffer
   );
 
   const foodTotal = getFoodTotal(
@@ -204,7 +228,9 @@ export function BookingProvider({ children }) {
     offerQty,
     masterData.offerTickets || [],
     foodQty,
-    masterData.foods || []
+    masterData.foods || [],
+    bookingType,
+    selectedOffer
   );
 
   const { discountAmount: couponDiscount, adjustedGrandTotal } = calculateTemporaryCouponUiDiscount(
@@ -227,6 +253,11 @@ export function BookingProvider({ children }) {
 
   const setBookingType = useCallback(
     (type) => dispatch({ type: "SET_BOOKING_TYPE", payload: type }),
+    []
+  );
+
+  const setOffer = useCallback(
+    (offer) => dispatch({ type: "SET_OFFER", payload: offer }),
     []
   );
 
@@ -340,6 +371,7 @@ export function BookingProvider({ children }) {
         setOfferQty,
         setFoodQty,
         setCoupon,
+        setOffer,
         setFinalReviewData,
         setCustomer,
         setTerms,

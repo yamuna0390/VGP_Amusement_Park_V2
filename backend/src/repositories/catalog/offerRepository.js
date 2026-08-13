@@ -19,6 +19,7 @@ async function getOfferByCode(connection = db, offerCode) {
             id,
             offer_name,
             offer_code,
+            promotion_type,
             description,
             offer_rule,
             discount_value,
@@ -55,6 +56,7 @@ async function getActiveOffers(connection = db, visitDate) {
             id,
             offer_name,
             offer_code,
+            promotion_type,
             description,
             offer_rule,
             discount_value,
@@ -76,7 +78,85 @@ async function getActiveOffers(connection = db, visitDate) {
     return rows;
 }
 
+/**
+ * Get active offer ticket mappings.
+ *
+ * @param {PoolConnection|Pool} connection
+ * @returns {Promise<Array>}
+ */
+async function getOfferTicketMappings(connection = db) {
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            ot.offer_id AS offerId,
+            ot.ticket_id AS ticketTypeId,
+            t.code AS ticketCode,
+            t.name AS ticketName,
+            ot.min_qty AS minQty,
+            ot.free_qty AS freeQty
+        FROM offer_tickets ot
+        JOIN ticket_types t ON ot.ticket_id = t.id
+        WHERE ot.is_active = 1
+        ORDER BY ot.display_order ASC
+        `
+    );
+    return rows;
+}
+
+/**
+ * Get active offer schedule rules.
+ *
+ * @param {PoolConnection|Pool} connection
+ * @returns {Promise<Array>}
+ */
+async function getOfferScheduleRules(connection = db) {
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            offer_id AS offerId,
+            day_of_week AS dayOfWeek,
+            valid_from AS validFrom,
+            valid_until AS validUntil
+        FROM offer_schedule_rules
+        `
+    );
+    return rows;
+}
+
+/**
+ * Get all active offers unconditionally.
+ *
+ * @param {PoolConnection|Pool} connection
+ * @returns {Promise<Array>}
+ */
+async function getAllActiveOffers(connection = db) {
+    const [rows] = await connection.execute(
+        `
+        SELECT
+            id,
+            offer_name,
+            offer_code,
+            promotion_type,
+            instruction,
+            offer_type,
+            discount_value,
+            valid_from,
+            valid_to,
+            min_advance_days,
+            status,
+            priority
+        FROM offers
+        WHERE status = 'Active'
+        ORDER BY priority ASC
+        `
+    );
+    return rows;
+}
+
 module.exports = {
     getOfferByCode,
-    getActiveOffers
+    getActiveOffers,
+    getOfferTicketMappings,
+    getOfferScheduleRules,
+    getAllActiveOffers
 };

@@ -76,18 +76,44 @@ export function getSelectedFoods(foodQty = {}, foods = []) {
 }
 
 /**
+ * Computes the effective price for a single ticket based on the active bookingType and selectedOffer.
+ * Shares the exact same logic used by TicketCard.
+ */
+export function getEffectiveTicketPrice(ticket, bookingType, selectedOffer) {
+  const originalPrice = ticket.price || 0;
+
+  if (bookingType === "offer" && selectedOffer && selectedOffer.ticketMappings) {
+    const isMapped = selectedOffer.ticketMappings.some(m => {
+      const mapId = typeof m === 'object' ? m.ticketTypeId || m.id || m.ticketTypeCode : m;
+      return mapId === ticket.id || mapId === ticket.code;
+    });
+
+    if (isMapped && selectedOffer.promotionType !== "BUY_X_GET_Y" && selectedOffer.discountValue > 0) {
+      const discountAmount = originalPrice * (selectedOffer.discountValue / 100);
+      return Math.round((originalPrice - discountAmount) * 100) / 100;
+    }
+  }
+
+  return originalPrice;
+}
+
+/**
  * Calculates total amount from selected regular and offer tickets.
  * @param {Object} ticketQty
  * @param {Array} regularTickets
  * @param {Object} offerQty
  * @param {Array} offerTickets
+ * @param {string} bookingType
+ * @param {Object} selectedOffer
  * @returns {number}
  */
 export function getTicketTotal(
   ticketQty = {},
   regularTickets = [],
   offerQty = {},
-  offerTickets = []
+  offerTickets = [],
+  bookingType = "regular",
+  selectedOffer = null
 ) {
   let total = 0;
 
@@ -95,7 +121,7 @@ export function getTicketTotal(
     regularTickets.forEach((ticket) => {
       const id = ticket.code || ticket.ticketId || ticket.id;
       const qty = Number(ticketQty[id] || ticketQty[String(id)] || 0);
-      const price = Number(ticket.price || 0);
+      const price = getEffectiveTicketPrice(ticket, bookingType, selectedOffer);
       if (qty > 0) {
         total += qty * price;
       }
@@ -148,6 +174,8 @@ export function getFoodTotal(foodQty = {}, foods = []) {
  * @param {Array} offerTickets
  * @param {Object} foodQty
  * @param {Array} foods
+ * @param {string} bookingType
+ * @param {Object} selectedOffer
  * @returns {number}
  */
 export function getGrandTotal(
@@ -156,13 +184,17 @@ export function getGrandTotal(
   offerQty = {},
   offerTickets = [],
   foodQty = {},
-  foods = []
+  foods = [],
+  bookingType = "regular",
+  selectedOffer = null
 ) {
   const ticketTotal = getTicketTotal(
     ticketQty,
     regularTickets,
     offerQty,
-    offerTickets
+    offerTickets,
+    bookingType,
+    selectedOffer
   );
 
   const foodTotal = getFoodTotal(foodQty, foods);

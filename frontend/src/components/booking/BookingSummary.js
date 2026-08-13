@@ -9,6 +9,7 @@ import {
   getFoodTotal,
   getGrandTotal,
   calculateTemporaryCouponUiDiscount,
+  getEffectiveTicketPrice,
 } from "@/utils/bookingSummary";
 import {
   CalendarDays,
@@ -53,23 +54,28 @@ export default function BookingSummary({
   const offerTickets = masterData.offerTickets || [];
   const foods = masterData.foods || [];
 
-  const ticketTotal = booking.ticketTotal !== undefined ? booking.ticketTotal : getTicketTotal(ticketQty, regularTickets, offerQty, offerTickets);
-  const foodTotal = booking.foodTotal !== undefined ? booking.foodTotal : getFoodTotal(foodQty, foods);
+  const ticketTotal = booking.finalReviewData?.quote?.ticketSubtotal !== undefined ? Number(booking.finalReviewData.quote.ticketSubtotal) : (booking.ticketTotal !== undefined ? booking.ticketTotal : getTicketTotal(ticketQty, regularTickets, offerQty, offerTickets));
+  const foodTotal = booking.finalReviewData?.quote?.addonSubtotal !== undefined ? Number(booking.finalReviewData.quote.addonSubtotal) : (booking.foodTotal !== undefined ? booking.foodTotal : getFoodTotal(foodQty, foods));
   const unadjustedGrandTotal = getGrandTotal(ticketQty, regularTickets, offerQty, offerTickets, foodQty, foods);
-  const calculatedCouponDiscount = booking.couponDiscount !== undefined
-    ? booking.couponDiscount
-    : calculateTemporaryCouponUiDiscount(ticketTotal, foodTotal, booking.appliedCoupon).discountAmount;
+  
+  const calculatedCouponDiscount = booking.finalReviewData?.quote?.couponDiscount !== undefined
+    ? Number(booking.finalReviewData.quote.couponDiscount)
+    : (booking.couponDiscount !== undefined
+        ? booking.couponDiscount
+        : calculateTemporaryCouponUiDiscount(ticketTotal, foodTotal, booking.appliedCoupon).discountAmount);
 
-  const grandTotal = booking.grandTotal !== undefined
-    ? booking.grandTotal
-    : (booking.couponApplied ? parseFloat((unadjustedGrandTotal - calculatedCouponDiscount).toFixed(2)) : unadjustedGrandTotal);
+  const grandTotal = booking.finalReviewData?.quote?.subtotal !== undefined
+    ? Number(booking.finalReviewData.quote.subtotal) - calculatedCouponDiscount
+    : (booking.grandTotal !== undefined
+        ? booking.grandTotal
+        : (booking.couponApplied ? parseFloat((unadjustedGrandTotal - calculatedCouponDiscount).toFixed(2)) : unadjustedGrandTotal));
 
   const selectedRegularTickets = regularTickets.filter(
     (tk) => Number(ticketQty[tk.id] || ticketQty[tk.code] || 0) > 0
   );
 
   const selectedOfferTickets = offerTickets.filter(
-    (of) => Number(offerQty[of.offerTicketId] || of.id || 0) > 0
+    (of) => Number(offerQty[of.offerTicketId] || offerQty[of.id] || 0) > 0
   );
 
   const selectedFoods = foods.filter(
@@ -78,14 +84,38 @@ export default function BookingSummary({
 
   const ticketGstPct = Number(masterData.parkSettings?.ticketGstPercentage ?? 18);
   const foodGstPct = Number(masterData.parkSettings?.foodGstPercentage ?? 5);
-  const convenienceFee = booking.finalReviewData?.convenienceFee !== undefined ? Number(booking.finalReviewData.convenienceFee) : ((ticketTotal > 0 || foodTotal > 0) ? Number(masterData.parkSettings?.convenienceFee ?? 40) : 0);
+  const convenienceFee = booking.finalReviewData?.quote?.convenienceFee !== undefined ? Number(booking.finalReviewData.quote.convenienceFee) : (booking.finalReviewData?.convenienceFee !== undefined ? Number(booking.finalReviewData.convenienceFee) : ((ticketTotal > 0 || foodTotal > 0) ? Number(masterData.parkSettings?.convenienceFee ?? 40) : 0));
 
-  const ticketGST = booking.finalReviewData?.ticketGST !== undefined ? Number(booking.finalReviewData.ticketGST) : parseFloat((ticketTotal * (ticketGstPct / 100)).toFixed(2));
-  const foodGST = booking.finalReviewData?.foodGST !== undefined ? Number(booking.finalReviewData.foodGST) : parseFloat((foodTotal * (foodGstPct / 100)).toFixed(2));
-  const totalPayable = booking.finalReviewData?.finalPayableAmount !== undefined ? Number(booking.finalReviewData.finalPayableAmount) : (booking.finalReviewData?.payableAmount !== undefined ? Number(booking.finalReviewData.payableAmount) : parseFloat((grandTotal + ticketGST + foodGST + convenienceFee).toFixed(2)));
+  const ticketGST = booking.finalReviewData?.quote?.ticketTax !== undefined ? Number(booking.finalReviewData.quote.ticketTax) : (booking.finalReviewData?.ticketGST !== undefined ? Number(booking.finalReviewData.ticketGST) : parseFloat((ticketTotal * (ticketGstPct / 100)).toFixed(2)));
+  const foodGST = booking.finalReviewData?.quote?.addonTax !== undefined ? Number(booking.finalReviewData.quote.addonTax) : (booking.finalReviewData?.foodGST !== undefined ? Number(booking.finalReviewData.foodGST) : parseFloat((foodTotal * (foodGstPct / 100)).toFixed(2)));
+  const totalPayable = booking.finalReviewData?.quote?.grandTotal !== undefined ? Number(booking.finalReviewData.quote.grandTotal) : (booking.finalReviewData?.finalPayableAmount !== undefined ? Number(booking.finalReviewData.finalPayableAmount) : (booking.finalReviewData?.payableAmount !== undefined ? Number(booking.finalReviewData.payableAmount) : parseFloat((grandTotal + ticketGST + foodGST + convenienceFee).toFixed(2))));
 
-  const totalTicketsCount = Object.values(ticketQty).reduce((a, b) => a + Number(b), 0) + Object.values(offerQty).reduce((a, b) => a + Number(b), 0);
-  const totalFoodCount = Object.values(foodQty).reduce((a, b) => a + Number(b), 0);
+  let totalFreeTickets = booking.finalReviewData?.purchaseSummary?.totalFreeTickets !== undefined ? Number(booking.finalReviewData.purchaseSummary.totalFreeTickets) : 0;
+  
+  if (booking.finalReviewData?.purchaseSummary?.totalFreeTickets === undefined && bookingType === "offer" && booking.selectedOffer?.promotionType === "BUY_X_GET_Y") {
+    selectedRegularTickets.forEach((tk) => {
+      const qty = Number(ticketQty[tk.id] || ticketQty[tk.code] || 0);
+      const mapping = booking.selectedOffer.ticketMappings?.find(m => {
+        const mapId = typeof m === 'object' ? m.ticketTypeId || m.id || m.ticketTypeCode : m;
+        return mapId === tk.id || mapId === tk.code;
+      });
+      if (mapping && mapping.minQty > 0) {
+        totalFreeTickets += Math.floor(qty / mapping.minQty) * (mapping.freeQty || 0);
+      }
+    });
+  }
+
+  const baseTicketsCount = booking.finalReviewData?.purchaseSummary?.totalPaidTickets !== undefined 
+    ? Number(booking.finalReviewData.purchaseSummary.totalPaidTickets) 
+    : (Object.values(ticketQty).reduce((a, b) => a + Number(b), 0) + Object.values(offerQty).reduce((a, b) => a + Number(b), 0));
+    
+  const totalTicketsCount = booking.finalReviewData?.purchaseSummary?.totalVisitors !== undefined
+    ? Number(booking.finalReviewData.purchaseSummary.totalVisitors)
+    : (baseTicketsCount + totalFreeTickets);
+    
+  const totalFoodCount = booking.finalReviewData?.purchaseSummary?.addons 
+    ? booking.finalReviewData.purchaseSummary.addons.reduce((a, b) => a + Number(b.quantity), 0)
+    : Object.values(foodQty).reduce((a, b) => a + Number(b), 0);
 
   const summaryContent = (
     <>
@@ -111,11 +141,15 @@ export default function BookingSummary({
         <div className="booking-summary-row__left">
           <Tag className="booking-summary-row__icon booking-summary-row__icon--yellow" />
           <div className="booking-summary-row__label-group">
-            <span className="booking-summary-row__label">Booking Type</span>
+            <span className="booking-summary-row__label">
+              {bookingType === "offer" ? "Offer selected" : "Booking Type"}
+            </span>
           </div>
         </div>
         <div className="booking-summary-row__value">
-          {bookingType === "regular" ? "Regular Booking" : "Offer Booking"}
+          {bookingType === "offer" && booking.selectedOffer 
+            ? booking.selectedOffer.offerName || "Offer Booking"
+            : "Regular Booking"}
         </div>
       </div>
 
@@ -141,11 +175,31 @@ export default function BookingSummary({
       {selectedRegularTickets.map((tk) => {
         const id = tk.id || tk.code;
         const qty = Number(ticketQty[id] || ticketQty[tk.code] || 0);
-        const price = Number(tk.price !== undefined ? tk.price : (tk.discountPrice !== null ? tk.discountPrice : tk.originalPrice) || 0);
+        const price = getEffectiveTicketPrice(tk, bookingType, booking.selectedOffer);
+        
+        let freeTickets = 0;
+        if (bookingType === "offer" && booking.selectedOffer?.promotionType === "BUY_X_GET_Y") {
+          const mapping = booking.selectedOffer.ticketMappings?.find(m => {
+            const mapId = typeof m === 'object' ? m.ticketTypeId || m.id || m.ticketTypeCode : m;
+            return mapId === tk.id || mapId === tk.code;
+          });
+          if (mapping && mapping.minQty > 0) {
+            freeTickets = Math.floor(qty / mapping.minQty) * (mapping.freeQty || 0);
+          }
+        }
+
         return (
-          <div key={id} className="booking-summary-breakdown-row">
-            <span>{tk.name} × {qty}</span>
-            <span>{fmt(price * qty)}</span>
+          <div key={id} className="booking-summary-breakdown-row-container">
+            <div className="booking-summary-breakdown-row">
+              <span>{tk.name} × {qty}</span>
+              <span>{fmt(price * qty)}</span>
+            </div>
+            {freeTickets > 0 && (
+              <div className="booking-summary-breakdown-row text-xs text-green-600 mt-0.5">
+                <span>Free tickets × {freeTickets}</span>
+                <span>FREE</span>
+              </div>
+            )}
           </div>
         );
       })}

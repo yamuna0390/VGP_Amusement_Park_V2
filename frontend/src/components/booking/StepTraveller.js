@@ -4,10 +4,12 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import BookingSummary from "@/components/booking/BookingSummary";
+import { updateCustomerInfo, generateBookingQuote } from "@/services/bookingApi";
 
 export default function StepTraveller({ onNext, onBack }) {
-  const { customer, setCustomer } = useBooking();
+  const { customer, setCustomer, setFinalReviewData } = useBooking();
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (field, value) => {
     setCustomer({ [field]: value });
@@ -16,7 +18,7 @@ export default function StepTraveller({ onNext, onBack }) {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const errs = {};
     if (!customer?.name?.trim()) {
       errs.name = "Lead traveller name is required.";
@@ -33,7 +35,29 @@ export default function StepTraveller({ onNext, onBack }) {
       return;
     }
 
-    onNext();
+    setSubmitting(true);
+    setErrors({});
+    try {
+      const payload = {
+        leadTravellerName: customer.name.trim(),
+        email: customer.email.trim(),
+        mobile: customer.mobile.replace(/\D/g, "").slice(-10),
+        whatsappDelivery: customer.sendTicketByWhatsapp || false,
+      };
+
+      await updateCustomerInfo(payload);
+      
+      const quoteResult = await generateBookingQuote();
+      if (quoteResult && quoteResult.data) {
+        setFinalReviewData(quoteResult.data);
+      }
+
+      onNext();
+    } catch (error) {
+      setErrors({ submit: error.message || "Failed to generate quote. Please try again." });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -54,6 +78,12 @@ export default function StepTraveller({ onNext, onBack }) {
               </div>
             </div>
           </div>
+
+          {errors.submit && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2">
+              <span>{errors.submit}</span>
+            </div>
+          )}
 
           <div className="booking-traveller-panel">
             <div className="booking-traveller-form">
@@ -123,11 +153,11 @@ export default function StepTraveller({ onNext, onBack }) {
             </div>
             
             <div className="booking-traveller-navigation">
-              <button className="booking-traveller-navigation__back" onClick={onBack}>
+              <button className="booking-traveller-navigation__back" onClick={onBack} disabled={submitting}>
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-              <button className="booking-traveller-navigation__next" onClick={handleNext}>
-                Review & Pay <ArrowRight className="w-4 h-4" />
+              <button className="booking-traveller-navigation__next" onClick={handleNext} disabled={submitting}>
+                {submitting ? "Saving..." : "Review & Pay"} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -138,7 +168,7 @@ export default function StepTraveller({ onNext, onBack }) {
         <div className="booking-summary-column">
           <BookingSummary
             onNext={handleNext}
-            canProceed={true}
+            canProceed={!submitting}
           />
         </div>
       </div>

@@ -4,7 +4,9 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import TicketCard from "@/components/booking/TicketCard";
+import { getEffectiveTicketPrice } from "@/utils/bookingSummary";
 import BookingSummary from "@/components/booking/BookingSummary";
+import { updateBookingItems } from "@/services/bookingApi";
 
 export default function StepTickets({ onNext, onBack }) {
   const {
@@ -13,10 +15,12 @@ export default function StepTickets({ onNext, onBack }) {
     setTicketQty,
     visitDate,
     bookingType,
+    selectedOffer,
   } = useBooking();
 
   const regularTickets = masterData.regularTickets || [];
   const [err, setErr] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleTicketChange = (code, qty) => {
     setErr("");
@@ -27,14 +31,38 @@ export default function StepTickets({ onNext, onBack }) {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const hasTickets = Object.values(ticketQty).some((q) => Number(q) > 0);
     if (!hasTickets) {
       setErr("Please select at least 1 ticket to continue.");
       return;
     }
     setErr("");
-    onNext();
+    
+    setSubmitting(true);
+    try {
+      const tickets = Object.entries(ticketQty || {})
+        .filter(([, quantity]) => quantity > 0)
+        .map(([ticketType, quantity]) => {
+          const ticket = (masterData.regularTickets || []).find((t) => (
+            String(t.id) === String(ticketType) || 
+            String(t.code) === String(ticketType) || 
+            String(t.ticketId) === String(ticketType)
+          ));
+          return {
+            ticketTypeId: ticket ? (ticket.id || ticket.dbId || ticket.ticketTypeId) : null,
+            quantity,
+          };
+        })
+        .filter((t) => t.ticketTypeId !== null);
+
+      await updateBookingItems({ tickets, addons: [] });
+      onNext();
+    } catch (error) {
+      setErr(error.message || "Failed to update tickets. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const hasTickets = Object.values(ticketQty).some((q) => Number(q) > 0);
@@ -73,24 +101,55 @@ export default function StepTickets({ onNext, onBack }) {
               {regularTickets.map((ticket) => {
                 const code = ticket.code || ticket.id;
                 const currentQty = ticketQty[code] || 0;
+                
+                let cardBookingType = "regular";
+                let displayTicket = { ...ticket };
+
+                if (bookingType === "offer" && selectedOffer && selectedOffer.ticketMappings) {
+                  const mapping = selectedOffer.ticketMappings.find(m => {
+                    const mapId = typeof m === 'object' ? m.ticketTypeId || m.id || m.ticketTypeCode : m;
+                    return mapId === ticket.id || mapId === ticket.code;
+                  });
+                  if (mapping) {
+                    cardBookingType = "offer";
+                    
+                    if (selectedOffer.promotionType === "BUY_X_GET_Y" && currentQty > 0) {
+                      const minQty = mapping.minQty || 1; // fallback to 1 to prevent division by 0
+                      const freeQty = mapping.freeQty || 0;
+                      const freeTickets = Math.floor(currentQty / minQty) * freeQty;
+                      
+                      if (freeTickets > 0) {
+                        displayTicket.badge = `+${freeTickets} FREE`;
+                      }
+                    }
+                  }
+                }
+                
+                const originalPrice = ticket.price || 0;
+                const effectivePrice = getEffectiveTicketPrice(ticket, bookingType, selectedOffer);
+                if (effectivePrice !== originalPrice) {
+                  displayTicket.originalFare = originalPrice;
+                  displayTicket.offerFare = effectivePrice;
+                }
+
                 return (
                   <TicketCard
                     key={ticket.id || code}
-                    ticket={ticket}
+                    ticket={displayTicket}
                     qty={currentQty}
                     onChange={(qty) => handleTicketChange(code, qty)}
-                    bookingType={bookingType}
+                    bookingType={cardBookingType}
                   />
                 );
               })}
             </div>
             
             <div className="booking-ticket-navigation">
-              <button className="booking-ticket-navigation__back" onClick={onBack}>
+              <button className="booking-ticket-navigation__back" onClick={onBack} disabled={submitting}>
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
-              <button className="booking-ticket-navigation__next" onClick={handleNext}>
-                Add-ons <ArrowRight className="w-4 h-4" />
+              <button className="booking-ticket-navigation__next" onClick={handleNext} disabled={submitting || !hasTickets}>
+                {submitting ? "Saving..." : "Add-ons"} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             
@@ -105,7 +164,7 @@ export default function StepTickets({ onNext, onBack }) {
         <div className="booking-summary-column">
           <BookingSummary
             onNext={handleNext}
-            canProceed={hasTickets}
+            canProceed={hasTickets && !submitting}
           />
         </div>
       </div>

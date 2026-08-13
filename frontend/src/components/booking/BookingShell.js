@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useBooking } from "@/context/BookingContext";
-import { getBookingInit } from "@/services/bookingApi";
+import { createBookingSession } from "@/services/bookingApi";
 import bookingTickets from "@/data/bookingTickets";
 import bookingAddons from "@/data/bookingAddons";
 import "@/components/booking/booking.css";
@@ -23,31 +23,28 @@ export default function BookingShell() {
     setStep,
     setMasterData,
   } = useBooking();
+  
+  const hasInitialized = useRef(false);
 
   const goNext = () => setStep(Math.min(step + 1, 6));
   const goBack = () => setStep(Math.max(step - 1, 1));
 
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     const loadBookingInit = async () => {
       try {
-        // [PHASE 2] Temporarily disabled API call since backend is not ready
-        // const result = await getBookingInit();
-        // 
-        // setMasterData({
-        //   foods: result.data.meals,
-        //   parkSettings: result.data.parkSettings,
-        //   regularTickets: bookingTickets,
-        // });
-        // 
-        // console.log("Booking Init Loaded:", result.data);
-
-        // Use local data for Phase 2 UI testing
+        const result = await createBookingSession();
+        
         setMasterData({
-          foods: bookingAddons,
+          foods: result.data.addons || [],
           parkSettings: {},
-          regularTickets: bookingTickets,
+          regularTickets: result.data.tickets || result.data.ticketTypes || [],
+          offerTickets: result.data.offers || [],
         });
-
+        
+        console.log("Booking Init Loaded:", result.data);
       } catch (error) {
         console.error("Failed to load booking initialization:", error);
       }

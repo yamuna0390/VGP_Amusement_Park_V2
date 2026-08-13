@@ -5,7 +5,7 @@ import { CheckCircle2, Lock, Tag, AlertCircle, Calendar as CalendarIcon, X, Arro
 import { useBooking } from "@/context/BookingContext";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import BookingSummary from "@/components/booking/BookingSummary";
-import { validateVisitDate } from "@/services/bookingApi";
+import { updateBookingSession } from "@/services/bookingApi";
 
 function getDaysArray(startDateIso, daysCount) {
   const arr = [];
@@ -134,39 +134,81 @@ export default function StepDateOffers({ onNext }) {
     }
 
     try {
-      const result = await validateVisitDate(d);
+      const result = await updateBookingSession({
+        visitDate: d,
+        bookingType: "REGULAR"
+      });
+
+      const updatedOffers = result.data?.offers || masterData.offerTickets || [];
+
+      // Stale offer protection
+      if (selectedOffer) {
+        const newOfferStatus = updatedOffers.find(o => o.id === selectedOffer.id);
+        if (!newOfferStatus || newOfferStatus.eligible === false) {
+          setOffer(null);
+          setBookingType("regular");
+        }
+      }
+
       setMasterData({
         allowOffers: result.data?.allowOffers ?? true,
-        regularTickets: result.data?.regularTickets || masterData.regularTickets || [],
-        offerTickets: result.data?.offerTickets || masterData.offerTickets || [],
+        offerTickets: updatedOffers,
       });
     } catch (error) {
       console.error("Date validation error:", error);
+      setErr(error.message || "Failed to update date");
     }
   };
 
   const handleSelectRegularBooking = () => {
+    if (!visitDate) {
+      setErr("Select a visit date");
+      return;
+    }
     setBookingType("regular");
     setOffer(null);
   };
 
-  const handleSelectOffer = (offer) => {
+  const handleSelectOffer = async (offer) => {
+    if (!visitDate) {
+      setErr("Select a visit date");
+      return;
+    }
     if (offer && couponCode) {
       setPendingOffer(offer);
       setShowOfferConfirm(true);
     } else {
-      setBookingType("offer");
-      setOffer(offer);
+      await applyOfferState(offer);
     }
   };
 
-  const confirmApplyOffer = () => {
-    if (pendingOffer) {
-      setBookingType("offer");
-      setOffer(pendingOffer);
-    }
+  const confirmApplyOffer = async () => {
+    const offerToApply = pendingOffer;
     setPendingOffer(null);
     setShowOfferConfirm(false);
+    
+    if (offerToApply) {
+      await applyOfferState(offerToApply);
+    }
+  };
+
+  const applyOfferState = async (offer) => {
+    try {
+      const result = await updateBookingSession({
+        visitDate,
+        bookingType: "OFFER",
+        offerId: offer.id
+      });
+      
+      setBookingType("offer");
+      
+      const backendOffer = result.data?.offers?.find(o => o.id === offer.id) || offer;
+      setOffer(backendOffer);
+      setErr("");
+    } catch (error) {
+      console.error("Offer selection error:", error);
+      setErr(error.message || "Failed to apply offer");
+    }
   };
 
   const handleProceed = () => {
@@ -273,8 +315,12 @@ export default function StepDateOffers({ onNext }) {
 
               <div className="booking-offers-grid">
                 {availableOffers.map((offer) => {
-                  const isSelected = selectedOffer?.id === offer.id || selectedOffer?.offerTicketId === offer.offerTicketId;
-                  const isDisabled = isTodayDate && offer.advanceRequired;
+                  const isSelected = !!selectedOffer && (
+                    selectedOffer.id === offer.id || 
+                    (selectedOffer.offerTicketId && selectedOffer.offerTicketId === offer.offerTicketId)
+                  );
+                  const isAdvanceConstrained = isTodayDate && (offer.minAdvanceDays !== undefined ? offer.minAdvanceDays >= 1 : offer.advanceRequired);
+                  const isDisabled = isAdvanceConstrained || offer.eligible === false;
 
                   let cardClass = "booking-offer-card";
                   if (isSelected) cardClass += " booking-offer-card--selected";
@@ -291,7 +337,7 @@ export default function StepDateOffers({ onNext }) {
                           <div className={`booking-radio-indicator ${isSelected ? "booking-radio-indicator--active" : ""}`}>
                             <div className="booking-radio-indicator__dot" />
                           </div>
-                          <h4 className="booking-offer-card__title">{offer.title || offer.displayName || offer.name}</h4>
+                          <h4 className="booking-offer-card__title"> {offer.offerName || offer.title || offer.displayName || offer.name}</h4>
                         </div>
                         {offer.badge && (
                           <span className={`booking-offer-badge ${offer.badgeColor || "booking-offer-badge--promo"}`}>
@@ -309,7 +355,7 @@ export default function StepDateOffers({ onNext }) {
                           📅 {offer.validity || "Valid through Aug 2026"}
                         </span>
                         {isDisabled && (
-                          <span className="booking-offer-notice">Advance required</span>
+                          <span className="booking-offer-notice">This offer is not available for selected date.</span>
                         )}
                       </div>
                     </div>

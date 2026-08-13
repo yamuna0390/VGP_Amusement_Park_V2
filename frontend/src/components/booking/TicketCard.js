@@ -21,12 +21,12 @@ export default function TicketCard({ ticket, qty, onChange, bookingType }) {
           <p className="booking-ticket-card__desc">{ticket.description}</p>
         )}
         <div className="booking-ticket-card__price">
-          {displayPrice === 0 ? "FREE" : fmt(displayPrice)}
           {showStruckThrough && (
             <span className="booking-ticket-card__price-original">
               {fmt(ticket.originalFare)}
             </span>
           )}
+          {displayPrice === 0 ? "FREE" : fmt(displayPrice)}
         </div>
       </div>
       <div className="booking-ticket-card__controls">

@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
@@ -9,6 +10,7 @@ const offerRoutes = require("./routes/offerRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const mealRoutes = require("./routes/mealRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 // Middleware
 const errorMiddleware = require("./middleware/errorMiddleware");
@@ -54,6 +56,8 @@ app.use(
     })
 );
 
+app.use(cookieParser());
+
 /**
  * ==========================================
  * Root Endpoint
@@ -90,6 +94,7 @@ app.use("/api/offers", offerRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/meals", mealRoutes);
+app.use("/api/booking", bookingRoutes);
 /**
  * ==========================================
  * 404 Handler

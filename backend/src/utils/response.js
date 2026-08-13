@@ -10,12 +10,15 @@ function success(res, message, data = null, status = 200) {
   });
 }
 
-function error(res, message, status = 400, errors = null) {
-  return res.status(status).json({
+function error(res, message, status = 400, code = null, errors = null) {
+  const payload = {
     success: false,
     message,
-    errors,
-  });
+  };
+  if (code) payload.code = code;
+  if (errors) payload.errors = errors;
+  
+  return res.status(status).json(payload);
 }
 
 module.exports = {

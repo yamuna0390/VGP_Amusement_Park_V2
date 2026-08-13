@@ -1,6 +1,7 @@
 "use client";
 import { useBooking } from "@/context/BookingContext";
 import { calcTotals, fmt } from "@/utils/bookingCalc";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function Invoice({ booking }) {
   const {
@@ -21,14 +22,20 @@ export default function Invoice({ booking }) {
     discountPercent,
     savings,
     tax,
-    grand_total,
     grandTotal,
+    bookingResult,
+    qr_token,
   } = booking;
 
   // Resolve booking ID and invoice number keys (camelCase vs snake_case)
   const bNumber = bookingNumber || bookingId;
   const bInvoiceNo = invoiceNo || `INV-${bNumber}`;
-  const displayGrandTotal = grand_total !== undefined ? grand_total : grandTotal;
+  
+  const quote = bookingResult?.quote;
+  const qrToken = bookingResult?.qr_token || null;
+  
+  const displayGrandTotal = quote ? quote.grandTotal : (grand_total !== undefined ? grand_total : grandTotal);
+  const displaySubtotal = quote ? quote.subtotal : subtotal;
   const displayOfferName = selectedOffer?.title || offer_name;
   const displayCouponCode = couponCode || coupon_code;
   const displayDiscount = discount || 0;
@@ -197,53 +204,76 @@ export default function Invoice({ booking }) {
           ) : (
             // Fallback rendering for older non-itemized bookings
             <>
-              {selectedRegularTickets.map((tk) => {
-                const rate = tk.price !== undefined ? tk.price : (tk.discountPrice !== null ? tk.discountPrice : tk.originalPrice) || 0;
-                const qty  = Number(ticketQty[tk.id] || ticketQty[tk.code] || 0);
-                return (
-                  <tr key={tk.id || tk.code} style={{ borderBottom: "1px solid #f3effa" }}>
-                    <td style={{ padding: "10px 0" }}>{tk.name}</td>
-                    <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(rate)}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(rate * qty)}</td>
-                  </tr>
-                );
-              })}
-              {selectedFoods.map((m) => {
-                const qty = Number(foodQty?.[m.id] || foodQty?.[m.code] || 0);
-                const price = Number(m.price || m.unitPrice || 0);
-                return (
-                  <tr key={m.id || m.code} style={{ borderBottom: "1px solid #f3effa" }}>
-                    <td style={{ padding: "10px 0" }}>{m.name}</td>
-                    <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price)}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price * qty)}</td>
-                  </tr>
-                );
-              })}
-              {t.offerDiscount > 0 && (
-                <tr className="bk-inv__deduct" style={{ color: "#2e7d32", fontWeight: "700" }}>
-                  <td colSpan={3} style={{ padding: "10px 0" }}>Offer Discount ({displayOfferName})</td>
-                  <td style={{ padding: "10px 0", textAlign: "right" }}>−{fmt(t.offerDiscount)}</td>
-                </tr>
+              {rawItems.length > 0 && rawItems[0].pricingType !== undefined ? (
+                rawItems.flatMap((item, idx) => {
+                  const rows = [];
+                  if (item.paidQuantity > 0) {
+                    rows.push(
+                      <tr key={`${item.code || idx}-paid`} style={{ borderBottom: "1px solid #f3effa" }}>
+                        <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
+                        <td style={{ padding: "10px 0", textAlign: "center" }}>{item.paidQuantity}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
+                      </tr>
+                    );
+                  }
+                  if (item.freeQuantity > 0) {
+                    rows.push(
+                      <tr key={`${item.code || idx}-free`} style={{ borderBottom: "1px solid #f3effa" }}>
+                        <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
+                        <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
+                        <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
+                      </tr>
+                    );
+                  }
+                  return rows;
+                })
+              ) : (
+                <>
+                  {selectedRegularTickets.map((tk) => {
+                    const rate = tk.price !== undefined ? tk.price : (tk.discountPrice !== null ? tk.discountPrice : tk.originalPrice) || 0;
+                    const qty  = Number(ticketQty[tk.id] || ticketQty[tk.code] || 0);
+                    return (
+                      <tr key={tk.id || tk.code} style={{ borderBottom: "1px solid #f3effa" }}>
+                        <td style={{ padding: "10px 0" }}>{tk.name}</td>
+                        <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(rate)}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(rate * qty)}</td>
+                      </tr>
+                    );
+                  })}
+                  {selectedFoods.map((m) => {
+                    const qty = Number(foodQty?.[m.id] || foodQty?.[m.code] || 0);
+                    const price = Number(m.price || m.unitPrice || 0);
+                    return (
+                      <tr key={m.id || m.code} style={{ borderBottom: "1px solid #f3effa" }}>
+                        <td style={{ padding: "10px 0" }}>{m.name}</td>
+                        <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price)}</td>
+                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(price * qty)}</td>
+                      </tr>
+                    );
+                  })}
+                </>
               )}
-              {t.couponDiscount > 0 && (
+              {(!isItemized && (!quote || displayDiscount > 0)) && (
                 <tr className="bk-inv__deduct" style={{ color: "#2e7d32", fontWeight: "700" }}>
-                  <td colSpan={3} style={{ padding: "10px 0" }}>Coupon Discount ({displayCouponCode})</td>
-                  <td style={{ padding: "10px 0", textAlign: "right" }}>−{fmt(t.couponDiscount)}</td>
+                  <td colSpan={3} style={{ padding: "10px 0" }}>Discount Applied</td>
+                  <td style={{ padding: "10px 0", textAlign: "right" }}>−{fmt(displayDiscount)}</td>
                 </tr>
               )}
               <tr style={{ borderBottom: "1px dashed var(--border)" }}>
                 <td colSpan={3} style={{ padding: "8px 0" }}>GST on tickets (18%)</td>
-                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(t.ticketGST)}</td>
+                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(quote ? quote.ticketTax : t?.ticketGST || 0)}</td>
               </tr>
               <tr style={{ borderBottom: "1px dashed var(--border)" }}>
                 <td colSpan={3} style={{ padding: "8px 0" }}>GST on food (5%)</td>
-                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(t.foodGST)}</td>
+                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(quote ? quote.addonTax : t?.foodGST || 0)}</td>
               </tr>
               <tr style={{ borderBottom: "1px dashed var(--border)" }}>
-                <td colSpan={3} style={{ padding: "8px 0" }}>Convenience fee (min ₹{t.convenienceFee})</td>
-                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(t.convenienceFee)}</td>
+                <td colSpan={3} style={{ padding: "8px 0" }}>Convenience fee {(!quote && t) ? `(min ₹${t.convenienceFee})` : ''}</td>
+                <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(quote ? quote.convenienceFee : t?.convenienceFee || 0)}</td>
               </tr>
             </>
           )}
@@ -252,38 +282,34 @@ export default function Invoice({ booking }) {
 
       <div className="bk-inv__total" style={{ display: "flex", justifyContent: "space-between", fontSize: "1.1rem", fontWeight: "900", borderTop: "2px solid var(--purple-deep)", paddingTop: "12px", marginBottom: "30px", color: "var(--purple-deep)" }}>
         <span>Total Payable</span>
-        <strong>{fmt(displayGrandTotal || subtotal || 0)}</strong>
+        <strong>{fmt(displayGrandTotal || displaySubtotal || 0)}</strong>
       </div>
 
       {/* QR + T&C */}
       <div className="bk-inv__bottom-auto">
         <div className="bk-inv__qr-wrap" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <div className="bk-inv__qr" aria-label={`QR code for booking ${bNumber}`} style={{ border: "2px solid var(--purple-deep)", padding: "10px", borderRadius: "8px", background: "#fff", marginBottom: "8px" }}>
-            <svg viewBox="0 0 100 100" width="120" height="120">
-              <rect x="5" y="5" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="10" y="10" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="13" y="13" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              <rect x="65" y="5" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="70" y="10" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="73" y="13" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              <rect x="5" y="65" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="10" y="70" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="13" y="73" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              {[40,45,50,55,60,65,70,75,80,85,90].map((x) =>
-                [40,45,50,55,60,65,70,75,80,85,90].map((y) =>
-                  (x + y) % 10 < 5
-                    ? <rect key={`${x}${y}`} x={x} y={y} width="4" height="4" fill="#1a0a2e"/>
-                    : null
-                )
-              )}
-              {[40,45,50,55].map((x) =>
-                [5,10,15,20,25,30,35].map((y) =>
-                  (x * y) % 7 < 3
-                    ? <rect key={`r${x}${y}`} x={x} y={y} width="4" height="4" fill="#1a0a2e"/>
-                    : null
-                )
-              )}
-            </svg>
+            {qrToken ? (
+              <QRCodeSVG  value={qrToken} size={120} bgColor={"#ffffff"} fgColor={"#1a0a2e"}  level={"M"}
+                includeMargin={false}
+              />
+            ) : (
+              <div style={{
+                width: "120px",
+                height: "120px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#f9f6fc",
+                color: "#888",
+                fontSize: "0.85rem",
+                fontWeight: "700",
+                textAlign: "center",
+                borderRadius: "6px"
+              }}>
+                QR unavailable
+              </div>
+            )}
           </div>
           <div className="bk-inv__qr-label">
             Scan at entry<br /><strong style={{ color: "var(--purple-deep)" }}>{bNumber}</strong>

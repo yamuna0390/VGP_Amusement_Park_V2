@@ -1,5 +1,6 @@
 "use client";
 import { fmt } from "@/utils/bookingCalc";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function QrTicket({ booking }) {
   const {
@@ -13,6 +14,8 @@ export default function QrTicket({ booking }) {
     coupon_code,
     visitor_count,
     tickets = [],
+    purchaseSummary,
+    qr_token,
   } = booking;
 
   const bNumber = bookingNumber || booking_number;
@@ -24,29 +27,46 @@ export default function QrTicket({ booking }) {
   let paidCount = 0;
   let freeCount = 0;
 
-  if (tickets && tickets.length > 0) {
+  if (purchaseSummary && purchaseSummary.totalPaidTickets !== undefined) {
+    paidCount = purchaseSummary.totalPaidTickets;
+    freeCount = purchaseSummary.totalFreeTickets || 0;
+  } else if (tickets && tickets.length > 0) {
+    let hasCounted = false;
     tickets.forEach(tk => {
-      // Support both snake_case (DB) and camelCase (live booking API)
-      const type = (tk.ticket_type || tk.ticketType || "").toLowerCase();
-      const price = Number(tk.unit_price ?? tk.unitPrice ?? 0);
-      const itemType = (tk.item_type || tk.itemType || "").toLowerCase();
+      if (tk.paidQuantity !== undefined || tk.freeQuantity !== undefined) {
+        paidCount += (tk.paidQuantity || 0);
+        freeCount += (tk.freeQuantity || 0);
+        hasCounted = true;
+      } else {
+        // Legacy fallback
+        const type = (tk.ticket_type || tk.ticketType || "").toLowerCase();
+        const price = Number(tk.unit_price ?? tk.unitPrice ?? 0);
+        const itemType = (tk.item_type || tk.itemType || "").toLowerCase();
 
-      // Only count actual ticket rows — skip GST, Fee, Discount rows
-      if (itemType === "ticket" || type.includes("ticket") || type.includes("pass")) {
-        if (price === 0 || type.includes("free")) {
-          freeCount += tk.quantity;
-        } else {
-          paidCount += tk.quantity;
+        if (itemType === "ticket" || type.includes("ticket") || type.includes("pass")) {
+          hasCounted = true;
+          if (price === 0 || type.includes("free")) {
+            freeCount += tk.quantity;
+          } else {
+            paidCount += tk.quantity;
+          }
         }
       }
     });
+
+    if (!hasCounted) {
+      paidCount = visitor_count || 1;
+      freeCount = 0;
+    }
   } else {
     // Fallback if tickets array is empty
     paidCount = visitor_count || 1;
     freeCount = 0;
   }
 
-  const totalVisitors = paidCount + freeCount;
+  const totalVisitors = (purchaseSummary && purchaseSummary.totalVisitors)
+    ? purchaseSummary.totalVisitors
+    : (paidCount + freeCount);
 
   return (
     <div className="bk-qr-ticket" style={{
@@ -157,31 +177,32 @@ export default function QrTicket({ booking }) {
             background: "#fff",
             boxShadow: "0 4px 10px rgba(0,0,0,0.03)"
           }}>
-            <svg viewBox="0 0 100 100" width="140" height="140">
-              <rect x="5" y="5" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="10" y="10" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="13" y="13" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              <rect x="65" y="5" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="70" y="10" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="73" y="13" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              <rect x="5" y="65" width="30" height="30" rx="2" fill="#1a0a2e"/>
-              <rect x="10" y="70" width="20" height="20" rx="1" fill="#fff"/>
-              <rect x="13" y="73" width="14" height="14" rx="1" fill="#1a0a2e"/>
-              {[40,45,50,55,60,65,70,75,80,85,90].map((x) =>
-                [40,45,50,55,60,65,70,75,80,85,90].map((y) =>
-                  (x + y) % 10 < 5
-                    ? <rect key={`${x}${y}`} x={x} y={y} width="4" height="4" fill="#1a0a2e"/>
-                    : null
-                )
-              )}
-              {[40,45,50,55].map((x) =>
-                [5,10,15,20,25,30,35].map((y) =>
-                  (x * y) % 7 < 3
-                    ? <rect key={`r${x}${y}`} x={x} y={y} width="4" height="4" fill="#1a0a2e"/>
-                    : null
-                )
-              )}
-            </svg>
+            {qr_token ? (
+              <QRCodeSVG 
+                value={qr_token} 
+                size={140} 
+                bgColor={"#ffffff"}
+                fgColor={"#1a0a2e"}
+                level={"M"}
+                includeMargin={false}
+              />
+            ) : (
+              <div style={{
+                width: "140px",
+                height: "140px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#f9f6fc",
+                color: "#888",
+                fontSize: "0.85rem",
+                fontWeight: "700",
+                textAlign: "center",
+                borderRadius: "8px"
+              }}>
+                QR unavailable
+              </div>
+            )}
           </div>
           <span style={{ fontSize: "0.75rem", color: "#666", marginTop: "10px", fontWeight: "700" }}>
             Scan QR code at the turnstile gate

@@ -36,6 +36,8 @@ export default function StepSuccess() {
     coupon_code: booking.couponCode || null,
     visitor_count: bookingResult.visitorCount || 1,
     tickets: booking.tickets || [],
+    purchaseSummary: bookingResult.purchaseSummary || null,
+    qr_token: bookingResult.qr_token || null,
   } : null;
 
   return (
