@@ -132,7 +132,7 @@ export default function Home() {
           </div>
 
           <div className="polaroid-grid">
-            <Link href="/rides" style={{textDecoration:'none'}}>
+            <Link href="/rides/power-surge" style={{textDecoration:'none'}}>
               <div className="polaroid r-l">
                 <img src="/assets/img_d19d00aca574.jpg" alt="Top Gun" loading="lazy"/>
                 <span className="ribbon">Power Cell </span>
@@ -142,7 +142,7 @@ export default function Home() {
 Meet Power Surge 🎢  </div>
               </div>
             </Link>
-            <Link href="/rides" style={{textDecoration:'none'}}>
+            <Link href="/rides/roller-coaster" style={{textDecoration:'none'}}>
               <div className="polaroid r-r">
                 <img src="/assets/img_03a9fee670e4.jpg" alt="Roller Coaster" loading="lazy"/>
                 <span className="ribbon">Roller Coaster</span>
@@ -152,7 +152,7 @@ Meet Power Surge 🎢  </div>
                 </div>
               </div>
             </Link>
-            <Link href="/rides" style={{textDecoration:'none'}}>
+            <Link href="/rides/giant-wheel" style={{textDecoration:'none'}}>
               <div className="polaroid r-l">
                 <img src="/assets/img_3d441bd929f9.jpg" alt="Ferris Wheel" loading="lazy"/>
                 <span className="ribbon">Ferris Wheel</span>
@@ -162,7 +162,7 @@ Meet Power Surge 🎢  </div>
                 </div>
               </div>
             </Link>
-            <Link href="/rides" style={{textDecoration:'none'}}>
+            <Link href="/rides/flying-tiger" style={{textDecoration:'none'}}>
               <div className="polaroid r-r">
                 <img src="/assets/img_d4c0f73d794b.jpg" alt="London Bull" loading="lazy"/>
                 <span className="ribbon">Flying Tiger</span>

@@ -28,6 +28,15 @@ export default function TicketCard({ ticket, qty, onChange, bookingType }) {
           )}
           {displayPrice === 0 ? "FREE" : fmt(displayPrice)}
         </div>
+        {ticket.buyXGetY && (
+          <div className="mt-2.5 px-3 py-2 bg-green-50 border border-green-200 rounded-lg flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-[0.8rem] text-green-800 font-bold">✓ Offer Applied</span>
+            <span className="text-[0.8rem] text-green-600/60 hidden sm:inline">·</span>
+            <span className="text-[0.8rem] text-green-700 font-medium">
+               Buy {ticket.buyXGetY.minQty} → Get {ticket.buyXGetY.freeQty} Free
+            </span>
+          </div>
+        )}
       </div>
       <div className="booking-ticket-card__controls">
         <button 

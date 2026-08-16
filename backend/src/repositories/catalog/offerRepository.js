@@ -137,6 +137,7 @@ async function getAllActiveOffers(connection = db) {
             offer_name,
             offer_code,
             promotion_type,
+            description,
             instruction,
             offer_type,
             discount_value,

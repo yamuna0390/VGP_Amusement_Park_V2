@@ -5,7 +5,34 @@ import { CheckCircle2, Lock, Tag, AlertCircle, Calendar as CalendarIcon, X, Arro
 import { useBooking } from "@/context/BookingContext";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import BookingSummary from "@/components/booking/BookingSummary";
-import { updateBookingSession } from "@/services/bookingApi";
+import { updateBookingSession, getTickets, validateCoupon } from "@/services/bookingApi";
+
+function getShortTicketName(name) {
+  if (!name) return "";
+  const lower = name.toLowerCase();
+  if (lower.includes("adult")) return "Adult";
+  if (lower.includes("child")) return "Child";
+  if (lower.includes("senior")) return "Senior";
+  if (lower.includes("student")) return "Student";
+  return name;
+}
+
+function groupBuyXGetY(offerTickets) {
+  if (!offerTickets || offerTickets.length === 0) return [];
+  const groups = {};
+  offerTickets.forEach(tk => {
+    const minQty = tk.minQty !== undefined ? tk.minQty : tk.min_qty;
+    const freeQty = tk.freeQty !== undefined ? tk.freeQty : tk.free_qty;
+    const key = `${minQty}-${freeQty}`;
+    if (!groups[key]) groups[key] = { min: minQty, free: freeQty, tickets: [] };
+    groups[key].tickets.push(getShortTicketName(tk.ticketCode || tk.ticketName || tk.ticket_name));
+  });
+
+  return Object.values(groups).map(g => ({
+    mainText: `Buy ${g.min} → Get ${g.free} Free`,
+    subText: `Applicable to: ${[...new Set(g.tickets)].join(", ")}`
+  }));
+}
 
 function getDaysArray(startDateIso, daysCount) {
   const arr = [];
@@ -245,44 +272,17 @@ export default function StepDateOffers({ onNext }) {
             </div>
           )}
 
-          {/* ROW 2: DATE SELECTOR */}
-          <div className="booking-date-selector">
-            <div className="booking-date-selector__strip">
-              {stripDays.map((day) => {
-                const isSelected = visitDate === day.iso;
-                const isToday = day.iso === todayIso;
-                
-                let dayClass = "booking-date-selector__day";
-                if (isSelected) dayClass += " booking-date-selector__day--selected";
-                if (isToday && !isSelected) dayClass += " booking-date-selector__day--today";
-                if (day.isPast) dayClass += " booking-date-selector__day--disabled";
-
-                return (
-                  <div
-                    key={day.iso}
-                    onClick={() => !day.isPast && handleDateSelect(day.iso)}
-                    className={dayClass}
-                  >
-                    <span className="booking-date-selector__day-name">{day.dayName}</span>
-                    <span className="booking-date-selector__day-number">{day.dayNumber}</span>
-                  </div>
-                );
-              })}
-              
-              <button 
-                type="button" 
-                className="booking-date-selector__calendar"
-                onClick={() => setShowCalendarModal(true)}
-                aria-label="Choose another date"
-              >
-                <CalendarIcon className="w-5 h-5 mb-1" />
-                <span>More dates</span>
-              </button>
+          <div className="booking-selection-layout">
+            {/* ROW 2: DATE SELECTOR */}
+            <div className="booking-date-selector">
+              <BookingCalendar
+                selectedDate={visitDate}
+                onSelectDate={handleDateSelect}
+              />
             </div>
-          </div>
 
-          {/* ROW 3: BOOKING/OFFERS */}
-          <div className="booking-offers-section">
+            {/* ROW 3: BOOKING/OFFERS */}
+            <div className="booking-offers-section">
             
             {/* Regular Booking */}
             <div 
@@ -339,15 +339,27 @@ export default function StepDateOffers({ onNext }) {
                           </div>
                           <h4 className="booking-offer-card__title"> {offer.offerName || offer.title || offer.displayName || offer.name}</h4>
                         </div>
-                        {offer.badge && (
+                        {offer.promotionType !== "BUY_X_GET_Y" && offer.badge && (
                           <span className={`booking-offer-badge ${offer.badgeColor || "booking-offer-badge--promo"}`}>
                             {offer.badge}
                           </span>
                         )}
                       </div>
                       
+                      {/* BUY_X_GET_Y rules */}
+                      {offer.promotionType === "BUY_X_GET_Y" && (
+                        <div style={{ marginBottom: "8px", marginTop: "4px", paddingLeft: "24px" }}>
+                          {groupBuyXGetY(offer.offerTickets || offer.offer_tickets || []).map((rule, rIdx) => (
+                            <div key={rIdx} style={{ marginBottom: "4px" }}>
+                              <strong style={{ display: "block", fontSize: "0.9rem", color: "#333" }}>{rule.mainText}</strong>
+                              <span style={{ fontSize: "0.75rem", color: "#666" }}>{rule.subText}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <p className="booking-offer-card__desc">
-                        {offer.desc || offer.instruction || offer.shortDescription}
+                        {offer.instruction}
                       </p>
 
                       <div className="booking-offer-card__footer">
@@ -382,10 +394,25 @@ export default function StepDateOffers({ onNext }) {
 
             </div>
           </div>
+          </div>
         </div>
 
         {/* SUMMARY — 30% */}
         <div className="booking-summary-column">
+          {selectedOffer && (
+            <div className="booking-royal-offer-notice">
+              <div className="booking-royal-offer-notice__header">
+                <span>ROYAL OFFER</span>
+                <span>ELIGIBLE</span>
+              </div>
+              <div className="booking-royal-offer-notice__title">
+                {String(selectedOffer.offerName || selectedOffer.title || selectedOffer.displayName || selectedOffer.name).toUpperCase()} SELECTED IN STEP 1
+              </div>
+              <div className="booking-royal-offer-notice__description">
+                {selectedOffer.desc || selectedOffer.instruction || selectedOffer.shortDescription || "The offer applies only to eligible Adult tickets; other selected categories remain at regular price."}
+              </div>
+            </div>
+          )}
           <BookingSummary
             onNext={handleProceed}
             canProceed={Boolean(visitDate)}

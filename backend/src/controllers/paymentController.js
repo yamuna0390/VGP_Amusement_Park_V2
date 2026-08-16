@@ -1,4 +1,5 @@
 const paymentService = require("../services/payment/paymentService");
+const bookingNotificationService = require("../services/booking/bookingNotificationService");
 const { success } = require("../utils/response");
 
 /**
@@ -32,6 +33,15 @@ async function verifyPayment(req, res, next) {
             razorpay_payment_id,
             razorpay_signature
         );
+        
+        if (result.success) {
+            // Trigger background notification workflow securely decoupled from HTTP response
+            bookingNotificationService.sendBookingConfirmation(result.data.bookingId)
+                .catch(error => {
+                    console.error("[BOOKING NOTIFICATION] Background task failed:", error);
+                });
+        }
+        
         return success(res, result.message, result.data, 200);
     } catch (error) {
         next(error);

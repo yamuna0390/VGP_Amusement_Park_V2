@@ -69,8 +69,49 @@ async function updateProfile(req, res) {
   }
 }
 
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    
+    await authService.forgotPassword(email);
+
+    // Generic response regardless of whether the email exists
+    return response.success(
+      res,
+      "If an account exists for this email, a password reset link has been sent."
+    );
+  } catch (error) {
+    return response.error(
+      res,
+      error.message,
+      400
+    );
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+
+    await authService.resetPassword(token, newPassword);
+
+    return response.success(
+      res,
+      "Password has been successfully reset."
+    );
+  } catch (error) {
+    return response.error(
+      res,
+      error.message,
+      400
+    );
+  }
+}
+
 module.exports = {
   register,
   login,
   updateProfile,
+  forgotPassword,
+  resetPassword,
 };

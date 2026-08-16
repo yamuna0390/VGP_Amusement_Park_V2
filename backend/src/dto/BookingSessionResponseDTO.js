@@ -46,7 +46,7 @@ class BookingSessionResponseDTO {
                 offerCode: o.offer_code,
                 offerName: o.offer_name,
                 instruction: o.instruction || "",
-                promotionType: o.offer_type,
+                promotionType: o.promotion_type,
                 discountValue: Number(o.discount_value),
                 validFrom: o.valid_from,
                 validTo: o.valid_to,

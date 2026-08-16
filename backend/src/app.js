@@ -11,6 +11,8 @@ const couponRoutes = require("./routes/couponRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const mealRoutes = require("./routes/mealRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const groupQuoteRoutes = require("./routes/groupQuoteRoutes");
 
 // Middleware
 const errorMiddleware = require("./middleware/errorMiddleware");
@@ -84,6 +86,8 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+const rideRoutes = require("./routes/rideRoutes");
+
 /**
  * ==========================================
  * API Routes
@@ -95,6 +99,9 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/meals", mealRoutes);
 app.use("/api/booking", bookingRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/group-quotes", groupQuoteRoutes);
+app.use("/api/rides", rideRoutes);
 /**
  * ==========================================
  * 404 Handler

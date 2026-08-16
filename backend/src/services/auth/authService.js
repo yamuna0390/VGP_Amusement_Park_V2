@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const authRepository = require("../../repositories/user/authRepository");
+const emailService = require("../notification/emailService");
 
 /**
  * Register a new user
@@ -107,8 +109,60 @@ async function updateProfile(userId, email, phone) {
   };
 }
 
+/**
+ * Initiates a forgot password flow
+ */
+async function forgotPassword(email) {
+  const user = await authRepository.findUserByEmail(email);
+
+  // We return immediately to avoid revealing if the email exists or not.
+  // We also restrict this specific reset flow to admins as requested,
+  // but we do not throw an error if the user is a customer to prevent enumeration.
+  if (!user || user.role !== 'admin') {
+    return true; 
+  }
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+  
+  // Expiry in 30 minutes
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+  const formattedExpiresAt = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
+
+  await authRepository.updateResetToken(email, hashedToken, formattedExpiresAt);
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const resetUrl = `${frontendUrl}/admin/reset-password?token=${rawToken}`;
+
+  await emailService.sendPasswordResetEmail(email, resetUrl);
+
+  return true;
+}
+
+/**
+ * Resets a password using a valid token
+ */
+async function resetPassword(token, newPassword) {
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  
+  const user = await authRepository.findUserByResetToken(hashedToken);
+  
+  if (!user) {
+    throw new Error("Invalid or expired password reset token");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+  // This will also nullify the reset token to ensure it's single-use
+  await authRepository.updatePassword(user.id, hashedPassword);
+
+  return true;
+}
+
 module.exports = {
   register,
   login,
   updateProfile,
+  forgotPassword,
+  resetPassword,
 };

@@ -136,7 +136,97 @@ async function sendWhatsAppDocument(toContact, documentLink, documentFilename) {
     }
 }
 
+async function sendWhatsAppBookingTemplate(toContact, customerName, bookingNumber, visitDate, pdfUrl) {
+    const apiKey = process.env.QIKCHAT_API_KEY;
+    
+    if (!apiKey) {
+        return {
+            success: false,
+            error: "QIKCHAT_API_KEY is not configured in the environment."
+        };
+    }
+
+    if (!toContact || !customerName || !bookingNumber || !visitDate || !pdfUrl) {
+        return {
+            success: false,
+            error: "toContact, customerName, bookingNumber, visitDate, and pdfUrl are required."
+        };
+    }
+
+    try {
+        const payload = {
+            to_contact: toContact,
+            type: "template",
+            template: {
+                name: "vgp_ticket_pdf",
+                language: "en",
+                components: [
+                    {
+                        type: "header",
+                        parameters: [
+                            {
+                                type: "document",
+                                document: {
+                                    link: pdfUrl,
+                                    filename: "VGP_Ticket.pdf"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        type: "body",
+                        parameters: [
+                            { type: "text", text: String(customerName) },
+                            { type: "text", text: String(bookingNumber) },
+                            { type: "text", text: String(visitDate) }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const response = await fetch("https://api.qikchat.in/v1/messages", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "QIKCHAT-API-KEY": apiKey
+            },
+            body: JSON.stringify(payload)
+        });
+
+        let data = {};
+        const textResponse = await response.text();
+        try {
+            data = JSON.parse(textResponse);
+        } catch (e) {
+            data = { error: "Non-JSON response", raw: textResponse };
+        }
+
+        if (!response.ok) {
+            return {
+                success: false,
+                status: response.status,
+                error: data.message || data.error || data.raw || "Failed to send WhatsApp template"
+            };
+        }
+
+        return {
+            success: true,
+            messageId: data.message_id || data.id || null,
+            status: response.status,
+            providerResponse: data
+        };
+
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message || "A network or unexpected error occurred"
+        };
+    }
+}
+
 module.exports = {
     sendWhatsAppText,
-    sendWhatsAppDocument
+    sendWhatsAppDocument,
+    sendWhatsAppBookingTemplate
 };

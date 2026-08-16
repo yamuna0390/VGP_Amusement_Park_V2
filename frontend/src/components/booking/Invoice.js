@@ -205,30 +205,40 @@ export default function Invoice({ booking }) {
             // Fallback rendering for older non-itemized bookings
             <>
               {rawItems.length > 0 && rawItems[0].pricingType !== undefined ? (
-                rawItems.flatMap((item, idx) => {
-                  const rows = [];
-                  if (item.paidQuantity > 0) {
-                    rows.push(
-                      <tr key={`${item.code || idx}-paid`} style={{ borderBottom: "1px solid #f3effa" }}>
-                        <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
-                        <td style={{ padding: "10px 0", textAlign: "center" }}>{item.paidQuantity}</td>
-                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
-                        <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
-                      </tr>
-                    );
-                  }
-                  if (item.freeQuantity > 0) {
-                    rows.push(
-                      <tr key={`${item.code || idx}-free`} style={{ borderBottom: "1px solid #f3effa" }}>
-                        <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
-                        <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
-                        <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
-                        <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
-                      </tr>
-                    );
-                  }
-                  return rows;
-                })
+                <>
+                  {rawItems.flatMap((item, idx) => {
+                    const rows = [];
+                    if (item.paidQuantity > 0) {
+                      rows.push(
+                        <tr key={`${item.code || idx}-paid`} style={{ borderBottom: "1px solid #f3effa" }}>
+                          <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
+                          <td style={{ padding: "10px 0", textAlign: "center" }}>{item.paidQuantity}</td>
+                          <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
+                          <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
+                        </tr>
+                      );
+                    }
+                    if (item.freeQuantity > 0) {
+                      rows.push(
+                        <tr key={`${item.code || idx}-free`} style={{ borderBottom: "1px solid #f3effa" }}>
+                          <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
+                          <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
+                          <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
+                          <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
+                        </tr>
+                      );
+                    }
+                    return rows;
+                  })}
+                  {bookingResult?.purchaseSummary?.addons?.map((item, idx) => (
+                    <tr key={`addon-${item.code || idx}`} style={{ borderBottom: "1px solid #f3effa" }}>
+                      <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
+                      <td style={{ padding: "10px 0", textAlign: "center" }}>{item.quantity}</td>
+                      <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
+                      <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
+                    </tr>
+                  ))}
+                </>
               ) : (
                 <>
                   {selectedRegularTickets.map((tk) => {

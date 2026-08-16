@@ -1,0 +1,363 @@
+CREATE TABLE `addons` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `addon_type` enum('MEAL_COUPON','LOCKER','OTHER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OTHER',
+  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Active',
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_addon_code` (`code`),
+  KEY `idx_addon_status` (`status`),
+  KEY `idx_addon_type` (`addon_type`),
+  KEY `idx_addon_display_order` (`display_order`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_events` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `session_id` bigint DEFAULT NULL,
+  `booking_id` bigint DEFAULT NULL,
+  `event_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `actor_type` enum('CUSTOMER','ADMIN','SYSTEM') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'CUSTOMER',
+  `metadata` json DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_booking_events_session` (`session_id`),
+  KEY `idx_booking_events_booking` (`booking_id`),
+  KEY `idx_booking_events_type` (`event_type`),
+  KEY `idx_booking_events_created` (`created_at`),
+  CONSTRAINT `fk_booking_events_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_booking_events_session` FOREIGN KEY (`session_id`) REFERENCES `booking_sessions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_items` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `booking_id` bigint NOT NULL,
+  `item_type` enum('TICKET','MEAL','TAX','FEE','DISCOUNT') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_id` bigint DEFAULT NULL,
+  `item_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `item_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `unit_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `final_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_booking` (`booking_id`),
+  KEY `idx_item_type` (`item_type`),
+  KEY `idx_reference` (`reference_id`),
+  CONSTRAINT `fk_booking_items_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_payments` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `booking_id` bigint NOT NULL,
+  `payment_gateway` enum('RAZORPAY','PHONEPE','PAYTM','CASH','MANUAL') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payment_method` enum('UPI','CARD','NET_BANKING','WALLET','CASH') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `transaction_id` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gateway_order_id` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gateway_payment_id` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'INR',
+  `payment_status` enum('PENDING','SUCCESS','FAILED','REFUNDED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `gateway_response` json DEFAULT NULL,
+  `paid_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_booking_payment` (`booking_id`),
+  KEY `idx_transaction_id` (`transaction_id`),
+  KEY `idx_payment_status` (`payment_status`),
+  CONSTRAINT `fk_booking_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_sequences` (
+  `visit_date` date NOT NULL,
+  `last_sequence` int NOT NULL DEFAULT '0',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`visit_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_session_customer` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `session_id` bigint NOT NULL,
+  `lead_traveller_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mobile` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `whatsapp_delivery` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_session_customer_session` (`session_id`),
+  CONSTRAINT `fk_session_customer_session` FOREIGN KEY (`session_id`) REFERENCES `booking_sessions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=157 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_session_items` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `session_id` bigint NOT NULL,
+  `item_type` enum('TICKET','ADDON') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ticket_type_id` bigint DEFAULT NULL,
+  `addon_id` bigint DEFAULT NULL,
+  `item_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `paid_quantity` int NOT NULL DEFAULT '0',
+  `free_quantity` int NOT NULL DEFAULT '0',
+  `unit_price_snapshot` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_session_items_session` (`session_id`),
+  KEY `idx_session_items_ticket` (`ticket_type_id`),
+  KEY `idx_session_items_addon` (`addon_id`),
+  CONSTRAINT `fk_session_items_addon` FOREIGN KEY (`addon_id`) REFERENCES `addons` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_session_items_session` FOREIGN KEY (`session_id`) REFERENCES `booking_sessions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_session_items_ticket` FOREIGN KEY (`ticket_type_id`) REFERENCES `ticket_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `chk_session_item_quantity` CHECK ((`quantity` > 0))
+) ENGINE=InnoDB AUTO_INCREMENT=422 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_session_quotes` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `session_id` bigint NOT NULL,
+  `quote_version` int NOT NULL DEFAULT '1',
+  `ticket_subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `addon_subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `offer_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `coupon_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `total_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `ticket_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `addon_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `total_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `convenience_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `grand_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'INR',
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_quote_version` (`session_id`,`quote_version`),
+  KEY `idx_quotes_session` (`session_id`),
+  KEY `idx_quotes_expiry` (`expires_at`),
+  CONSTRAINT `fk_quote_session` FOREIGN KEY (`session_id`) REFERENCES `booking_sessions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `booking_sessions` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `session_token_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint DEFAULT NULL,
+  `visit_date` date DEFAULT NULL,
+  `booking_type` enum('REGULAR','OFFER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'REGULAR',
+  `offer_id` bigint DEFAULT NULL,
+  `current_step` tinyint NOT NULL DEFAULT '1',
+  `status` enum('ACTIVE','EXPIRED','COMPLETED','ABANDONED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ACTIVE',
+  `expires_at` datetime NOT NULL,
+  `last_activity_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_booking_session_token` (`session_token_hash`),
+  KEY `idx_booking_session_user` (`user_id`),
+  KEY `idx_booking_session_status` (`status`),
+  KEY `idx_booking_session_expires` (`expires_at`),
+  KEY `idx_booking_session_visit_date` (`visit_date`),
+  KEY `idx_booking_session_offer` (`offer_id`),
+  CONSTRAINT `fk_booking_session_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_booking_session_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `chk_booking_session_step` CHECK ((`current_step` between 1 and 5))
+) ENGINE=InnoDB AUTO_INCREMENT=275 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `bookings` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `booking_number` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint DEFAULT NULL,
+  `guest_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `guest_email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `guest_mobile` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `visit_date` date NOT NULL,
+  `ticket_subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `meal_subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `subtotal` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `offer_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `coupon_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `total_discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `ticket_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `food_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `total_tax` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `convenience_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `grand_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `paid_visitors` int NOT NULL DEFAULT '0',
+  `free_visitors` int NOT NULL DEFAULT '0',
+  `total_visitors` int NOT NULL DEFAULT '0',
+  `offer_id` bigint DEFAULT NULL,
+  `offer_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `offer_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `coupon_id` bigint DEFAULT NULL,
+  `coupon_code` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `booking_status` enum('PAYMENT_PENDING','CONFIRMED','CANCELLED','REFUNDED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PAYMENT_PENDING',
+  `payment_status` enum('PENDING','SUCCESS','FAILED','REFUNDED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `remarks` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `invoice_number` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `qr_token` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `redeemed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `booking_number` (`booking_number`),
+  UNIQUE KEY `invoice_number` (`invoice_number`),
+  UNIQUE KEY `qr_token` (`qr_token`),
+  KEY `idx_booking_number` (`booking_number`),
+  KEY `idx_visit_date` (`visit_date`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_booking_status` (`booking_status`),
+  KEY `idx_payment_status` (`payment_status`),
+  CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `coupons` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `coupon_code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `coupon_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `discount_type` enum('Percentage','Flat') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `discount_value` decimal(10,2) NOT NULL,
+  `minimum_amount` decimal(10,2) DEFAULT '0.00',
+  `usage_limit` int DEFAULT NULL,
+  `used_count` int DEFAULT '0',
+  `valid_from` date NOT NULL,
+  `valid_to` date NOT NULL,
+  `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `coupon_code` (`coupon_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `invoice_sequences` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `invoice_date` date NOT NULL,
+  `last_sequence` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_invoice_date` (`invoice_date`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `meal_types` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `image_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Active',
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `offer_schedule_rules` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `offer_id` bigint NOT NULL,
+  `day_of_week` tinyint DEFAULT NULL,
+  `valid_from` date DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_offer_schedule_offer` (`offer_id`),
+  KEY `idx_offer_schedule_dates` (`valid_from`,`valid_until`),
+  KEY `idx_offer_schedule_weekday` (`day_of_week`),
+  CONSTRAINT `fk_offer_schedule_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_offer_schedule_weekday` CHECK (((`day_of_week` is null) or (`day_of_week` between 1 and 7)))
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `offer_tickets` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `offer_id` bigint NOT NULL,
+  `ticket_id` bigint NOT NULL,
+  `display_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `min_qty` int NOT NULL DEFAULT '1',
+  `free_qty` int NOT NULL DEFAULT '0',
+  `max_qty` int DEFAULT NULL,
+  `display_order` int NOT NULL DEFAULT '1',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_offer` (`offer_id`),
+  KEY `idx_ticket` (`ticket_id`),
+  KEY `idx_active` (`is_active`),
+  KEY `idx_display` (`display_order`),
+  CONSTRAINT `fk_offer_ticket_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_offer_ticket_type` FOREIGN KEY (`ticket_id`) REFERENCES `ticket_types` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `offers` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `offer_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `instruction` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `offer_code` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `promotion_type` enum('PERCENTAGE','FLAT','BUY_X_GET_Y') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `discount_type` enum('PERCENTAGE','FLAT','FIXED_PRICE') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `discount_value` decimal(10,2) NOT NULL,
+  `minimum_amount` decimal(10,2) DEFAULT '0.00',
+  `valid_from` date NOT NULL,
+  `valid_to` date NOT NULL,
+  `min_advance_days` int NOT NULL DEFAULT '1',
+  `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `offer_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `applicable_tickets` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `min_qty` int DEFAULT '1',
+  `free_qty` int DEFAULT '1',
+  `priority` int DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `offer_code` (`offer_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `park_settings` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `setting_key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `setting_value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `setting_key` (`setting_key`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `ticket_types` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Active',
+  `display_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+CREATE TABLE `users` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` enum('admin','customer') COLLATE utf8mb4_unicode_ci DEFAULT 'customer',
+  `status` enum('active','inactive') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+

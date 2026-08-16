@@ -36,6 +36,7 @@ const initialState = {
     name: "",
     email: "",
     mobile: "",
+    sendTicketByWhatsapp: true,
   },
 
   agreedToTerms: false,

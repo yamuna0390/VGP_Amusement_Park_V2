@@ -116,10 +116,14 @@ async function createPaymentOrder(rawToken) {
             offer_id: session.offer_id,
             booking_status: 'PAYMENT_PENDING',
             payment_status: 'PENDING',
-            remarks: JSON.stringify({ sessionId: session.id })
+            remarks: JSON.stringify({ sessionId: session.id }),
+            whatsapp_delivery: customer.whatsappDelivery === true ? 1 : 0
         };
 
         bookingId = await bookingRepository.createBooking(bookingData);
+        if (items && items.length > 0) {
+            await bookingRepository.createBookingItems(bookingId, items);
+        }
     }
 
     // 5. Create Razorpay Order

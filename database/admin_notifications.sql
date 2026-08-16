@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS admin_notifications (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    reference_id BIGINT,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;

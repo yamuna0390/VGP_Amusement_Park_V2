@@ -21,7 +21,6 @@ export const metadata = {
 // import Footer from "@/components/layout/Footer";
 // import Mascot from "@/components/layout/Mascot";
 import { ToastProvider } from "@/context/ToastContext";
-import { AuthProvider } from "@/context/AuthContext";
 import { BookingProvider } from "@/context/BookingContext";
 
 export default function RootLayout({ children }) {
@@ -29,11 +28,9 @@ export default function RootLayout({ children }) {
  <html lang="en" className={`${robotoCondensed.variable} ${nunito.variable}`}>
   <body>
     <ToastProvider>
-      <AuthProvider>
         <BookingProvider>
           {children}
         </BookingProvider>
-      </AuthProvider>
     </ToastProvider>
   </body>
 </html>

@@ -50,7 +50,7 @@ async function generateBookingNumber(visitDate, connection = db) {
 async function createBooking(bookingData, connection = db) {
     const query = `
         INSERT INTO bookings (
-            booking_number, user_id, guest_name, guest_email, guest_mobile, 
+            booking_number, user_id, guest_name, guest_email, guest_mobile, whatsapp_delivery,
             visit_date, ticket_subtotal, meal_subtotal, subtotal, 
             offer_discount, coupon_discount, total_discount, 
             ticket_tax, food_tax, total_tax, convenience_fee, grand_total, 
@@ -58,7 +58,7 @@ async function createBooking(bookingData, connection = db) {
             offer_id, offer_code, offer_name, coupon_id, coupon_code, 
             booking_status, payment_status, remarks
         ) VALUES (
-            ?, ?, ?, ?, ?, 
+            ?, ?, ?, ?, ?, ?, 
             ?, ?, ?, ?, 
             ?, ?, ?, 
             ?, ?, ?, ?, ?, 
@@ -74,6 +74,7 @@ async function createBooking(bookingData, connection = db) {
         bookingData.guest_name,
         bookingData.guest_email,
         bookingData.guest_mobile,
+        bookingData.whatsapp_delivery === 1 ? 1 : 0,
         bookingData.visit_date,
         bookingData.ticket_subtotal || 0,
         bookingData.meal_subtotal || 0,
@@ -101,6 +102,40 @@ async function createBooking(bookingData, connection = db) {
 
     const [result] = await connection.execute(query, values);
     return result.insertId;
+}
+
+/**
+ * Creates booking items in the database.
+ * 
+ * @param {number} bookingId
+ * @param {Array} items
+ * @param {object} connection - Optional transaction connection
+ */
+async function createBookingItems(bookingId, items, connection = db) {
+    if (!items || items.length === 0) return;
+
+    const query = `
+        INSERT INTO booking_items (
+            booking_id, item_type, reference_id, item_code, item_name,
+            quantity, unit_price, subtotal, discount_amount, tax_amount, final_amount
+        ) VALUES ?
+    `;
+
+    const values = items.map(item => [
+        bookingId,
+        item.item_type === 'ADDON' ? 'MEAL' : item.item_type,
+        item.reference_id || null,
+        item.item_code || null,
+        item.item_name,
+        item.quantity || (item.item_type === 'TICKET' ? (item.paid_quantity + (item.free_quantity || 0)) : 1),
+        item.unit_price || item.unit_price_snapshot || 0,
+        item.subtotal || item.total_price || (item.quantity * (item.unit_price_snapshot || 0)) || 0, // Fallbacks
+        item.discount_amount || 0,
+        item.tax_amount || 0,
+        item.final_amount || item.total_price || (item.quantity * (item.unit_price_snapshot || 0)) || 0
+    ]);
+
+    await connection.query(query, [values]);
 }
 
 /**
@@ -236,6 +271,86 @@ async function markBookingRedeemed(bookingId, connection) {
     return result.affectedRows > 0;
 }
 
+/**
+ * Retrieves paginated and filtered bookings for the admin list.
+ */
+async function getAllBookings(filters, connection = db) {
+    let query = `
+        SELECT 
+            id, booking_number, invoice_number, guest_name, guest_mobile, guest_email,
+            visit_date, grand_total, payment_status, booking_status, created_at,
+            IF(qr_token IS NOT NULL AND qr_token != '', 1, 0) as has_qr
+        FROM bookings
+        WHERE 1=1
+    `;
+    const values = [];
+
+    // Filters
+    if (filters.search) {
+        query += ` AND (booking_number LIKE ? OR invoice_number LIKE ? OR guest_name LIKE ? OR guest_mobile LIKE ? OR guest_email LIKE ?)`;
+        const searchStr = `%${filters.search}%`;
+        values.push(searchStr, searchStr, searchStr, searchStr, searchStr);
+    }
+    if (filters.visit_date) {
+        query += ` AND visit_date = ?`;
+        values.push(filters.visit_date);
+    }
+    if (filters.payment_status) {
+        query += ` AND payment_status = ?`;
+        values.push(filters.payment_status);
+    }
+    if (filters.booking_status) {
+        query += ` AND booking_status = ?`;
+        values.push(filters.booking_status);
+    }
+    if (filters.created_date) {
+        query += ` AND DATE(created_at) = ?`;
+        values.push(filters.created_date);
+    }
+
+    // Count Total (for pagination)
+    const countQuery = `SELECT COUNT(*) as total FROM (${query}) as t`;
+    const [countRows] = await connection.execute(countQuery, values);
+    const total = countRows[0].total;
+
+    // Order & Pagination
+    query += ` ORDER BY created_at DESC`;
+    
+    if (filters.limit && filters.offset !== undefined) {
+        query += ` LIMIT ${Number(filters.limit)} OFFSET ${Number(filters.offset)}`;
+    }
+
+    const [rows] = await connection.execute(query, values);
+    return { data: rows, total };
+}
+
+/**
+ * Retrieves full booking details by ID for admin view.
+ */
+async function getAdminBookingDetailsById(bookingId, connection = db) {
+    const [bookings] = await connection.execute('SELECT * FROM bookings WHERE id = ?', [bookingId]);
+    if (bookings.length === 0) return null;
+    
+    const booking = bookings[0];
+
+    const [items] = await connection.execute('SELECT * FROM booking_items WHERE booking_id = ?', [bookingId]);
+    const [payments] = await connection.execute('SELECT * FROM booking_payments WHERE booking_id = ?', [bookingId]);
+
+    // Mask QR Token
+    if (booking.qr_token) {
+        booking.qr_token = '***MASKED***';
+        booking.has_qr = true;
+    } else {
+        booking.has_qr = false;
+    }
+
+    return {
+        ...booking,
+        items,
+        payments
+    };
+}
+
 module.exports = {
     generateBookingNumber,
     generateInvoiceNumber,
@@ -247,5 +362,8 @@ module.exports = {
     updateBookingQrToken,
     getBookingByQrToken,
     getBookingByQrTokenLock,
-    markBookingRedeemed
+    markBookingRedeemed,
+    getAllBookings,
+    getAdminBookingDetailsById,
+    createBookingItems
 };

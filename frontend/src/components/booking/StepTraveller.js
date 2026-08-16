@@ -1,15 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
+import { useAuth } from "@/context/AuthContext";
 import BookingSummary from "@/components/booking/BookingSummary";
 import { updateCustomerInfo, generateBookingQuote } from "@/services/bookingApi";
 
 export default function StepTraveller({ onNext, onBack }) {
   const { customer, setCustomer, setFinalReviewData } = useBooking();
+  const { user } = useAuth();
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const isNameEmpty = !customer?.name || customer.name.trim() === "";
+      const isEmailEmpty = !customer?.email || customer.email.trim() === "";
+      const isMobileEmpty = !customer?.mobile || customer.mobile.trim() === "";
+
+      if (isNameEmpty && isEmailEmpty && isMobileEmpty) {
+        setCustomer({
+          ...customer,
+          name: user.fullName || "",
+          email: user.email || "",
+          mobile: user.phone || ""
+        });
+      }
+    }
+  }, [user, customer?.name, customer?.email, customer?.mobile, setCustomer]);
 
   const handleChange = (field, value) => {
     setCustomer({ [field]: value });
@@ -42,7 +61,7 @@ export default function StepTraveller({ onNext, onBack }) {
         leadTravellerName: customer.name.trim(),
         email: customer.email.trim(),
         mobile: customer.mobile.replace(/\D/g, "").slice(-10),
-        whatsappDelivery: customer.sendTicketByWhatsapp || false,
+        whatsappDelivery: customer.sendTicketByWhatsapp === true,
       };
 
       await updateCustomerInfo(payload);

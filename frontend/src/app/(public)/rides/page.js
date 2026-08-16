@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { rides } from "@/data/rides";
+import { fetchRides } from "@/services/rideApi";
 import { IC } from "@/data/rideIcons";
 import Pill from "@/components/ui/Pill";
 import RideVideoPreview from "@/components/ui/RideVideoPreview";
@@ -19,6 +19,17 @@ const BG_HEX = {
 
 export default function Rides() {
   const [filter, setFilter] = useState("all");
+  const [rides, setRides] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRides() {
+      const apiRides = await fetchRides();
+      setRides(apiRides);
+      setIsLoading(false);
+    }
+    loadRides();
+  }, []);
 
   const filters = [
     { id: "all",    label: "All" },
@@ -33,8 +44,16 @@ export default function Rides() {
   const filteredRides = filter === "all" 
     ? rides 
     : filter === "90-130"
-      ? rides.filter(r => r.h === "90-130")
+      ? rides.filter(r => r.h === "90-130" || r.rideInfo?.minHeight?.includes("90"))
       : rides.filter(r => r.c === filter);
+
+  if (isLoading) {
+    return (
+      <div className="page show" id="page-rides" style={{ minHeight: "60vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <p>Loading rides...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="page show" id="page-rides">

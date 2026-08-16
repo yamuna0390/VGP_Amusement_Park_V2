@@ -12,7 +12,7 @@ const bookingRepository = require('../../repositories/booking/bookingRepository'
  * @returns {string} The path to the generated PDF
  */
 async function generateBookingPdf(bookingId, outputPath) {
-    const booking = await bookingRepository.getBookingById(bookingId);
+    const booking = await bookingRepository.getAdminBookingDetailsById(bookingId);
     if (!booking) {
         throw new Error('Booking not found');
     }
@@ -28,6 +28,51 @@ async function generateBookingPdf(bookingId, outputPath) {
     const fmt = (val) => '₹' + Number(val).toFixed(2);
     
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(booking.qr_token || '')}`;
+
+    const hasItems = booking.items && booking.items.length > 0;
+    const ticketsHTML = hasItems && booking.items.some(i => i.item_type === 'TICKET')
+        ? booking.items.filter(i => i.item_type === 'TICKET').map(item => `
+            <tr>
+                <td>${item.item_name}</td>
+                <td style="text-align: center">${item.quantity}</td>
+                <td style="text-align: right">${fmt(item.unit_price)}</td>
+                <td style="text-align: right">${fmt(item.subtotal)}</td>
+            </tr>
+        `).join('')
+        : `
+            <tr>
+                <td>Paid Visitors</td>
+                <td style="text-align: center">${booking.paid_visitors || 0}</td>
+                <td style="text-align: right">-</td>
+                <td style="text-align: right">${fmt(booking.ticket_subtotal || 0)}</td>
+            </tr>
+            ${booking.free_visitors > 0 ? `
+            <tr>
+                <td>Free Visitors</td>
+                <td style="text-align: center">${booking.free_visitors}</td>
+                <td style="text-align: right">-</td>
+                <td style="text-align: right">₹0.00</td>
+            </tr>
+            ` : ''}
+        `;
+
+    const addonsHTML = hasItems && booking.items.some(i => i.item_type === 'MEAL' || i.item_type === 'ADDON')
+        ? booking.items.filter(i => i.item_type === 'MEAL' || i.item_type === 'ADDON').map(item => `
+            <tr>
+                <td>${item.item_name}</td>
+                <td style="text-align: center">${item.quantity}</td>
+                <td style="text-align: right">${fmt(item.unit_price)}</td>
+                <td style="text-align: right">${fmt(item.subtotal)}</td>
+            </tr>
+        `).join('')
+        : (booking.meal_subtotal > 0 ? `
+            <tr>
+                <td>Food / Addons</td>
+                <td style="text-align: center">-</td>
+                <td style="text-align: right">-</td>
+                <td style="text-align: right">${fmt(booking.meal_subtotal || 0)}</td>
+            </tr>
+        ` : '');
 
     const html = `
     <!DOCTYPE html>
@@ -181,35 +226,23 @@ async function generateBookingPdf(bookingId, outputPath) {
                     <tr>
                         <th>DESCRIPTION</th>
                         <th style="text-align: center">QTY</th>
+                        <th style="text-align: right">RATE</th>
                         <th style="text-align: right">AMOUNT</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Paid Visitors</td>
-                        <td style="text-align: center">${booking.paid_visitors || 0}</td>
-                        <td style="text-align: right">${fmt(booking.ticket_subtotal || 0)}</td>
-                    </tr>
-                    ${booking.free_visitors > 0 ? `
-                    <tr>
-                        <td>Free Visitors</td>
-                        <td style="text-align: center">${booking.free_visitors}</td>
-                        <td style="text-align: right">₹0.00</td>
-                    </tr>
-                    ` : ''}
-                    <tr>
-                        <td>Food / Addons</td>
-                        <td style="text-align: center">-</td>
-                        <td style="text-align: right">${fmt(booking.meal_subtotal || 0)}</td>
-                    </tr>
+                    ${ticketsHTML}
+                    ${addonsHTML}
                     <tr>
                         <td>Discounts</td>
                         <td style="text-align: center">-</td>
+                        <td style="text-align: right">-</td>
                         <td style="text-align: right; color: #2e7d32;">-${fmt(booking.total_discount || 0)}</td>
                     </tr>
                     <tr>
                         <td>Taxes & Fees</td>
                         <td style="text-align: center">-</td>
+                        <td style="text-align: right">-</td>
                         <td style="text-align: right">${fmt(Number(booking.total_tax || 0) + Number(booking.convenience_fee || 0))}</td>
                     </tr>
                 </tbody>

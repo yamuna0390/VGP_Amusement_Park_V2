@@ -2176,3 +2176,7 @@ html, body {
   object-fit: cover;
   max-height: 400px;
 }
+
+.round-padding{
+  padding: 6px;
+}

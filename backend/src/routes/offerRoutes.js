@@ -3,6 +3,9 @@ const router = express.Router();
 const offerController = require("../controllers/offerController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Public Offers
+router.get("/public/all", offerController.getPublicOffers);
+
 // Offers CRUD
 router.get("/", offerController.getOffers);
 router.post("/", authMiddleware, offerController.createOffer);

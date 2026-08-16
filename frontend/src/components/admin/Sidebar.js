@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Settings,
+  BookOpenCheck
 } from "lucide-react";
 
 import "./Sidebar.css";
@@ -29,13 +30,18 @@ export default function Sidebar() {
       icon: LayoutDashboard,
     },
     {
+      name: "Bookings",
+      href: "/admin/bookings",
+      icon: BookOpenCheck,
+    },
+    {
       name: "Users",
       href: "/admin/users",
       icon: Users,
     },
     {
-      name: "Attractions",
-      href: "/admin/attractions",
+      name: "Rides",
+      href: "/admin/rides",
       icon: FerrisWheel,
     },
     {
@@ -44,7 +50,7 @@ export default function Sidebar() {
       icon: Ticket,
     },
     {
-      name: "Food Items",
+      name: "Add-ons",
       href: "/admin/food-items",
       icon: UtensilsCrossed,
     },

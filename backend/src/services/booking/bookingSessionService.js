@@ -91,7 +91,9 @@ function evaluateOffers(offers, visitDate, mappings, schedules) {
     const advanceDays = diffTime >= 0 ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : -1;
 
     // In JS getDay(): 0=Sun, 1=Mon, ..., 6=Sat.
-    const visitDayOfWeek = new Date(vDateUTC).getDay(); 
+    // Database check constraint requires 1-7. Map 0 (Sunday) to 7.
+    const jsDayOfWeek = new Date(vDateUTC).getDay(); 
+    const visitDayOfWeek = jsDayOfWeek === 0 ? 7 : jsDayOfWeek;
     
     // Helper to extract YYYY-MM-DD from mysql Date (which is local time)
     const toYMD = (d) => {
@@ -144,7 +146,7 @@ function evaluateOffers(offers, visitDate, mappings, schedules) {
                 
                 if (!matchesRule) {
                     eligible = false;
-                    const daysMap = {0:"Sundays", 1:"Mondays", 2:"Tuesdays", 3:"Wednesdays", 4:"Thursdays", 5:"Fridays", 6:"Saturdays"};
+                    const daysMap = {1:"Mondays", 2:"Tuesdays", 3:"Wednesdays", 4:"Thursdays", 5:"Fridays", 6:"Saturdays", 7:"Sundays"};
                     const days = [...new Set(rules.map(r => daysMap[r.dayOfWeek]))];
                     reason = `Offer is available only on ${days.join(" and ")}.`;
                 }

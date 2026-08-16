@@ -41,3 +41,45 @@ export async function login(loginData) {
 
   return data;
 }
+
+/**
+ * Forgot Password
+ */
+export async function forgotPassword(email) {
+  const response = await fetch(`${API_URL}/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+
+  return data;
+}
+
+/**
+ * Reset Password
+ */
+export async function resetPassword(token, newPassword) {
+  const response = await fetch(`${API_URL}/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, newPassword }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+
+  return data;
+}

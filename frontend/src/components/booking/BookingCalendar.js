@@ -54,56 +54,47 @@ export default function BookingCalendar({ selectedDate, onSelectDate }) {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  return (
-    <div className="bg-white border border-[#E6D7EA] rounded-[20px] shadow-[0_8px_24px_rgba(75,15,97,0.08)] p-5 flex flex-col justify-between h-full">
+    return (
+    <div className="bg-[#FFFCF9] border border-[#F5D400]/40 rounded-[24px] shadow-sm p-6 flex flex-col justify-between h-full round-padding">
       <div>
-        {/* Header */}
-        <div className="text-center pb-4 mb-4 border-b border-purple-50">
-          <h2 className="text-[#4A216B] font-black text-lg tracking-wide uppercase">
-            SELECT VISIT DATE
-          </h2>
-          <p className="text-gray-500 text-xs mt-1 font-semibold leading-relaxed">
-            Open 365 days a year<br />from 10:00 AM to 6:00 PM
-          </p>
-        </div>
 
         {/* Month Navigation */}
-        <div className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center justify-between mb-8 px-2">
           <button
             type="button"
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all ${
               canGoPrev
-                ? "bg-purple-50 text-[#681B81] hover:bg-purple-100"
-                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                ? "bg-[#681B81] text-white border-2 border-[#F5D400] hover:bg-[#4B0F61] shadow-sm"
+                : "bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed"
             }`}
             onClick={prevMonth}
             disabled={!canGoPrev}
             aria-label="Previous month"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
-          <span className="font-extrabold text-[#681B81] text-sm tracking-wider">
-            {monthName.toUpperCase()} {viewYear}
+          <span className="font-black text-[#4A216B] text-[22px] sm:text-[28px] tracking-widest uppercase">
+            {monthName} {viewYear}
           </span>
 
           <button
             type="button"
-            className="w-8 h-8 rounded-full bg-purple-50 text-[#681B81] hover:bg-purple-100 flex items-center justify-center transition-colors"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#681B81] text-white border-2 border-[#F5D400] hover:bg-[#4B0F61] shadow-sm flex items-center justify-center transition-all"
             onClick={nextMonth}
             aria-label="Next month"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
         {/* DOW Grid */}
-        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+        <div className="grid grid-cols-7 gap-1 text-center mb-4">
           {DAYS.map((d) => (
             <span
               key={d}
-              className={`text-[11px] font-extrabold ${
-                d === "SUN" ? "text-red-500" : "text-gray-500"
+              className={`text-[13px] sm:text-[14px] font-black tracking-wide ${
+                d === "SUN" ? "text-red-600" : "text-[#5C4B64]"
               }`}
             >
               {d}
@@ -112,7 +103,7 @@ export default function BookingCalendar({ selectedDate, onSelectDate }) {
         </div>
 
         {/* Day Cells Grid */}
-        <div className="grid grid-cols-7 gap-1 text-center">
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5 text-center">
           {cells.map((day, i) => {
             if (!day) return <div key={`e${i}`} className="w-full aspect-square" />;
 
@@ -127,14 +118,14 @@ export default function BookingCalendar({ selectedDate, onSelectDate }) {
                 type="button"
                 disabled={isPast}
                 onClick={() => onSelectDate(dateStr)}
-                className={`w-full aspect-square min-w-[36px] min-h-[36px] max-w-[44px] max-h-[44px] mx-auto rounded-[10px] text-xs font-bold transition-all flex items-center justify-center relative ${
+                className={`w-full aspect-square max-w-[56px] mx-auto rounded-[12px] sm:rounded-[16px] text-sm sm:text-lg font-black transition-all flex items-center justify-center relative shadow-sm ${
                   isSelected
-                    ? "bg-[#681B81] text-white shadow-md scale-105"
+                    ? "bg-[#E53E3E] border-2 border-[#C53030] text-white shadow-md scale-105 z-10"
                     : isToday
-                    ? "border-2 border-[#F5D400] text-gray-800 bg-white"
+                    ? "bg-white border-[3px] border-[#681B81] text-[#681B81]"
                     : isPast
-                    ? "bg-gray-50 text-gray-300 border border-dashed border-gray-200 cursor-not-allowed"
-                    : "bg-white border border-gray-100 text-gray-700 hover:border-purple-200 hover:bg-purple-50/50"
+                    ? "bg-[#F9FAFB] border border-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed opacity-70 shadow-none"
+                    : "bg-[#FFFDF5] border border-[#F5D400]/50 text-[#681B81] hover:bg-[#FEF5C8] hover:border-[#F5D400]"
                 }`}
               >
                 {day}
@@ -145,17 +136,17 @@ export default function BookingCalendar({ selectedDate, onSelectDate }) {
       </div>
 
       {/* Legend */}
-      <div className="pt-4 mt-4 border-t border-purple-50 flex items-center justify-center space-x-4 text-[11px] font-bold text-gray-600">
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3.5 h-3.5 rounded bg-[#681B81]" />
+      <div className="pt-6 mt-8 border-t border-[#F5D400]/30 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] font-black text-[#5C4B64] uppercase tracking-wide">
+        <div className="flex items-center gap-2.5">
+          <div className="w-4 h-4 rounded-md bg-[#FFFDF5] border border-[#F5D400]/50" />
+          <span>Available</span>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <div className="w-4 h-4 rounded-md bg-[#E53E3E] border-2 border-[#C53030]" />
           <span>Selected</span>
         </div>
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3.5 h-3.5 rounded border-2 border-[#F5D400] bg-white" />
-          <span>Today</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <div className="w-3.5 h-3.5 rounded border border-dashed border-gray-300 bg-gray-50" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-4 h-4 rounded-md bg-[#F9FAFB] border border-[#E5E7EB]" />
           <span>Unavailable</span>
         </div>
       </div>

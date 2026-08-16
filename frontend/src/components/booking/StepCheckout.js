@@ -4,7 +4,6 @@ import { ChevronLeft } from "lucide-react";
 import { createPaymentOrder, verifyPayment } from "@/services/bookingApi";
 import { loadRazorpay } from "@/utils/loadRazorpay";
 import { useBooking } from "@/context/BookingContext";
-import { useAuth } from "@/context/AuthContext";
 import BookingSummary from "@/components/booking/BookingSummary";
 import CustomerForm from "@/components/booking/CustomerForm";
 import { fmt } from "@/utils/bookingCalc";
@@ -35,18 +34,6 @@ export default function StepCheckout({ onBack }) {
     setBookingResult,
     finalReviewData,
   } = useBooking();
-
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      setCustomer({
-        name: user.fullName || "",
-        email: user.email || "",
-        mobile: user.phone || "",
-      });
-    }
-  }, [user, setCustomer]);
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);

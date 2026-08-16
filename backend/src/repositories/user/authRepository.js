@@ -50,9 +50,43 @@ async function updateUserProfile(id, email, phone) {
   );
 }
 
+/**
+ * Update the user's reset token and expiration
+ */
+async function updateResetToken(email, token, expiresAt) {
+  await pool.execute(
+    "UPDATE users SET reset_password_token = ?, reset_password_expires = ? WHERE email = ?",
+    [token, expiresAt, email]
+  );
+}
+
+/**
+ * Find a user by reset token where token is not expired
+ */
+async function findUserByResetToken(token) {
+  const [rows] = await pool.execute(
+    "SELECT * FROM users WHERE reset_password_token = ? AND reset_password_expires > NOW()",
+    [token]
+  );
+  return rows[0];
+}
+
+/**
+ * Update the user's password and clear the reset token
+ */
+async function updatePassword(id, hashedPassword) {
+  await pool.execute(
+    "UPDATE users SET password = ?, reset_password_token = NULL, reset_password_expires = NULL WHERE id = ?",
+    [hashedPassword, id]
+  );
+}
+
 module.exports = {
   findUserByEmail,
   createUser,
   findUserById,
   updateUserProfile,
+  updateResetToken,
+  findUserByResetToken,
+  updatePassword,
 };

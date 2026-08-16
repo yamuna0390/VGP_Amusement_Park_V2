@@ -76,14 +76,14 @@ const SLIDES = [
   {
     id: "school",
     icon: "🏫",
-    heading: "School Annual Day",
+    heading: "School Excursion",
     sub: "GRAND VENUE · 3,000 GUESTS",
     description:
-      "Host school annual days, award ceremonies and inter-school events in our sprawling open-air amphitheatre. Safe, spacious and spectacular.",
+      "Host school excursions, award ceremonies and inter-school events in our sprawling open-air amphitheatre. Safe, spacious and spectacular.",
     cta: { label: "Reserve the Venue", href: "/contact" },
     cta2: { label: "Learn More", href: "/contact" },
     img: "/assets/img_5b25b363752a.jpg",
-    imgAlt: "School annual day event at VGP",
+    imgAlt: "School excursion at VGP",
     accent: "#22A7B3",
     accentDark: "#0E7C88",
   },

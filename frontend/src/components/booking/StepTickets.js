@@ -113,14 +113,16 @@ export default function StepTickets({ onNext, onBack }) {
                   if (mapping) {
                     cardBookingType = "offer";
                     
-                    if (selectedOffer.promotionType === "BUY_X_GET_Y" && currentQty > 0) {
+                    if (selectedOffer.promotionType === "BUY_X_GET_Y") {
                       const minQty = mapping.minQty || 1; // fallback to 1 to prevent division by 0
                       const freeQty = mapping.freeQty || 0;
                       const freeTickets = Math.floor(currentQty / minQty) * freeQty;
                       
-                      if (freeTickets > 0) {
-                        displayTicket.badge = `+${freeTickets} FREE`;
-                      }
+                      displayTicket.buyXGetY = {
+                        minQty,
+                        freeQty,
+                        earnedFreeTickets: freeTickets
+                      };
                     }
                   }
                 }

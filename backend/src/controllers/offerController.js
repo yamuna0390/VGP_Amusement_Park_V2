@@ -3,6 +3,32 @@ const { success } = require("../utils/response");
 const OfferResponseDTO = require("../dto/OfferResponseDTO");
 
 /**
+ * Get Public Active Offers (No date filter, with tickets for BUY_X_GET_Y)
+ */
+const getPublicOffers = async (req, res, next) => {
+    try {
+        const rawOffers = await offerRepository.getAllActiveOffers();
+        const offerMappings = await offerRepository.getOfferTicketMappings();
+
+        const offers = rawOffers.map(offer => {
+            return {
+                ...offer,
+                offer_tickets: offerMappings.filter(ot => ot.offerId === offer.id)
+            };
+        });
+
+        return success(
+            res,
+            "Public offers retrieved successfully.",
+            offers
+        );
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Get Active Offers
  */
 const getOffers = async (req, res, next) => {
@@ -58,6 +84,7 @@ const deleteOffer = async (req, res, next) => {
 };
 
 module.exports = {
+  getPublicOffers,
   getOffers,
   createOffer,
   updateOffer,

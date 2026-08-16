@@ -1,7 +1,101 @@
 "use client";
+import { useState } from "react";
 import ScrollBanner from "@/components/ui/ScrollBanner";
 
 export default function Group() {
+  const [organisationName, setOrganisationName] = useState("");
+  const [groupSize, setGroupSize] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+
+  const [email, setEmail] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async () => {
+    setError("");
+
+    // Frontend Validation
+    if (!organisationName.trim()) {
+      setError("Organisation Name is required.");
+      return;
+    }
+
+    if (!groupSize || isNaN(groupSize)) {
+      setError("Group Size must be a valid number.");
+      return;
+    }
+
+    const size = parseInt(groupSize, 10);
+    if (size <= 0) {
+      setError("Group Size must be a positive number.");
+      return;
+    }
+
+    if (!preferredDate) {
+      setError("Preferred Date is required.");
+      return;
+    }
+
+    const selectedDate = new Date(preferredDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      setError("Preferred Date cannot be in the past.");
+      return;
+    }
+
+    if (!contactNumber.trim()) {
+      setError("Contact Number is required.");
+      return;
+    }
+
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+    }
+
+    // Submission
+    setIsSubmitting(true);
+
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${API_BASE_URL}/group-quotes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          organisationName: organisationName.trim(),
+          groupSize: size,
+          preferredDate,
+          contactNumber: contactNumber.trim(),
+          email: email.trim() || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to submit request.");
+      }
+
+      setSuccess(true);
+    } catch (err) {
+      setError(
+        err.message ||
+        "We couldn't submit your request right now. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="page show" id="page-group">
       <section>
@@ -19,13 +113,81 @@ export default function Group() {
           </div>
           <div className="panel" style={{ marginTop: "36px" }}>
             <h3>📋 Get a Group Quote</h3>
-            <div className="two-col">
-              <div className="field"><label>Organisation Name</label><input placeholder="e.g. St. Mary's School" /></div>
-              <div className="field"><label>Group Size</label><input type="number" placeholder="e.g. 60" /></div>
-              <div className="field"><label>Preferred Date</label><input type="date" /></div>
-              <div className="field"><label>Contact Number</label><input placeholder="+91" /></div>
-            </div>
-            <button className="cta-big cta-red" onClick={() => alert("Quote request sent! Our team will contact you shortly.")}>Request Quote</button>
+            
+            {success ? (
+              <div style={{ padding: "20px", background: "#f0fdf4", color: "#166534", borderRadius: "8px", border: "1px solid #bbf7d0", marginTop: "16px" }}>
+                <h4 style={{ margin: "0 0 8px 0", fontSize: "1.1rem" }}>Request Received!</h4>
+                <p style={{ margin: 0, lineHeight: "1.5" }}>
+                  Thank you for your group booking enquiry.<br/>
+                  Our team will contact you shortly via WhatsApp or email.
+                </p>
+              </div>
+            ) : (
+              <>
+                {error && (
+                  <div style={{ color: "#dc2626", marginBottom: "16px", fontSize: "0.95rem", fontWeight: "500" }}>
+                    {error}
+                  </div>
+                )}
+                <div className="two-col">
+                  <div className="field">
+                    <label>Organisation Name *</label>
+                    <input 
+                      placeholder="e.g. St. Mary's School" 
+                      value={organisationName}
+                      onChange={(e) => setOrganisationName(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Group Size *</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 60" 
+                      value={groupSize}
+                      onChange={(e) => setGroupSize(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Preferred Date *</label>
+                    <input 
+                      type="date" 
+                      value={preferredDate}
+                      onChange={(e) => setPreferredDate(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Contact Number *</label>
+                    <input 
+                      placeholder="+91" 
+                      value={contactNumber}
+                      onChange={(e) => setContactNumber(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="field" style={{ gridColumn: "1 / -1" }}>
+                    <label>Email Address (Optional)</label>
+                    <input 
+                      type="email"
+                      placeholder="contact@example.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+                <button 
+                  className="cta-big cta-red" 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  style={{ opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "not-allowed" : "pointer", marginTop: "16px" }}
+                >
+                  {isSubmitting ? "SUBMITTING..." : "REQUEST QUOTE"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
