@@ -179,17 +179,22 @@ function bookingReducer(state, action) {
         savings: action.payload.savings,
         tickets: action.payload.tickets,
         offer_name: action.payload.offerName,
-        step: 6,
+        step: 5,
       };
 
-    case "SET_MASTER_DATA":
+    case "SET_MASTER_DATA": {
+      const masterDataUpdate = typeof action.payload === "function"
+        ? action.payload(state.masterData)
+        : action.payload;
+
       return {
         ...state,
         masterData: {
           ...state.masterData,
-          ...action.payload,
+          ...masterDataUpdate,
         },
       };
+    }
 
     case "RESET":
       return {
@@ -209,11 +214,15 @@ export function BookingProvider({ children }) {
 
   const { ticketQty, offerQty, foodQty, masterData, appliedCoupon, couponApplied, bookingType, selectedOffer } = state;
 
+  const flattenedOfferTickets = Array.isArray(masterData.offerTickets)
+    ? masterData.offerTickets.flatMap((offer) => offer.offerTickets || offer.offer_tickets || [])
+    : [];
+
   const ticketTotal = getTicketTotal(
     ticketQty,
     masterData.regularTickets || [],
     offerQty,
-    masterData.offerTickets || [],
+    flattenedOfferTickets,
     bookingType,
     selectedOffer
   );
@@ -227,7 +236,7 @@ export function BookingProvider({ children }) {
     ticketQty,
     masterData.regularTickets || [],
     offerQty,
-    masterData.offerTickets || [],
+    flattenedOfferTickets,
     foodQty,
     masterData.foods || [],
     bookingType,

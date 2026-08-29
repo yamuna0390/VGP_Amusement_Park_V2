@@ -122,7 +122,7 @@ export default function Restaurant() {
           <div className="section-head">
             <ScrollBanner title="Snack Street" subtitle="Follow the royal signposts" />
           </div>
-          <img className="stalls-img" src="/assets/img_484d44fafa7d.png" loading="lazy" decoding="async" alt="Popcorn, tea & coffee, cold drinks, ice cream and quick snacks signposts" />
+          <img className="stalls-img" src="/assets/snacks.jpeg" loading="lazy" decoding="async" alt="Popcorn, tea & coffee, cold drinks, ice cream and quick snacks signposts" />
           <p style={{ textAlign: "center", fontWeight: 800, color: "var(--purple)", marginTop: "14px" }}>
             Popcorn · Tea &amp; Coffee · Cold Drinks · Ice Cream · Quick Snacks — the signposts lead the way!
           </p>

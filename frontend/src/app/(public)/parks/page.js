@@ -33,7 +33,7 @@ export default function Parks() {
       id: "waghoba",
       name: "VGP Waghoba",
       url: "https://www.vgpwaghoba.in/",
-      image: "https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=800&q=80",
+      image: "/images/zooPark.jpeg",
       description: "An eco-safari and nature park experience dedicated to wildlife conservation, wild cat habitats, exotic bird aviaries, and interactive outdoor trails.",
       badge: "Eco-Safari & Nature Park"
     }

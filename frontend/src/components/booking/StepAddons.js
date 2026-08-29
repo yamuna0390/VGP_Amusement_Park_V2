@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 
 import AddonCard from "@/components/booking/AddonCard";
 import BookingSummary from "@/components/booking/BookingSummary";
-import { updateBookingItems } from "@/services/bookingApi";
+import { updateBookingItems, generateBookingQuote, getMeals } from "@/services/bookingApi";
 
 export default function StepAddons({ onNext, onBack }) {
   const {
     masterData,
+    setMasterData,
     ticketQty = {},
     foodQty = {},
     setFoodQty,
+    offerQty = {},
+    setFinalReviewData,
   } = useBooking();
 
   const foods = masterData.foods || [];
@@ -21,6 +24,23 @@ export default function StepAddons({ onNext, onBack }) {
 
   const [err, setErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [loadingMeals, setLoadingMeals] = useState(false);
+
+  useEffect(() => {
+    async function loadMeals() {
+      if (masterData.foods && masterData.foods.length > 0) return; // already loaded by Step 1
+      try {
+        setLoadingMeals(true);
+        const fetchedMeals = await getMeals();
+        setMasterData(prev => ({ ...prev, foods: fetchedMeals }));
+      } catch (error) {
+        console.error("Failed to load addons:", error);
+      } finally {
+        setLoadingMeals(false);
+      }
+    }
+    loadMeals();
+  }, []);
 
   const handleAddonChange = (code, qty) => {
     setErr("");
@@ -33,7 +53,6 @@ export default function StepAddons({ onNext, onBack }) {
 
   const handleNext = async () => {
     setErr("");
-    
     setSubmitting(true);
     try {
       const tickets = Object.entries(ticketQty || {})
@@ -51,6 +70,17 @@ export default function StepAddons({ onNext, onBack }) {
         })
         .filter((t) => t.ticketTypeId !== null);
 
+      const offerTicketsArray = Array.isArray(masterData.offerTickets)
+        ? masterData.offerTickets.flatMap((offer) => offer.offerTickets || offer.offer_tickets || [])
+        : [];
+
+      const offerTickets = Object.entries(offerQty || {})
+        .filter(([, quantity]) => quantity > 0)
+        .map(([offerTicketId, quantity]) => ({
+          offerTicketId: Number(offerTicketId),
+          quantity,
+        }));
+
       const addons = Object.entries(foodQty || {})
         .filter(([, quantity]) => quantity > 0)
         .map(([foodType, quantity]) => {
@@ -66,7 +96,13 @@ export default function StepAddons({ onNext, onBack }) {
         })
         .filter((m) => m.addonId !== null);
 
-      await updateBookingItems({ tickets, addons });
+      await updateBookingItems({ tickets, offerTickets, addons });
+      
+      const quoteResponse = await generateBookingQuote();
+      if (quoteResponse?.data) {
+        setFinalReviewData(quoteResponse.data);
+      }
+
       onNext();
     } catch (error) {
       setErr(error.message || "Failed to update items. Please try again.");
@@ -112,8 +148,12 @@ export default function StepAddons({ onNext, onBack }) {
             </div>
 
             <div className="booking-addons-grid">
-              {foods
-                .map((addon) => {
+              {loadingMeals ? (
+                <div className="p-4 text-center text-sm text-gray-500 w-full">Loading addons...</div>
+              ) : foods.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-500 w-full">No addons available.</div>
+              ) : (
+                foods.map((addon) => {
                   const code = addon.id || addon.code;
                   const currentQty = foodQty[code] || 0;
                   return (
@@ -124,7 +164,8 @@ export default function StepAddons({ onNext, onBack }) {
                       onChange={(qty) => handleAddonChange(code, qty)}
                     />
                   );
-              })}
+                })
+              )}
             </div>
             
             <div className="booking-addons-navigation">

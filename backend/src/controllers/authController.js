@@ -6,7 +6,8 @@ const response = require("../utils/response");
  */
 async function register(req, res) {
   try {
-    const result = await authService.register(req.body);
+    const rawToken = req.cookies?.booking_session;
+    const result = await authService.register(req.body, rawToken);
 
     return response.success(
       res,
@@ -31,8 +32,9 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
+    const rawToken = req.cookies?.booking_session;
 
-    const result = await authService.login(email, password);
+    const result = await authService.login(email, password, rawToken);
 
     return response.success(
       res,

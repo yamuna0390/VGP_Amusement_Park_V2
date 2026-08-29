@@ -3,57 +3,117 @@
 import { Minus, Plus } from "lucide-react";
 import { fmt } from "@/utils/bookingCalc";
 
-export default function TicketCard({ ticket, qty, onChange, bookingType }) {
-  const isOffer = bookingType === 'offer';
-  const displayPrice = isOffer && ticket.offerFare !== undefined ? ticket.offerFare : (ticket.originalFare || ticket.price || 0);
-  const showStruckThrough = isOffer && ticket.offerFare !== undefined && ticket.originalFare !== undefined && ticket.offerFare < ticket.originalFare;
+export default function TicketCard({
+  ticket,
+  qty = 0,
+  onChange,
+  bookingType = "regular",
+}) {
+  const isOffer = bookingType === "offer";
 
-  const isSelected = qty > 0;
+  /*
+   * Regular ticket:
+   *   name
+   *   price
+   *
+   * Offer ticket:
+   *   displayName
+   *   displaySubname
+   *   offerPrice
+   *   instruction
+   */
+  const displayName = isOffer
+    ? ticket.displayName || ticket.name || "Offer"
+    : ticket.name || ticket.displayName || "Ticket";
+
+  const displaySubname = isOffer
+    ? ticket.displaySubname || ""
+    : "";
+
+  const displayPrice = isOffer
+    ? Number(ticket.offerPrice ?? ticket.price ?? 0)
+    : Number(ticket.price ?? ticket.onlinePrice ?? 0);
+
+  const instruction = isOffer
+    ? ticket.instruction || ""
+    : "";
+
+  const isSelected = Number(qty) > 0;
+
+  const handleDecrease = () => {
+    const nextQty = Math.max(0, Number(qty) - 1);
+    onChange(nextQty);
+  };
+
+  const handleIncrease = () => {
+    onChange(Number(qty) + 1);
+  };
 
   return (
-    <div className={`booking-ticket-card ${isSelected ? "booking-ticket-card--selected" : ""}`}>
+    <div
+      className={`booking-ticket-card ${
+        isSelected ? "booking-ticket-card--selected" : ""
+      } ${isOffer ? "booking-ticket-card--offer" : ""}`}
+    >
       <div className="booking-ticket-card__info">
-        <h3 className="booking-ticket-card__name">{ticket.name}</h3>
-        {ticket.badge && (
-          <span className="booking-ticket-card__badge">{ticket.badge}</span>
+
+        {/* Display Name */}
+        <h3 className="booking-ticket-card__name">
+          {displayName}
+        </h3>
+
+        {/* Display Subname — e.g. 10% OFF / BOGO */}
+        {displaySubname && (
+          <div className="booking-ticket-card__offer-subname">
+            {displaySubname}
+          </div>
         )}
-        {ticket.description && (
-          <p className="booking-ticket-card__desc">{ticket.description}</p>
+
+        {/* Regular ticket description */}
+        {!isOffer && ticket.description && (
+          <p className="booking-ticket-card__desc">
+            {ticket.description}
+          </p>
         )}
+
+        {/* Price */}
         <div className="booking-ticket-card__price">
-          {showStruckThrough && (
-            <span className="booking-ticket-card__price-original">
-              {fmt(ticket.originalFare)}
-            </span>
-          )}
           {displayPrice === 0 ? "FREE" : fmt(displayPrice)}
         </div>
-        {ticket.buyXGetY && (
-          <div className="mt-2.5 px-3 py-2 bg-green-50 border border-green-200 rounded-lg flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-[0.8rem] text-green-800 font-bold">✓ Offer Applied</span>
-            <span className="text-[0.8rem] text-green-600/60 hidden sm:inline">·</span>
-            <span className="text-[0.8rem] text-green-700 font-medium">
-               Buy {ticket.buyXGetY.minQty} → Get {ticket.buyXGetY.freeQty} Free
-            </span>
+
+        {/* Offer instruction */}
+        {isOffer && instruction && (
+          <div className="booking-ticket-card__instruction">
+            {instruction}
           </div>
         )}
       </div>
+
+      {/* Quantity Controls */}
       <div className="booking-ticket-card__controls">
-        <button 
+        <button
+          type="button"
           className="booking-ticket-control booking-ticket-control--minus"
-          onClick={() => onChange(qty - 1)}
-          disabled={qty <= 0}
-          aria-label={`Decrease ${ticket.name} quantity`}
+          onClick={handleDecrease}
+          disabled={Number(qty) <= 0}
+          aria-label={`Decrease ${displayName} quantity`}
         >
           <Minus className="w-4 h-4" />
         </button>
-        <span className="booking-ticket-qty" aria-live="polite">
+
+        <span
+          className="booking-ticket-qty"
+          aria-live="polite"
+          aria-label={`${displayName} quantity`}
+        >
           {qty}
         </span>
-        <button 
+
+        <button
+          type="button"
           className="booking-ticket-control booking-ticket-control--plus"
-          onClick={() => onChange(qty + 1)}
-          aria-label={`Increase ${ticket.name} quantity`}
+          onClick={handleIncrease}
+          aria-label={`Increase ${displayName} quantity`}
         >
           <Plus className="w-4 h-4" />
         </button>

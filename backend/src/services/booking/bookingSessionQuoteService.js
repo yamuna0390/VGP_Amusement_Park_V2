@@ -42,8 +42,8 @@ async function generateQuote(rawToken) {
     }
 
     // Step validation
-    if (session.current_step < 3 || !session.visit_date) {
-        const err = new Error("Booking step incomplete. Please complete previous steps.");
+    if (!session.visit_date) {
+        const err = new Error("Booking step incomplete. Missing visit date.");
         err.statusCode = 400;
         err.code = "BOOKING_STEP_INCOMPLETE";
         throw err;
@@ -58,14 +58,6 @@ async function generateQuote(rawToken) {
         throw err;
     }
 
-    const customer = await bookingSessionCustomerRepository.getCustomerBySessionId(session.id);
-    if (!customer) {
-        const err = new Error("Booking step incomplete. Missing customer info.");
-        err.statusCode = 400;
-        err.code = "BOOKING_STEP_INCOMPLETE";
-        throw err;
-    }
-
     // Load full details for addons to determine addon_type
     const addonItems = items.filter(i => i.item_type === 'ADDON');
     let dbAddons = [];
@@ -74,14 +66,18 @@ async function generateQuote(rawToken) {
         dbAddons = await addonRepository.getActiveAddonsByIds(undefined, addonIds);
     }
 
-    // Load offer info
-    let offer = null;
-    let offerMappings = [];
-    if (session.booking_type === 'OFFER' && session.offer_id) {
-        const allOffers = await offerRepository.getAllActiveOffers();
-        offer = allOffers.find(o => o.id === session.offer_id);
-        const allMappings = await offerRepository.getOfferTicketMappings();
-        offerMappings = allMappings.filter(m => m.offerId === session.offer_id);
+    // Load components for OFFER tickets
+    const offerItems = items.filter(i => i.item_type === 'TICKET' && i.pricing_type === 'OFFER');
+    let offerComponents = [];
+    let componentTicketDefs = [];
+    if (offerItems.length > 0) {
+        const offerItemIds = offerItems.map(i => i.id);
+        offerComponents = await bookingSessionRepository.getSessionItemComponents(offerItemIds);
+        
+        const uniqueTicketTypeIds = [...new Set(offerComponents.map(c => c.ticket_type_id))];
+        if (uniqueTicketTypeIds.length > 0) {
+            componentTicketDefs = await ticketRepository.getTicketsByIds(undefined, uniqueTicketTypeIds);
+        }
     }
 
     let ticketSubtotal = 0;
@@ -96,20 +92,21 @@ async function generateQuote(rawToken) {
 
     for (const item of items) {
         if (item.item_type === 'TICKET') {
-            const amount = item.paid_quantity * item.unit_price_snapshot;
+            const pricingType = item.pricing_type || 'REGULAR';
+            
+            let amount = 0;
+            if (pricingType === 'OFFER') {
+                amount = item.quantity * item.unit_price_snapshot;
+            } else {
+                amount = item.paid_quantity * item.unit_price_snapshot;
+            }
+            
             ticketSubtotal += amount;
 
             totalPaidTickets += item.paid_quantity;
             totalFreeTickets += item.free_quantity;
 
-            let isMapped = false;
-            if (offer) {
-                isMapped = offerMappings.some(m => m.ticketTypeId === item.ticket_type_id);
-            }
-
-            const pricingType = (offer && isMapped) ? 'OFFER' : 'REGULAR';
-
-            ticketDetails.push({
+            const ticketDetail = {
                 ticketTypeId: item.ticket_type_id,
                 code: item.item_code,
                 name: item.item_name,
@@ -119,13 +116,23 @@ async function generateQuote(rawToken) {
                 unitPrice: Number(item.unit_price_snapshot),
                 pricingType,
                 amount: Number(amount.toFixed(2))
-            });
+            };
 
-            // Calculate percentage discount
-            if (offer && isMapped && offer.promotion_type === 'PERCENTAGE') {
-                const discountValue = Number(offer.discount_value);
-                offerDiscount += amount * (discountValue / 100);
+            if (pricingType === 'OFFER') {
+                const itemComponents = offerComponents.filter(c => c.session_item_id === item.id);
+                ticketDetail.components = itemComponents.map(c => {
+                    const tDef = componentTicketDefs.find(t => t.id === c.ticket_type_id);
+                    return {
+                        componentType: c.component_type,
+                        ticketTypeId: c.ticket_type_id,
+                        code: tDef ? tDef.code : null,
+                        name: tDef ? tDef.name : null,
+                        quantity: c.quantity
+                    };
+                });
             }
+
+            ticketDetails.push(ticketDetail);
         } else if (item.item_type === 'ADDON') {
             const amount = item.quantity * item.unit_price_snapshot;
             addonSubtotal += amount;
@@ -142,14 +149,6 @@ async function generateQuote(rawToken) {
                 unitPrice: Number(item.unit_price_snapshot),
                 amount: Number(amount.toFixed(2))
             });
-        }
-    }
-
-    // Flat discount
-    if (offer && offer.promotion_type === 'FLAT') {
-        const hasMappedTicket = ticketDetails.some(t => t.pricingType === 'OFFER');
-        if (hasMappedTicket) {
-            offerDiscount += Number(offer.discount_value);
         }
     }
 

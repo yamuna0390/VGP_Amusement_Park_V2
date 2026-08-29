@@ -4,7 +4,7 @@ import { useBooking } from "@/context/BookingContext";
 import Invoice from "@/components/booking/Invoice";
 import QrTicket from "@/components/booking/QrTicket";
 import Link from "next/link";
-// import { confirmPayment } from "@/services/bookingApi";
+import { confirmPayment } from "@/services/bookingApi";
 
 export default function StepSuccess() {
   const booking = useBooking();
@@ -14,8 +14,8 @@ export default function StepSuccess() {
 
   // Auto-confirm payment on success page load (simulated payment gateway callback)
   useEffect(() => {
-    if (bookingResult?.bookingId && !paymentConfirmed) {
-      confirmPayment(bookingResult.bookingId)
+    if (booking.bookingId && !paymentConfirmed) {
+      confirmPayment(booking.bookingId)
         .then(() => setPaymentConfirmed(true))
         .catch((err) => {
           // Non-fatal: booking is still created, just status not updated

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { adminRideService } from "@/services/adminRideService";
+import { getImageUrl } from "@/constants/api";
 import { Plus, Trash2 } from "lucide-react";
 import "./RideForm.css";
 
@@ -41,6 +42,20 @@ export default function RideForm({ initialData = null, isEdit = false }) {
   const router = useRouter();
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
+
+  const validateImage = (file) => {
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      return "Image is too large. Maximum size is 5 MB.";
+    }
+    if (!allowedTypes.includes(file.type)) {
+      return "Unsupported image format. Please select a JPG, PNG, or WebP image.";
+    }
+    return null;
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -112,8 +127,8 @@ export default function RideForm({ initialData = null, isEdit = false }) {
       } else {
         await adminRideService.createRide(form);
         alert("Ride created successfully");
-        router.push("/admin/rides");
       }
+      router.push("/admin/rides");
     } catch (error) {
       alert("Error saving ride: " + error.message);
     } finally {
@@ -228,8 +243,35 @@ export default function RideForm({ initialData = null, isEdit = false }) {
         <section className="form-section">
           <h3>Media (URL Paths)</h3>
           <div className="form-group">
-            <label>Card Image URL (/images/vgrides/...)</label>
-            <input type="text" name="card_image_url" value={form.card_image_url || ""} onChange={handleChange} />
+            <label>Card Image *</label>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <input 
+                type="file" 
+                accept="image/jpeg, image/png, image/webp" 
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  
+                  const errorMsg = validateImage(file);
+                  if (errorMsg) {
+                    setImageErrors(prev => ({ ...prev, card: errorMsg }));
+                    return;
+                  }
+                  setImageErrors(prev => ({ ...prev, card: null }));
+                  
+                  try {
+                    const safeSlug = form.slug || form.name.replace(/\s+/g, '-').toLowerCase() || 'new-ride';
+                    const url = await adminRideService.uploadRideImage(file, safeSlug, 'card');
+                    handleChange({ target: { name: 'card_image_url', value: url } });
+                  } catch (err) {
+                    setImageErrors(prev => ({ ...prev, card: err.message }));
+                  }
+                }}
+              />
+              {form.card_image_url && <img src={getImageUrl(form.card_image_url)} alt="Preview" style={{ height: "40px", borderRadius: "4px" }} />}
+            </div>
+            {imageErrors.card && <p className="error-text" style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "4px", marginBottom: "0" }}>{imageErrors.card}</p>}
+            <input type="hidden" name="card_image_url" value={form.card_image_url || ""} />
           </div>
           <div className="form-row">
             <div className="form-group">
@@ -241,15 +283,38 @@ export default function RideForm({ initialData = null, isEdit = false }) {
               </select>
             </div>
             <div className="form-group">
-              <label>Hero Image URL</label>
-              <input type="text" name="hero_image_url" value={form.hero_image_url || ""} onChange={handleChange} />
+              <label>Hero Image</label>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <input 
+                  type="file" 
+                  accept="image/jpeg, image/png, image/webp" 
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const errorMsg = validateImage(file);
+                    if (errorMsg) {
+                      setImageErrors(prev => ({ ...prev, hero: errorMsg }));
+                      return;
+                    }
+                    setImageErrors(prev => ({ ...prev, hero: null }));
+
+                    try {
+                      const safeSlug = form.slug || form.name.replace(/\s+/g, '-').toLowerCase() || 'new-ride';
+                      const url = await adminRideService.uploadRideImage(file, safeSlug, 'hero');
+                      handleChange({ target: { name: 'hero_image_url', value: url } });
+                    } catch (err) {
+                      setImageErrors(prev => ({ ...prev, hero: err.message }));
+                    }
+                  }}
+                />
+                {form.hero_image_url && <img src={getImageUrl(form.hero_image_url)} alt="Preview" style={{ height: "40px", borderRadius: "4px" }} />}
+              </div>
+              {imageErrors.hero && <p className="error-text" style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "4px", marginBottom: "0" }}>{imageErrors.hero}</p>}
+              <input type="hidden" name="hero_image_url" value={form.hero_image_url || ""} />
             </div>
           </div>
           <div className="form-row">
-            <div className="form-group">
-              <label>Hero Video URL (.mp4)</label>
-              <input type="text" name="hero_video_url" value={form.hero_video_url || ""} onChange={handleChange} />
-            </div>
             <div className="form-group">
               <label>YouTube ID</label>
               <input type="text" name="hero_youtube_url" value={form.hero_youtube_url || ""} onChange={handleChange} />
@@ -264,16 +329,41 @@ export default function RideForm({ initialData = null, isEdit = false }) {
             <button type="button" className="btn-secondary btn-sm" onClick={addGalleryRow}><Plus size={14}/> Add Image</button>
           </div>
           {form.gallery.map((img, index) => (
-            <div key={index} className="repeater-row">
-              <div className="form-group" style={{ flex: 1 }}>
-                <input 
-                  type="text" 
-                  placeholder="Image URL (/images/vgrides/...)" 
-                  value={img.image_url} 
-                  onChange={(e) => handleGalleryChange(index, "image_url", e.target.value)} 
-                />
+            <div key={index} className="repeater-row" style={{ alignItems: "center" }}>
+              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input 
+                    type="file" 
+                    accept="image/jpeg, image/png, image/webp" 
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      
+                      const errorMsg = validateImage(file);
+                      if (errorMsg) {
+                        setImageErrors(prev => ({ ...prev, gallery: { ...(prev.gallery || {}), [index]: errorMsg } }));
+                        return;
+                      }
+                      setImageErrors(prev => {
+                        const newGalleryErrs = { ...(prev.gallery || {}) };
+                        delete newGalleryErrs[index];
+                        return { ...prev, gallery: newGalleryErrs };
+                      });
+
+                      try {
+                        const safeSlug = form.slug || form.name.replace(/\s+/g, '-').toLowerCase() || 'new-ride';
+                        const url = await adminRideService.uploadRideImage(file, safeSlug, 'gallery');
+                        handleGalleryChange(index, "image_url", url);
+                      } catch (err) {
+                        setImageErrors(prev => ({ ...prev, gallery: { ...(prev.gallery || {}), [index]: err.message } }));
+                      }
+                    }}
+                  />
+                  {img.image_url && <img src={getImageUrl(img.image_url)} alt="Preview" style={{ height: "40px", borderRadius: "4px" }} />}
+                </div>
+                {imageErrors.gallery?.[index] && <p className="error-text" style={{ color: "#ef4444", fontSize: "0.85rem", marginTop: "4px", marginBottom: "0" }}>{imageErrors.gallery[index]}</p>}
               </div>
-              <div className="form-group" style={{ width: '100px' }}>
+              <div className="form-group" style={{ width: '100px', marginBottom: 0 }}>
                 <input 
                   type="number" 
                   placeholder="Order" 

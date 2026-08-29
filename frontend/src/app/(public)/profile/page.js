@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { API_BASE_URL } from "@/constants/api";
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
@@ -14,6 +15,8 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  
+
 
   useEffect(() => {
     if (user) {
@@ -45,7 +48,7 @@ export default function ProfilePage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/auth/profile", {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -79,6 +82,9 @@ export default function ProfilePage() {
         <div style={{ display: "flex", gap: "10px", marginBottom: "30px", borderBottom: "2px solid var(--border)", paddingBottom: "10px" }}>
           <Link href="/profile" style={{ fontWeight: "800", color: "var(--purple-deep)", borderBottom: "3px solid var(--purple-deep)", padding: "8px 16px" }}>
             👤 My Profile
+          </Link>
+          <Link href="/my-bookings" style={{ fontWeight: "800", color: "var(--ink)", padding: "8px 16px", opacity: 0.6 }}>
+            🎟️ My Bookings
           </Link>
         </div>
 
@@ -189,6 +195,7 @@ export default function ProfilePage() {
 
           </form>
         </div>
+
       </div>
     </div>
   );

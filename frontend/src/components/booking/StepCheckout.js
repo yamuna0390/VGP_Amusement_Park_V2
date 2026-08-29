@@ -241,7 +241,7 @@ export default function StepCheckout({ onBack }) {
                 />
                 <span className="text-sm text-slate-600 font-semibold leading-relaxed group-hover:text-slate-800 transition-colors">
                   I agree to the VGP Universal Kingdom{" "}
-                  <a href="/terms" className="text-blue-600 hover:text-blue-700 underline underline-offset-2">Terms &amp; Conditions</a> and Privacy Policy.
+                  <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline underline-offset-2">Terms &amp; Conditions</a> and <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline underline-offset-2">Privacy Policy</a>.
                 </span>
               </label>
               {errors.terms && <p className="text-red-600 font-bold text-sm mt-2">{errors.terms}</p>}

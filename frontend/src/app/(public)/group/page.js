@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import ScrollBanner from "@/components/ui/ScrollBanner";
+import { API_BASE_URL } from "@/constants/api";
 
 export default function Group() {
   const [organisationName, setOrganisationName] = useState("");
@@ -64,7 +65,6 @@ export default function Group() {
     setIsSubmitting(true);
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
       const response = await fetch(`${API_BASE_URL}/group-quotes`, {
         method: "POST",
         headers: {

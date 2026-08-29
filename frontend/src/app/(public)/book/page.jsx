@@ -5,6 +5,13 @@ export const metadata = {
   description: 'Book your tickets for VGP Universal Kingdom amusement park. Choose from multiple ticket categories, exclusive offers, and add-ons.',
 };
 
-export default function BookPage() {
-  return <BookingShell />;
+export default async function BookPage({ searchParams }) {
+  const params = await searchParams;
+  const offerId = params?.offerId || null;
+  
+  if (offerId) {
+    console.log("Intent received for offerId:", offerId);
+  }
+
+  return <BookingShell initialOfferId={offerId} />;
 }

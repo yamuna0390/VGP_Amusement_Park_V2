@@ -21,14 +21,32 @@ const getAdminOfferById = async (req, res, next) => {
         }
         
         const offer = offers[0];
-        const [offer_tickets] = await db.query(
-            `SELECT id, ticket_id, display_name, min_qty, free_qty, max_qty, display_order, is_active FROM offer_tickets WHERE offer_id = ? ORDER BY display_order ASC`,
-            [id]
-        );
-        const [offer_schedule_rules] = await db.query(
-            `SELECT id, day_of_week, valid_from, valid_until FROM offer_schedule_rules WHERE offer_id = ?`,
-            [id]
-        );
+      const [offer_tickets] = await db.query(
+    `SELECT
+        id,
+        buy_ticket_id,
+        free_ticket_id,
+        display_name,
+        display_subname,
+        buy_quantity,
+        free_quantity,
+        offer_price,
+        max_qty,
+        display_order,
+        is_active
+     FROM offer_tickets
+     WHERE offer_id = ?
+     ORDER BY display_order ASC`,
+    [id]
+);
+     const [offer_schedule_rules] = await db.query(
+    `SELECT
+        id,
+        day_of_week
+     FROM offer_schedule_rules
+     WHERE offer_id = ?`,
+    [id]
+);
 
         offer.offer_tickets = offer_tickets;
         offer.offer_schedule_rules = offer_schedule_rules;
@@ -41,119 +59,367 @@ const getAdminOfferById = async (req, res, next) => {
 
 const createAdminOffer = async (req, res, next) => {
     const connection = await db.getConnection();
+
     try {
         await connection.beginTransaction();
 
-        const {
-            offer_name, description, instruction, offer_code, promotion_type, discount_type, discount_value,
-            minimum_amount, valid_from, valid_to, min_advance_days, status, priority,
-            offer_tickets, offer_schedule_rules
-        } = req.body;
+     const {
+    offer_name,
+    description,
+    instruction,
+    offer_code,
+    offer_type_id,
+    discount_percentage,
+    flat_discount,
+    minimum_booking_value,
+    valid_from,
+    valid_to,
+    min_advance_days,
+    status,
+    display_order,
+    offer_tickets,
+    offer_schedule_rules
+} = req.body;
 
+        // ---------------------------------------------------------
+        // 1. Create main offer
+        // ---------------------------------------------------------
         const [offerResult] = await connection.query(
             `INSERT INTO offers (
-                offer_name, description, instruction, offer_code, promotion_type, discount_type, discount_value,
-                minimum_amount, valid_from, valid_to, min_advance_days, status, priority, offer_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    offer_name,
+    description,
+    instruction,
+    offer_code,
+    offer_type_id,
+    discount_percentage,
+    flat_discount,
+    minimum_booking_value,
+    valid_from,
+    valid_to,
+    min_advance_days,
+    status,
+    display_order
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                offer_name, description || null, instruction || null, offer_code || null, promotion_type, discount_type, discount_value || 0,
-                minimum_amount || 0, valid_from, valid_to, min_advance_days || 1, status || 'Active', priority || 1, 'PROMO'
-            ]
+    offer_name,
+    description || null,
+    instruction || null,
+    offer_code || null,
+    offer_type_id,
+    discount_percentage !== undefined
+        ? discount_percentage
+        : null,
+    flat_discount !== undefined
+        ? flat_discount
+        : null,
+    minimum_booking_value !== undefined
+        ? minimum_booking_value
+        : null,
+    valid_from,
+    valid_to,
+    min_advance_days !== undefined
+        ? min_advance_days
+        : 1,
+    status || "Active",
+    display_order !== undefined
+        ? display_order
+        : 0
+]
         );
 
         const offerId = offerResult.insertId;
 
-        if (offer_tickets && Array.isArray(offer_tickets)) {
+        // ---------------------------------------------------------
+        // 2. Create offer ticket mappings
+        // ---------------------------------------------------------
+        if (Array.isArray(offer_tickets)) {
             for (let i = 0; i < offer_tickets.length; i++) {
                 const tk = offer_tickets[i];
+
                 await connection.query(
-                    `INSERT INTO offer_tickets (offer_id, ticket_id, display_name, min_qty, free_qty, max_qty, display_order, is_active)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO offer_tickets (
+                        offer_id,
+                        buy_ticket_id,
+                        free_ticket_id,
+                        display_name,
+                        display_subname,
+                        buy_quantity,
+                        free_quantity,
+                        offer_price,
+                        max_qty,
+                        display_order,
+                        is_active
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
-                        offerId, tk.ticket_id, tk.display_name, tk.min_qty || 1, tk.free_qty || 0, tk.max_qty || null, tk.display_order || (i + 1), tk.is_active !== undefined ? tk.is_active : 1
+                        offerId,
+
+                        tk.buy_ticket_id,
+
+                        tk.free_ticket_id !== undefined
+                            ? tk.free_ticket_id
+                            : null,
+
+                        tk.display_name,
+
+                        tk.display_subname !== undefined
+                            ? tk.display_subname
+                            : null,
+
+                        tk.buy_quantity !== undefined
+                            ? tk.buy_quantity
+                            : 1,
+
+                        tk.free_quantity !== undefined
+                            ? tk.free_quantity
+                            : 0,
+
+                        tk.offer_price !== undefined
+                            ? Math.round(Number(tk.offer_price))
+                            : 0,
+
+                        tk.max_qty !== undefined
+                            ? tk.max_qty
+                            : null,
+
+                        tk.display_order !== undefined
+                            ? tk.display_order
+                            : i + 1,
+
+                        tk.is_active !== undefined
+                            ? tk.is_active
+                            : 1
                     ]
                 );
             }
         }
 
-        if (offer_schedule_rules && Array.isArray(offer_schedule_rules)) {
+        // ---------------------------------------------------------
+        // 3. Create schedule rules
+        // ---------------------------------------------------------
+        if (Array.isArray(offer_schedule_rules)) {
             for (const rule of offer_schedule_rules) {
                 await connection.query(
-                    `INSERT INTO offer_schedule_rules (offer_id, day_of_week, valid_from, valid_until)
-                     VALUES (?, ?, ?, ?)`,
+                    `INSERT INTO offer_schedule_rules (
+                        offer_id,
+                        day_of_week
+                    )
+                    VALUES (?, ?)`,
                     [
-                        offerId, rule.day_of_week, rule.valid_from || null, rule.valid_until || null
+                        offerId,
+                        rule.day_of_week
                     ]
                 );
             }
         }
 
         await connection.commit();
-        return success(res, "Offer created successfully", { id: offerId });
+
+        return success(
+            res,
+            "Offer created successfully",
+            { id: offerId },
+            201
+        );
+
     } catch (error) {
         await connection.rollback();
         next(error);
+
     } finally {
         connection.release();
     }
 };
-
 const updateAdminOffer = async (req, res, next) => {
     const connection = await db.getConnection();
+
     try {
         await connection.beginTransaction();
 
         const { id } = req.params;
+
         const {
-            offer_name, description, instruction, offer_code, promotion_type, discount_type, discount_value,
-            minimum_amount, valid_from, valid_to, min_advance_days, status, priority,
-            offer_tickets, offer_schedule_rules
+            offer_name,
+            description,
+            instruction,
+            offer_code,
+            offer_type_id,
+            discount_percentage,
+            flat_discount,
+            minimum_booking_value,
+            valid_from,
+            valid_to,
+            min_advance_days,
+            status,
+            display_order,
+            offer_tickets,
+            offer_schedule_rules
         } = req.body;
 
+        // ---------------------------------------------------------
+        // 1. Update main offer
+        // ---------------------------------------------------------
         await connection.query(
-            `UPDATE offers SET 
-                offer_name=?, description=?, instruction=?, offer_code=?, promotion_type=?, discount_type=?, discount_value=?,
-                minimum_amount=?, valid_from=?, valid_to=?, min_advance_days=?, status=?, priority=?
-            WHERE id=?`,
+            `UPDATE offers SET
+                offer_name = ?,
+                description = ?,
+                instruction = ?,
+                offer_code = ?,
+                offer_type_id = ?,
+                discount_percentage = ?,
+                flat_discount = ?,
+                minimum_booking_value = ?,
+                valid_from = ?,
+                valid_to = ?,
+                min_advance_days = ?,
+                status = ?,
+                display_order = ?
+             WHERE id = ?`,
             [
-                offer_name, description || null, instruction || null, offer_code || null, promotion_type, discount_type, discount_value || 0,
-                minimum_amount || 0, valid_from, valid_to, min_advance_days || 1, status || 'Active', priority || 1,
+                offer_name,
+                description || null,
+                instruction || null,
+                offer_code || null,
+                offer_type_id,
+
+                discount_percentage !== undefined
+                    ? discount_percentage
+                    : null,
+
+                flat_discount !== undefined
+                    ? flat_discount
+                    : null,
+
+                minimum_booking_value !== undefined
+                    ? minimum_booking_value
+                    : null,
+
+                valid_from,
+                valid_to,
+
+                min_advance_days !== undefined
+                    ? min_advance_days
+                    : 1,
+
+                status || "Active",
+
+                display_order !== undefined
+                    ? display_order
+                    : 0,
+
                 id
             ]
         );
 
-        await connection.query(`DELETE FROM offer_tickets WHERE offer_id = ?`, [id]);
-        if (offer_tickets && Array.isArray(offer_tickets)) {
+        // ---------------------------------------------------------
+        // 2. Replace offer ticket mappings
+        // ---------------------------------------------------------
+        await connection.query(
+            `DELETE FROM offer_tickets
+             WHERE offer_id = ?`,
+            [id]
+        );
+
+        if (Array.isArray(offer_tickets)) {
             for (let i = 0; i < offer_tickets.length; i++) {
                 const tk = offer_tickets[i];
+
                 await connection.query(
-                    `INSERT INTO offer_tickets (offer_id, ticket_id, display_name, min_qty, free_qty, max_qty, display_order, is_active)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO offer_tickets (
+                        offer_id,
+                        buy_ticket_id,
+                        free_ticket_id,
+                        display_name,
+                        display_subname,
+                        buy_quantity,
+                        free_quantity,
+                        offer_price,
+                        max_qty,
+                        display_order,
+                        is_active
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
-                        id, tk.ticket_id, tk.display_name, tk.min_qty || 1, tk.free_qty || 0, tk.max_qty || null, tk.display_order || (i + 1), tk.is_active !== undefined ? tk.is_active : 1
+                        id,
+
+                        tk.buy_ticket_id,
+
+                        tk.free_ticket_id !== undefined
+                            ? tk.free_ticket_id
+                            : null,
+
+                        tk.display_name,
+
+                        tk.display_subname !== undefined
+                            ? tk.display_subname
+                            : null,
+
+                        tk.buy_quantity !== undefined
+                            ? tk.buy_quantity
+                            : 1,
+
+                        tk.free_quantity !== undefined
+                            ? tk.free_quantity
+                            : 0,
+
+                        tk.offer_price !== undefined
+                            ? Math.round(Number(tk.offer_price))
+                            : 0,
+
+                        tk.max_qty !== undefined
+                            ? tk.max_qty
+                            : null,
+
+                        tk.display_order !== undefined
+                            ? tk.display_order
+                            : i + 1,
+
+                        tk.is_active !== undefined
+                            ? tk.is_active
+                            : 1
                     ]
                 );
             }
         }
 
-        await connection.query(`DELETE FROM offer_schedule_rules WHERE offer_id = ?`, [id]);
-        if (offer_schedule_rules && Array.isArray(offer_schedule_rules)) {
+        // ---------------------------------------------------------
+        // 3. Replace schedule rules
+        // ---------------------------------------------------------
+        await connection.query(
+            `DELETE FROM offer_schedule_rules
+             WHERE offer_id = ?`,
+            [id]
+        );
+
+        if (Array.isArray(offer_schedule_rules)) {
             for (const rule of offer_schedule_rules) {
                 await connection.query(
-                    `INSERT INTO offer_schedule_rules (offer_id, day_of_week, valid_from, valid_until)
-                     VALUES (?, ?, ?, ?)`,
+                    `INSERT INTO offer_schedule_rules (
+                        offer_id,
+                        day_of_week
+                    )
+                    VALUES (?, ?)`,
                     [
-                        id, rule.day_of_week, rule.valid_from || null, rule.valid_until || null
+                        id,
+                        rule.day_of_week
                     ]
                 );
             }
         }
 
         await connection.commit();
-        return success(res, "Offer updated successfully");
+
+        return success(
+            res,
+            "Offer updated successfully",
+            { id }
+        );
+
     } catch (error) {
         await connection.rollback();
         next(error);
+
     } finally {
         connection.release();
     }

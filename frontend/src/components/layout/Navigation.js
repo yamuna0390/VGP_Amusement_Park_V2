@@ -155,6 +155,9 @@ export default function Navigation() {
             <Link href="/profile" onClick={() => toggleDrawer(false)}>
               👤 My Profile
             </Link>
+            <Link href="/my-bookings" onClick={() => toggleDrawer(false)}>
+              🎟️ My Bookings
+            </Link>
             <a
               onClick={() => {
                 toggleDrawer(false);
@@ -190,7 +193,7 @@ export default function Navigation() {
           💒 Banquet Hall — Sea Thru
         </Link>
 
-        <Link href="/stay" onClick={() => toggleDrawer(false)}>
+        <Link href="/accommodation" onClick={() => toggleDrawer(false)}>
           🛏️ Stay — Room Bookings
         </Link>
 
@@ -202,7 +205,7 @@ export default function Navigation() {
           🧳 Tour Operator&apos;s Login
         </Link>
 
-        <Link href="/about" onClick={() => toggleDrawer(false)}>
+        <Link href="/aboutus" onClick={() => toggleDrawer(false)}>
           👑 About Us
         </Link>
       </div>

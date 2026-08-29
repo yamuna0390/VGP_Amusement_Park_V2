@@ -3,6 +3,10 @@ const router = express.Router();
 const bookingController = require("../controllers/bookingController");
 const authMiddleware = require("../middleware/authMiddleware");
 
+// GET /api/booking/internal-render/:id
+// Internal endpoint for headless PDF generation
+router.get("/internal-render/:id", bookingController.getInternalRenderData);
+
 // POST /api/booking/session
 // authMiddleware is optional here because the user may be a guest
 // Let's use authMiddleware but it already sets req.user = null if no token is provided, 
@@ -35,5 +39,13 @@ router.post("/payment/order", paymentController.createPaymentOrder);
 // POST /api/booking/payment/verify
 // Verifies the Razorpay payment signature.
 router.post("/payment/verify", paymentController.verifyPayment);
+
+// GET /api/booking/my-bookings
+// Gets bookings for logged in customer
+router.get("/my-bookings", authMiddleware, bookingController.getMyBookings);
+
+// GET /api/booking/my-bookings/:id/pdf
+// Downloads PDF for a specific authenticated booking
+router.get("/my-bookings/:id/pdf", authMiddleware, bookingController.downloadMyBookingPdf);
 
 module.exports = router;

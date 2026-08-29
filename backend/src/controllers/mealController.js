@@ -1,4 +1,4 @@
-const mealRepository = require("../repositories/catalog/mealRepository");
+const addonRepository = require("../repositories/catalog/addonRepository");
 const { success } = require("../utils/response");
 
 /**
@@ -10,7 +10,7 @@ const getMeals = async (req, res, next) => {
 
     try {
 
-        const meals = await mealRepository.getActiveMeals();
+        const meals = await addonRepository.getActiveAddons();
 
         return success(
             res,

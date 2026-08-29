@@ -3,11 +3,10 @@
 import { Check } from "lucide-react";
 
 const STEPS = [
-  { num: 1, label: "Date & Offer" },
-  { num: 2, label: "Tickets" },
-  { num: 3, label: "Add-ons" },
-  { num: 4, label: "Customer Info" },
-  { num: 5, label: "Checkout" },
+  { num: 1, label: "Date & Tickets" },
+  { num: 2, label: "Add-ons" },
+  { num: 3, label: "Customer Info" },
+  { num: 4, label: "Checkout" },
 ];
 
 export default function BookingStepper({ currentStep }) {

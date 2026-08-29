@@ -17,7 +17,11 @@ import StepTraveller from "@/components/booking/StepTraveller";
 import StepCheckout from "@/components/booking/StepCheckout";
 import StepSuccess from "@/components/booking/StepSuccess";
 
-export default function BookingShell() {
+export default function BookingShell({ initialOfferId }) {
+  if (initialOfferId) {
+    console.log("BookingShell received initial intent for offer ID:", initialOfferId);
+  }
+
   const {
     step,
     setStep,
@@ -26,39 +30,71 @@ export default function BookingShell() {
   
   const hasInitialized = useRef(false);
 
-  const goNext = () => setStep(Math.min(step + 1, 6));
+  const goNext = () => setStep(Math.min(step + 1, 5));
   const goBack = () => setStep(Math.max(step - 1, 1));
 
-  useEffect(() => {
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
+  // useEffect(() => {
+  //   if (hasInitialized.current) return;
+  //   hasInitialized.current = true;
 
-    const loadBookingInit = async () => {
-      try {
-        const result = await createBookingSession();
+  //   const loadBookingInit = async () => {
+  //     try {
+  //       const result = await createBookingSession();
         
-        setMasterData({
-          foods: result.data.addons || [],
-          parkSettings: {},
-          regularTickets: result.data.tickets || result.data.ticketTypes || [],
-          offerTickets: result.data.offers || [],
-        });
+  //       setMasterData({
+  //         foods: result.data.addons || [],
+  //         parkSettings: {},
+  //         regularTickets: result.data.tickets || result.data.ticketTypes || [],
+  //         offerTickets: result.data.offers || [],
+  //       });
         
-        console.log("Booking Init Loaded:", result.data);
-      } catch (error) {
-        console.error("Failed to load booking initialization:", error);
-      }
-    };
+  //       console.log("Booking Init Loaded:", result.data);
+  //     } catch (error) {
+  //       console.error("Failed to load booking initialization:", error);
+  //     }
+  //   };
 
-    loadBookingInit();
-  }, [setMasterData]);
+  //   loadBookingInit();
+  // }, [setMasterData]);
+useEffect(() => {
+  console.log("🔥 BookingShell mounted");
 
+  if (hasInitialized.current) {
+    console.log("⏭️ Booking initialization already attempted");
+    return;
+  }
+
+  hasInitialized.current = true;
+
+  console.log("🚀 Creating booking session");
+
+  const loadBookingInit = async () => {
+    try {
+      const result = await createBookingSession();
+
+      console.log("✅ Booking session created:", result);
+
+      setMasterData({
+        foods: result.data.addons || [],
+        parkSettings: {},
+        regularTickets: result.data.tickets || result.data.ticketTypes || [],
+        offerTickets: result.data.offers || [],
+      });
+
+      console.log("📦 Booking Init Loaded:", result.data);
+    } catch (error) {
+      console.error("❌ Failed to load booking initialization:", error);
+    }
+  };
+
+  loadBookingInit();
+}, [setMasterData]);
   return (
     <div className="min-h-screen flex flex-col bk-premium-bg text-gray-800 font-sans">
       <BookingHeader />
 
       {/* Show stepper on steps 1-5 */}
-      {step < 6 && (
+      {step < 5 && (
         <BookingStepper currentStep={step} />
       )}
 
@@ -67,36 +103,29 @@ export default function BookingShell() {
           className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 box-border booking-content-glow"
           key={step}
         >
-          {step === 1 && <StepDateOffers onNext={goNext} />}
+          {step === 1 && <StepDateOffers onNext={goNext} initialOfferId={initialOfferId} />}
 
           {step === 2 && (
-            <StepTickets
-              onNext={goNext}
-              onBack={goBack}
-            />
-          )}
-
-          {step === 3 && (
             <StepAddons
               onNext={goNext}
               onBack={goBack}
             />
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <StepTraveller
               onNext={goNext}
               onBack={goBack}
             />
           )}
 
-          {step === 5 && (
+          {step === 4 && (
             <StepCheckout
               onBack={goBack}
             />
           )}
 
-          {step === 6 && <StepSuccess />}
+          {step === 5 && <StepSuccess />}
         </div>
       </main>
 

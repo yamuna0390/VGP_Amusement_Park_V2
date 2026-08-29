@@ -1,68 +1,82 @@
-const mysql = require("mysql2/promise");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const mysql = require('mysql2/promise');
 
-async function runTests() {
-  const conn = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "Yam@9809",
-    database: "amusement_park"
-  });
-
-  const [users] = await conn.execute("SELECT id FROM users LIMIT 1");
-  const testUserId = users.length > 0 ? users[0].id : null;
-
-  const API_URL = "http://localhost:5000/api/booking/session";
-  const JWT_SECRET = "vgp_backend_2026_super_secret_key";
-  
-  console.log("\n--- TEST A: NO AUTH HEADER ---");
-  const resA = await fetch(API_URL, { method: "POST" });
-  const headersA = [...resA.headers.entries()];
-  const cookieA = headersA.find(h => h[0].toLowerCase() === 'set-cookie')?.[1];
-  console.log("Status:", resA.status);
-  console.log("Set-Cookie:", cookieA);
-  
-  const tokenA = cookieA ? cookieA.split(";")[0].split("=")[1] : null;
-  const hashA = crypto.createHash("sha256").update(tokenA).digest("hex");
-  
-  const [rowsA] = await conn.execute("SELECT * FROM booking_sessions WHERE session_token_hash = ?", [hashA]);
-  const dbA = rowsA[0];
-  console.log("DB record user_id:", dbA.user_id);
-  console.log("DB record matches token hash?", dbA.session_token_hash === hashA);
-  console.log("DB booking_type:", dbA.booking_type);
-  console.log("DB current_step:", dbA.current_step);
-  console.log("DB expires_at:", dbA.expires_at);
-
-  let dbB = null;
-  let hashB = null;
-
-  if (testUserId) {
-    console.log("\n--- TEST B: VALID JWT ---");
-    const token = jwt.sign({ id: testUserId, email: "test@vgp.com", role: "customer" }, JWT_SECRET, { expiresIn: "1h" });
-    
-    const resB = await fetch(API_URL, { 
-      method: "POST", 
-      headers: { "Authorization": `Bearer ${token}` } 
+async function runTest(quantity) {
+    console.log('\n--- Testing Little Legend x' + quantity + ' ---');
+    let res = await fetch('http://localhost:5000/api/booking/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitDate: '2026-10-10' }) // Assume Saturday
     });
-    const headersB = [...resB.headers.entries()];
-    const cookieB = headersB.find(h => h[0].toLowerCase() === 'set-cookie')?.[1];
-    console.log("Status:", resB.status);
-    console.log("Set-Cookie:", cookieB);
+    let sessionData = await res.json();
+    let sessionId = sessionData.data.id;
+    let cookie = res.headers.get('set-cookie');
+    let cookieStr = cookie ? cookie.split(';')[0] : '';
     
-    const tokenB = cookieB ? cookieB.split(";")[0].split("=")[1] : null;
-    hashB = crypto.createHash("sha256").update(tokenB).digest("hex");
+    let offersRes = await fetch('http://localhost:5000/api/offers?visitDate=2026-10-10');
+    let offersDataResponse = await offersRes.json();
+    let offersData = offersDataResponse.data || offersDataResponse;
+    let littleLegend = offersData.find(o => o.displayName && o.displayName.toLowerCase().includes('little legend')) || offersData[0];
     
-    const [rowsB] = await conn.execute("SELECT * FROM booking_sessions WHERE session_token_hash = ?", [hashB]);
-    dbB = rowsB[0];
-    console.log("DB record user_id:", dbB.user_id);
-    console.log("DB record matches token hash?", dbB.session_token_hash === hashB);
-  }
-
-  console.log("\n--- VERIFICATION 8 ---");
-  console.log("Different tokens generated?", hashA !== hashB);
-
-  await conn.end();
+    let ticketsRes = await fetch('http://localhost:5000/api/tickets');
+    let ticketsData = await ticketsRes.json();
+    let adultTicket = ticketsData.find(t => t.name && t.name.toLowerCase().includes('adult')) || ticketsData[0];
+    
+    let itemsPayload = {
+        tickets: [{ ticketTypeId: adultTicket.id, quantity: 1 }],
+        offerTickets: [{ offerTicketId: littleLegend.id, quantity: quantity }],
+        addons: []
+    };
+    
+    let itemsRes = await fetch('http://localhost:5000/api/booking/session/items', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Cookie': cookieStr },
+        body: JSON.stringify(itemsPayload)
+    });
+    let itemsResData = await itemsRes.json();
+    if (!itemsResData.success) {
+        console.log("ITEMS FAILED:", itemsResData);
+    }
+    
+    let customerPayload = {
+        leadTravellerName: 'Test User', email: 'test@example.com', mobile: '9999999999'
+    };
+    let custRes = await fetch('http://localhost:5000/api/booking/session/customer', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Cookie': cookieStr },
+        body: JSON.stringify(customerPayload)
+    });
+    let custResData = await custRes.json();
+    if (!custResData.success) {
+        console.log("CUST FAILED:", custResData);
+    }
+    
+    res = await fetch('http://localhost:5000/api/booking/session/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': cookieStr }
+    });
+    let quoteData = await res.json();
+    console.log("QUOTE DATA:");
+    console.log(JSON.stringify(quoteData, null, 2));
+    
+    // DB inspection
+    require('dotenv').config();
+    const db = mysql.createPool({ 
+        host: process.env.DB_HOST || 'localhost', 
+        user: process.env.DB_USER || 'root', 
+        password: process.env.DB_PASSWORD || '', 
+        database: process.env.DB_NAME || 'vgp_park' 
+    });
+    const [items] = await db.query('SELECT * FROM booking_session_items WHERE session_id = ?', [sessionId]);
+    if(items.length > 0) {
+        const [components] = await db.query('SELECT * FROM booking_session_item_components WHERE session_item_id IN (?)', [items.map(i => i.id)]);
+        console.log('\nCOMPONENTS ROWS:');
+        console.log(components);
+    }
+    await db.end();
 }
 
-runTests().catch(console.error);
+async function main() {
+    await runTest(1);
+    await runTest(2);
+}
+main().catch(console.error);

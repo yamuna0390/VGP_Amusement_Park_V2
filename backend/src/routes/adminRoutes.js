@@ -53,4 +53,12 @@ router.get('/notifications', adminNotificationController.getNotifications);
 router.get('/notifications/unread-count', adminNotificationController.getUnreadCount);
 router.patch('/notifications/:id/read', adminNotificationController.markAsRead);
 
+// Admin Events
+const adminEventController = require('../controllers/adminEventController');
+router.get('/events', adminEventController.getAdminEvents);
+router.get('/events/:id', adminEventController.getAdminEventById);
+router.post('/events', adminEventController.createAdminEvent);
+router.put('/events/:id', adminEventController.updateAdminEvent);
+router.patch('/events/:id/status', adminEventController.updateAdminEventStatus);
+
 module.exports = router;

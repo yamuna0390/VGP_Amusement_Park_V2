@@ -1,65 +1,26 @@
 class BookingSessionResponseDTO {
+    /**
+     * API 1
+     * POST /api/booking/session
+     *
+     * Creates the clean initial booking-session response.
+     *
+     * API 1 intentionally does NOT return:
+     * - tickets
+     * - offers
+     * - offerMappings
+     * - offerSchedules
+     *
+     * Those are fetched through separate APIs.
+     */
     static fromEntities({
         sessionId,
         visitDate,
         bookingType,
         offerId,
         expiresAt,
-        tickets,
-        offers,
-        offerMappings,
-        offerSchedules,
         addons
     }) {
-        // Build ticket types
-        const ticketTypes = (tickets || []).map(t => ({
-            id: Number(t.id),
-            code: t.code,
-            name: t.name,
-            description: t.description,
-            price: Number(t.price),
-            displayOrder: Number(t.display_order)
-        }));
-
-        // Build offers with their nested mappings and schedules
-        const offersList = (offers || []).map(o => {
-            const mappings = (offerMappings || [])
-                .filter(m => m.offerId === o.id)
-                .map(m => ({
-                    ticketTypeId: Number(m.ticketTypeId),
-                    ticketCode: m.ticketCode,
-                    ticketName: m.ticketName,
-                    minQty: Number(m.minQty),
-                    freeQty: Number(m.freeQty)
-                }));
-
-            const schedules = (offerSchedules || [])
-                .filter(s => s.offerId === o.id)
-                .map(s => ({
-                    dayOfWeek: s.dayOfWeek,
-                    validFrom: s.validFrom,
-                    validUntil: s.validUntil
-                }));
-
-            return {
-                id: Number(o.id),
-                offerCode: o.offer_code,
-                offerName: o.offer_name,
-                instruction: o.instruction || "",
-                promotionType: o.promotion_type,
-                discountValue: Number(o.discount_value),
-                validFrom: o.valid_from,
-                validTo: o.valid_to,
-                minAdvanceDays: Number(o.min_advance_days || 0),
-                status: o.status,
-                priority: Number(o.priority),
-                eligible: o.eligible !== undefined ? o.eligible : true,
-                reason: o.reason || null,
-                ticketMappings: mappings,
-                scheduleRules: schedules
-            };
-        });
-
         // Build addons
         const addonsList = (addons || []).map(a => ({
             id: Number(a.id),
@@ -71,27 +32,25 @@ class BookingSessionResponseDTO {
             displayOrder: Number(a.displayOrder)
         }));
 
-        const selectedOffer = offerId ? offersList.find(o => o.id === offerId) : null;
-
-        const response = {
+        return {
             session: {
+                sessionId: sessionId,
                 visitDate: visitDate || null,
                 bookingType: bookingType || "REGULAR",
                 offerId: offerId || null,
-                offerCode: selectedOffer ? selectedOffer.offerCode : null,
-                offerName: selectedOffer ? selectedOffer.offerName : null,
                 currentStep: 1,
                 status: "ACTIVE",
                 expiresAt: expiresAt
             },
-            tickets: ticketTypes,
-            offers: offersList,
             addons: addonsList
         };
-
-        return response;
     }
 
+    /**
+     * PUT /api/booking/session/items
+     *
+     * Returns the updated ticket/addon selections.
+     */
     static fromSessionItems(session, items, offerMappings = []) {
         return {
             session: {
@@ -113,8 +72,17 @@ class BookingSessionResponseDTO {
                         paidQuantity: Number(i.paid_quantity),
                         freeQuantity: Number(i.free_quantity),
                         unitPrice: Number(i.unit_price_snapshot),
-                        pricingType: session.booking_type === 'OFFER' && offerMappings.some(m => m.offerId === session.offer_id && m.ticketTypeId === Number(i.ticket_type_id)) ? "OFFER" : "REGULAR"
+                        pricingType:
+                            session.booking_type === 'OFFER' &&
+                            offerMappings.some(
+                                m =>
+                                    m.offerId === session.offer_id &&
+                                    m.ticketTypeId === Number(i.ticket_type_id)
+                            )
+                                ? "OFFER"
+                                : "REGULAR"
                     })),
+
                 addons: items
                     .filter(i => i.item_type === 'ADDON')
                     .map(i => ({
@@ -129,6 +97,12 @@ class BookingSessionResponseDTO {
             }
         };
     }
+
+    /**
+     * PUT /api/booking/session/customer
+     *
+     * Returns updated customer information.
+     */
     static fromCustomerItems(session, customer) {
         return {
             customer: {

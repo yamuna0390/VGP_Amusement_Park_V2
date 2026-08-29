@@ -11,55 +11,62 @@ const addonRepository = require("../../repositories/catalog/addonRepository");
  * @param {Object} user - The authenticated user (optional)
  * @returns {Promise<Object>} An object containing the raw sessionToken and catalogue data
  */
+/**
+ * Creates a new booking session.
+ *
+ * API 1
+ * POST /api/booking/session
+ *
+ * Initial database state:
+ * - visit_date    = NULL
+ * - booking_type  = REGULAR
+ * - offer_id      = NULL
+ * - current_step  = 1
+ * - status        = ACTIVE
+ *
+ * API 1 returns only:
+ * - session
+ * - addons
+ *
+ * Tickets and offers are loaded by later APIs.
+ *
+ * @param {Object} user - The authenticated user (optional)
+ * @returns {Promise<Object>}
+ */
 async function createSession(user) {
     // 1. Generate secure random token
     const rawToken = generateToken();
-    
-    // 2. Hash token
+
+    // 2. Hash token for database storage
     const sessionTokenHash = hashToken(rawToken);
 
     // 3. Determine user_id
     const userId = user && user.id ? user.id : null;
 
-    // Calculate expiry (30 mins from now)
+    // 4. Calculate session expiry
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
-    // We do NOT use a long transaction for everything, just simple independent queries as requested.
-    
-    // 4. Create booking session
+    // 5. Create booking session
     const sessionId = await bookingSessionRepository.createSession({
         sessionTokenHash,
         userId,
-        expiresAt: expiresAt
+        expiresAt
     });
 
-    // Load catalogue
-    // 5. Load ticket types (only active ones for booking UI)
-    const tickets = await ticketRepository.getRegularTickets();
-    
-    // 6. Load offers
-    const offers = await offerRepository.getAllActiveOffers();
-
-    // 7. Load offer ticket mappings
-    const offerMappings = await offerRepository.getOfferTicketMappings();
-
-    // 8. Load offer schedule rules
-    const offerSchedules = await offerRepository.getOfferScheduleRules();
-
-    // 9. Load active addons
+    // 6. API 1 needs only active addons
     const addons = await addonRepository.getActiveAddons();
 
-    // 10. Return raw token and raw data 
-    // The Controller will pass this to DTO.
+    // 7. Return only data required by API 1
     return {
         rawToken,
         data: {
             sessionId,
-            expiresAt: expiresAt,
-            tickets,
-            offers,
-            offerMappings,
-            offerSchedules,
+            visitDate: null,
+            bookingType: "REGULAR",
+            offerId: null,
+            currentStep: 1,
+            status: "ACTIVE",
+            expiresAt,
             addons
         }
     };
@@ -95,9 +102,10 @@ function evaluateOffers(offers, visitDate, mappings, schedules) {
     const jsDayOfWeek = new Date(vDateUTC).getDay(); 
     const visitDayOfWeek = jsDayOfWeek === 0 ? 7 : jsDayOfWeek;
     
-    // Helper to extract YYYY-MM-DD from mysql Date (which is local time)
+    // Helper to extract YYYY-MM-DD from mysql Date (which is local time) or string
     const toYMD = (d) => {
         if (!d) return null;
+        if (typeof d === 'string') return d.substring(0, 10);
         return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
     };
 
@@ -176,6 +184,27 @@ function evaluateOffers(offers, visitDate, mappings, schedules) {
  * @param {string} rawToken 
  * @param {Object} payload 
  */
+/**
+ * Handles API 2.
+ *
+ * PATCH /api/booking/session
+ *
+ * API 2 only validates and saves the selected visit date.
+ *
+ * Request:
+ * {
+ *   "visitDate": "YYYY-MM-DD"
+ * }
+ *
+ * It does NOT:
+ * - require bookingType
+ * - require offerId
+ * - load tickets
+ * - load offers
+ * - load offer mappings
+ * - load offer schedules
+ * - load addons
+ */
 async function updateSession(rawToken, payload) {
     if (!rawToken) {
         const err = new Error("Session cookie missing");
@@ -185,7 +214,10 @@ async function updateSession(rawToken, payload) {
     }
 
     const sessionTokenHash = hashToken(rawToken);
-    const session = await bookingSessionRepository.getSessionByHash(sessionTokenHash);
+
+    const session = await bookingSessionRepository.getSessionByHash(
+        sessionTokenHash
+    );
 
     if (!session) {
         const err = new Error("Session not found");
@@ -194,15 +226,19 @@ async function updateSession(rawToken, payload) {
         throw err;
     }
 
-    if (session.status !== 'ACTIVE' || new Date(session.expires_at) <= new Date()) {
+    if (
+        session.status !== "ACTIVE" ||
+        new Date(session.expires_at) <= new Date()
+    ) {
         const err = new Error("Session has expired");
         err.statusCode = 403;
         err.code = "SESSION_EXPIRED";
         throw err;
     }
 
-    // Validate Visit Date
-    const vDate = new Date(payload.visitDate);
+    // Validate visit date
+    const vDate = new Date(`${payload.visitDate}T00:00:00`);
+
     if (isNaN(vDate.getTime())) {
         const err = new Error("Invalid visit date format.");
         err.statusCode = 400;
@@ -210,63 +246,43 @@ async function updateSession(rawToken, payload) {
         throw err;
     }
 
+    // Build today's date as YYYY-MM-DD
     const today = new Date();
-    const tDateStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
-    if (payload.visitDate < tDateStr) {
-        const err = new Error("The selected visit date cannot be in the past.");
+
+    const todayStr =
+        today.getFullYear() +
+        "-" +
+        String(today.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(today.getDate()).padStart(2, "0");
+
+    // Reject past dates
+    if (payload.visitDate < todayStr) {
+        const err = new Error(
+            "The selected visit date cannot be in the past."
+        );
         err.statusCode = 400;
         err.code = "VISIT_DATE_IN_PAST";
         throw err;
     }
 
-    // Load ALL catalogues for evaluation
-    const tickets = await ticketRepository.getRegularTickets();
-    const rawOffers = await offerRepository.getAllActiveOffers();
-    const offerMappings = await offerRepository.getOfferTicketMappings();
-    const offerSchedules = await offerRepository.getOfferScheduleRules();
-    const addons = await addonRepository.getActiveAddons();
-
-    const evaluatedOffers = evaluateOffers(rawOffers, payload.visitDate, offerMappings, offerSchedules);
-
-    // Validate OFFER selection
-    if (payload.bookingType === 'OFFER') {
-        const selectedOffer = evaluatedOffers.find(o => o.id === payload.offerId);
-        if (!selectedOffer) {
-            const err = new Error("Offer not found");
-            err.statusCode = 404;
-            err.code = "OFFER_NOT_FOUND";
-            throw err;
-        }
-        if (!selectedOffer.eligible) {
-            const err = new Error("This offer is not available for the selected visit date.");
-            err.statusCode = 400;
-            err.code = "OFFER_NOT_AVAILABLE";
-            throw err;
-        }
-    }
-
-    // Transactional Update
+    // Save ONLY the visit date.
+    // booking_type remains REGULAR from API 1.
+    // offer_id remains NULL until the user selects an offer.
     const connection = await db.getConnection();
+
     try {
         await connection.beginTransaction();
 
-        // Check Conflict (REGULAR vs OFFER) if items exist
-        const itemsCount = await bookingSessionRepository.getSessionItemsCount(session.id, connection);
-        if (itemsCount > 0 && session.booking_type !== payload.bookingType) {
-            const err = new Error("Regular tickets and offer tickets cannot be combined in the same booking.");
-            err.statusCode = 400;
-            err.code = "BOOKING_TYPE_CONFLICT";
-            throw err;
-        }
-
-        // Update booking_sessions
-        await bookingSessionRepository.updateSession(session.id, {
-            visit_date: payload.visitDate,
-            booking_type: payload.bookingType,
-            offer_id: payload.offerId || null,
-            current_step: 1,
-            last_activity_at: new Date()
-        }, connection);
+        await bookingSessionRepository.updateSession(
+            session.id,
+            {
+                visit_date: payload.visitDate,
+                current_step: 1,
+                last_activity_at: new Date()
+            },
+            connection
+        );
 
         await connection.commit();
     } catch (error) {
@@ -276,24 +292,20 @@ async function updateSession(rawToken, payload) {
         connection.release();
     }
 
-    // Return the updated session logic (pass back to controller)
-    const updatedSession = await bookingSessionRepository.getSessionByHash(sessionTokenHash);
+    // Fetch the updated session
+    const updatedSession =
+        await bookingSessionRepository.getSessionByHash(
+            sessionTokenHash
+        );
 
-    // We pass evaluatedOffers directly so DTO can include the 'eligible' and 'reason' flags
     return {
         sessionId: updatedSession.id,
         visitDate: updatedSession.visit_date,
         bookingType: updatedSession.booking_type,
         offerId: updatedSession.offer_id,
-        expiresAt: updatedSession.expires_at,
-        tickets,
-        offers: evaluatedOffers,
-        offerMappings,
-        offerSchedules,
-        addons
+        expiresAt: updatedSession.expires_at
     };
 }
-
 /**
  * Handles Step 2 API request (PUT /api/booking/session/items).
  * 
@@ -332,100 +344,108 @@ async function updateSessionItems(rawToken, payload) {
         throw err;
     }
 
-    // 1. Fetch requested tickets and addons from DB
-    const ticketIds = payload.tickets.map(t => t.ticketTypeId);
-    const dbTickets = await ticketRepository.getTicketsByIds(undefined, ticketIds); // using default connection
-
-    // Validate tickets
-    for (const requestedTicket of payload.tickets) {
-        const dbTicket = dbTickets.find(t => t.id === requestedTicket.ticketTypeId);
-        if (!dbTicket) {
-            const err = new Error("Ticket not found.");
-            err.statusCode = 404;
-            err.code = "TICKET_NOT_FOUND";
-            throw err;
-        }
-        // getTicketsByIds already filters by 'Active', but just in case
-    }
-    if (dbTickets.length !== ticketIds.length) {
-        const err = new Error("One or more tickets are not available.");
-        err.statusCode = 400;
-        err.code = "TICKET_NOT_AVAILABLE";
-        throw err;
-    }
-
+    // 1. Fetch all tickets and addons from DB
+    const allDbTickets = await ticketRepository.getActiveTickets();
+    
     // Validate addons
     const addonIds = payload.addons ? payload.addons.map(a => a.addonId) : [];
     let dbAddons = [];
     if (addonIds.length > 0) {
         dbAddons = await addonRepository.getActiveAddonsByIds(undefined, addonIds);
-        if (dbAddons.length !== addonIds.length) {
-            const err = new Error("One or more addons are not available.");
-            err.statusCode = 400;
-            err.code = "ADDON_NOT_AVAILABLE";
-            throw err;
-        }
     }
 
     // 2. Offer Validation (if booking_type === 'OFFER')
     let offer = null;
     let offerMappings = [];
-    if (session.booking_type === 'OFFER') {
+    if (session.booking_type === 'OFFER' || payload.offerTickets) {
         const allOffers = await offerRepository.getAllActiveOffers();
         offerMappings = await offerRepository.getOfferTicketMappings();
         const offerSchedules = await offerRepository.getOfferScheduleRules();
 
         const evaluatedOffers = evaluateOffers(allOffers, session.visit_date, offerMappings, offerSchedules);
         offer = evaluatedOffers.find(o => o.id === session.offer_id);
-
-        if (!offer) {
-            const err = new Error("Offer not found.");
-            err.statusCode = 404;
-            err.code = "OFFER_NOT_FOUND";
-            throw err;
-        }
-        if (!offer.eligible) {
-            const err = new Error(offer.reason || "This offer is not available for the selected visit date.");
-            err.statusCode = 400;
-            err.code = "OFFER_NOT_AVAILABLE";
-            throw err;
-        }
     }
 
     const itemsToInsert = [];
 
-    // 3. Process Tickets
-    for (const reqTicket of payload.tickets) {
-        const dbTicket = dbTickets.find(t => t.id === reqTicket.ticketTypeId);
-        const quantity = reqTicket.quantity;
-        let paidQuantity = quantity;
-        let freeQuantity = 0;
+    // 3. Process Regular Tickets
+    if (payload.tickets) {
+        for (const reqTicket of payload.tickets) {
+            const dbTicket = allDbTickets.find(t => t.id === reqTicket.ticketTypeId);
+            if (!dbTicket) continue;
+            itemsToInsert.push({
+                sessionId: session.id,
+                itemType: 'TICKET',
+                pricingType: 'REGULAR',
+                ticketTypeId: dbTicket.id,
+                addonId: null,
+                itemCode: dbTicket.code,
+                itemName: dbTicket.name,
+                quantity: reqTicket.quantity,
+                paidQuantity: reqTicket.quantity,
+                freeQuantity: 0,
+                unitPriceSnapshot: dbTicket.price
+            });
+        }
+    }
 
-        if (session.booking_type === 'OFFER') {
-            const mapping = offerMappings.find(m => m.offerId === offer.id && m.ticketTypeId === dbTicket.id);
+    // 3.5 Process Offer Tickets
+    if (payload.offerTickets) {
+        for (const reqOffer of payload.offerTickets) {
+            const mapping = offerMappings.find(m => m.id === reqOffer.offerTicketId);
             if (mapping) {
-                if (offer.promotion_type === 'BUY_X_GET_Y') {
-                    const minQty = mapping.minQty;
-                    const freeQty = mapping.freeQty;
-                    if (minQty > 0) {
-                        freeQuantity = Math.floor(quantity / minQty) * freeQty;
-                    }
+                const dbTicket = allDbTickets.find(t => t.id === mapping.buyTicketId);
+                if (!dbTicket) continue;
+
+                let quantity = reqOffer.quantity;
+                let buyQuantity = mapping.buyQuantity || 1;
+                let freeQuantity = mapping.freeQuantity || 0;
+                
+                let paidQuantity = quantity * buyQuantity;
+                let totalFreeQuantity = quantity * freeQuantity;
+                
+                // The price snapshot MUST be the offer price.
+                let offerPrice = mapping.offerPrice ?? dbTicket.price;
+
+                const parentItem = {
+                    sessionId: session.id,
+                    itemType: 'TICKET',
+                    pricingType: 'OFFER',
+                    ticketTypeId: dbTicket.id, // we save the underlying buyTicketId
+                    addonId: null,
+                    offerId: mapping.offerId,
+                    offerTicketId: mapping.id,
+                    itemCode: dbTicket.code,
+                    itemName: mapping.displayName || dbTicket.name,
+                    quantity,
+                    paidQuantity,
+                    freeQuantity: totalFreeQuantity, 
+                    unitPriceSnapshot: offerPrice,
+                    components: []
+                };
+
+                // BUY component
+                parentItem.components.push({
+                    componentType: 'BUY',
+                    ticketTypeId: dbTicket.id,
+                    quantity: paidQuantity,
+                    unitPriceSnapshot: dbTicket.price
+                });
+
+                // FREE component
+                if (mapping.freeTicketId && totalFreeQuantity > 0) {
+                    const freeDbTicket = allDbTickets.find(t => t.id === mapping.freeTicketId);
+                    parentItem.components.push({
+                        componentType: 'FREE',
+                        ticketTypeId: mapping.freeTicketId,
+                        quantity: totalFreeQuantity,
+                        unitPriceSnapshot: freeDbTicket ? freeDbTicket.price : 0
+                    });
                 }
+
+                itemsToInsert.push(parentItem);
             }
         }
-
-        itemsToInsert.push({
-            sessionId: session.id,
-            itemType: 'TICKET',
-            ticketTypeId: dbTicket.id,
-            addonId: null,
-            itemCode: dbTicket.code,
-            itemName: dbTicket.name,
-            quantity,
-            paidQuantity,
-            freeQuantity,
-            unitPriceSnapshot: dbTicket.price
-        });
     }
 
     // 4. Process Addons
@@ -436,6 +456,7 @@ async function updateSessionItems(rawToken, payload) {
             itemsToInsert.push({
                 sessionId: session.id,
                 itemType: 'ADDON',
+                pricingType: 'ADDON',
                 ticketTypeId: null,
                 addonId: dbAddon.id,
                 itemCode: dbAddon.code,
@@ -458,7 +479,13 @@ async function updateSessionItems(rawToken, payload) {
 
         // INSERT all new session items
         for (const item of itemsToInsert) {
-            await bookingSessionRepository.insertSessionItem(item, connection);
+            const insertedId = await bookingSessionRepository.insertSessionItem(item, connection);
+            if (item.components && item.components.length > 0) {
+                for (const comp of item.components) {
+                    comp.sessionItemId = insertedId;
+                    await bookingSessionRepository.insertSessionItemComponent(comp, connection);
+                }
+            }
         }
 
         // UPDATE booking_sessions (current_step = 2, last_activity_at = NOW)

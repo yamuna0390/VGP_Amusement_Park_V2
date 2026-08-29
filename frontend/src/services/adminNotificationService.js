@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from "@/constants/api";
 
 const getHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
@@ -43,6 +43,10 @@ export const adminNotificationService = {
       }
       return data.data.count;
     } catch (error) {
+      // Gracefully handle browser-level network interceptions (e.g. adblockers blocking "unread-count")
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        return null;
+      }
       console.error('Error fetching unread count:', error);
       throw error;
     }

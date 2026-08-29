@@ -10,6 +10,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+
+  // Keep MySQL DATE columns as YYYY-MM-DD strings.
+  // This prevents visit dates from being converted
+  // into JavaScript Date objects and shifted by timezone.
+  dateStrings: true,
 });
 
 module.exports = pool;

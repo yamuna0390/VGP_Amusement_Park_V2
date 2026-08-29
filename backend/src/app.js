@@ -24,7 +24,9 @@ const app = express();
  * Security Middleware
  * ==========================================
  */
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 /**
  * ==========================================
@@ -87,12 +89,15 @@ app.get("/api/health", (req, res) => {
 });
 
 const rideRoutes = require("./routes/rideRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const path = require("path");
 
 /**
  * ==========================================
  * API Routes
  * ==========================================
  */
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/coupons", couponRoutes);
@@ -102,6 +107,13 @@ app.use("/api/booking", bookingRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/group-quotes", groupQuoteRoutes);
 app.use("/api/rides", rideRoutes);
+app.use("/api/upload", uploadRoutes);
+
+const eventRoutes = require("./routes/eventRoutes");
+app.use("/api/events", eventRoutes);
+
+const operatorEnquiryRoutes = require("./routes/operatorEnquiryRoutes");
+app.use("/api/operator-enquiries", operatorEnquiryRoutes);
 /**
  * ==========================================
  * 404 Handler

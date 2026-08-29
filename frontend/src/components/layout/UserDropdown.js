@@ -60,6 +60,13 @@ export default function UserDropdown({ user, logout }) {
           >
             👤 My Profile
           </Link>
+          <Link 
+            href="/my-bookings" 
+            className="user-dropdown-item"
+            onClick={handleItemClick}
+          >
+            🎟️ My Bookings
+          </Link>
           <hr className="user-dropdown-divider" />
           <button 
             onClick={handleLogoutClick} 

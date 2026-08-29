@@ -3,17 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { getImageUrl } from "@/constants/api";
 import "./RideOverview.css";
 
 export default function RideOverview({ ride }) {
-  const gallery = ride?.gallery && ride.gallery.length > 0
-    ? ride.gallery
-    : [
-        ride?.heroImage || "/images/rides/castle-jet/card.webp",
-        "/images/rides/castle-jet/gallery-1.webp",
-        "/images/rides/castle-jet/gallery-2.webp",
-        "/images/rides/castle-jet/gallery-3.webp"
-      ];
+  const gallery = ride?.gallery && ride.gallery.length > 0 ? ride.gallery : [];
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -58,47 +52,54 @@ export default function RideOverview({ ride }) {
 
           {/* RIGHT COLUMN: Interactive Gallery & Carousel */}
           <div className="overview-right-col">
-            <div className="main-gallery-stage">
-              <Image
-                src={gallery[activeImageIndex] || ride?.heroImage || "/assets/images/rides/roller1.jpg"}
-                alt={`${ride?.n || "Ride"} View ${activeImageIndex + 1}`}
-                fill
-                priority
-                className="gallery-main-image"
-              />
-              <div className="gallery-badge">
-                Photo {activeImageIndex + 1} of {gallery.length}
-              </div>
+            {gallery.length > 0 ? (
+              <>
+                <div className="main-gallery-stage">
+                  <img
+                    src={getImageUrl(gallery[activeImageIndex])}
+                    alt={`${ride?.n || "Ride"} View ${activeImageIndex + 1}`}
+                    className="gallery-main-image"
+                  />
+                  <div className="gallery-badge">
+                    Photo {activeImageIndex + 1} of {gallery.length}
+                  </div>
 
-              {gallery.length > 1 && (
-                <>
-                  <button className="gallery-nav-btn prev" onClick={handlePrev} aria-label="Previous Image">
-                    <ChevronLeft size={22} />
-                  </button>
-                  <button className="gallery-nav-btn next" onClick={handleNext} aria-label="Next Image">
-                    <ChevronRight size={22} />
-                  </button>
-                </>
-              )}
-            </div>
+                  {gallery.length > 1 && (
+                    <>
+                      <button className="gallery-nav-btn prev" onClick={handlePrev} aria-label="Previous Image">
+                        <ChevronLeft size={22} />
+                      </button>
+                      <button className="gallery-nav-btn next" onClick={handleNext} aria-label="Next Image">
+                        <ChevronRight size={22} />
+                      </button>
+                    </>
+                  )}
+                </div>
 
-            {/* Carousel Thumbnails */}
-            {gallery.length > 1 && (
-              <div className="gallery-thumbnails-carousel">
-                {gallery.map((imgUrl, index) => (
-                  <button
-                    key={index}
-                    className={`thumbnail-btn ${index === activeImageIndex ? "active" : ""}`}
-                    onClick={() => setActiveImageIndex(index)}
-                  >
-                    <Image
-                      src={imgUrl}
-                      alt={`Thumbnail ${index + 1}`}
-                      fill
-                      className="thumbnail-img"
-                    />
-                  </button>
-                ))}
+                {/* Carousel Thumbnails */}
+                {gallery.length > 1 && (
+                  <div className="gallery-thumbnails-carousel">
+                    {gallery.map((imgUrl, index) => (
+                      <button
+                        key={index}
+                        className={`thumbnail-btn ${index === activeImageIndex ? "active" : ""}`}
+                        onClick={() => setActiveImageIndex(index)}
+                      >
+                        <Image
+                          src={getImageUrl(imgUrl)}
+                          alt={`Thumbnail ${index + 1}`}
+                          fill
+                          unoptimized
+                          className="thumbnail-img"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="main-gallery-stage" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#94a3b8' }}>
+                <span style={{ fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gallery Unavailable</span>
               </div>
             )}
           </div>

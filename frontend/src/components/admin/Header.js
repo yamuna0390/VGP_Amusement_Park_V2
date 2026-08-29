@@ -33,7 +33,7 @@ export default function Header() {
       const interval = setInterval(async () => {
         try {
           const newCount = await adminNotificationService.getUnreadCount();
-          if (newCount !== unreadCountRef.current) {
+          if (newCount !== null && newCount !== unreadCountRef.current) {
             loadNotifications();
           }
         } catch (error) {

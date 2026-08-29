@@ -10,6 +10,8 @@ const { generateBookingPdf } = require('../services/pdf/pdfService');
 const downloadPdf = async (req, res, next) => {
     try {
         const { qrToken } = req.params;
+        console.log("=== PDF CONTROLLER TRACE ===");
+        console.log("downloadPdf invoked for token length:", qrToken ? qrToken.length : 0);
 
         if (!qrToken || qrToken.length < 32) {
             return res.status(400).json({ success: false, message: "Invalid authorization token format" });

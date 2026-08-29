@@ -34,11 +34,11 @@ export default function Invoice({ booking }) {
   const quote = bookingResult?.quote;
   const qrToken = bookingResult?.qr_token || null;
   
-  const displayGrandTotal = quote ? quote.grandTotal : (grand_total !== undefined ? grand_total : grandTotal);
+  const displayGrandTotal = quote ? quote.grandTotal : (grandTotal !== undefined ? grandTotal : 0);
   const displaySubtotal = quote ? quote.subtotal : subtotal;
   const displayOfferName = selectedOffer?.title || offer_name;
   const displayCouponCode = couponCode || coupon_code;
-  const displayDiscount = discount || 0;
+  const displayDiscount = quote?.totalDiscount !== undefined ? quote.totalDiscount : (discount || 0);
   const displaySavings = savings || displayDiscount;
 
   // Normalize items to a consistent format (handle both camelCase from live API and snake_case from DB)
@@ -208,26 +208,70 @@ export default function Invoice({ booking }) {
                 <>
                   {rawItems.flatMap((item, idx) => {
                     const rows = [];
-                    if (item.paidQuantity > 0) {
+                    
+                    if (item.pricingType === "OFFER" && item.components && item.components.length > 0) {
                       rows.push(
-                        <tr key={`${item.code || idx}-paid`} style={{ borderBottom: "1px solid #f3effa" }}>
+                        <tr key={`${item.code || idx}-parent`} style={{ borderBottom: "none" }}>
+                          <td style={{ padding: "10px 0 2px 0", fontWeight: "700" }}>{item.name}</td>
+                          <td style={{ padding: "10px 0 2px 0", textAlign: "center" }}>{item.quantity}</td>
+                          <td style={{ padding: "10px 0 2px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
+                          <td style={{ padding: "10px 0 2px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
+                        </tr>
+                      );
+                      
+                      item.components.forEach((comp, cIdx) => {
+                        const isFree = comp.componentType === "FREE";
+                        rows.push(
+                          <tr key={`${item.code || idx}-comp-${cIdx}`} style={{ borderBottom: cIdx === item.components.length - 1 ? "1px solid #f3effa" : "none" }}>
+                            <td style={{ padding: "2px 0 6px 15px", fontSize: "0.8rem", color: "#555" }}>
+                              {comp.componentType}: {comp.name}
+                            </td>
+                            <td style={{ padding: "2px 0 6px 0", textAlign: "center", fontSize: "0.8rem", color: "#555" }}>
+                              {comp.quantity}
+                            </td>
+                            <td style={{ padding: "2px 0 6px 0", textAlign: "right", fontSize: "0.8rem", color: "#555" }}>
+                              {isFree ? "FREE" : "Included"}
+                            </td>
+                            <td style={{ padding: "2px 0 6px 0", textAlign: "right", fontSize: "0.8rem", color: isFree ? "#2e7d32" : "#555" }}>
+                              {isFree ? "₹0.00" : "-"}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    } else if (item.pricingType === "REGULAR" && (!item.freeQuantity || item.freeQuantity === 0)) {
+                      rows.push(
+                        <tr key={`${item.code || idx}-reg`} style={{ borderBottom: "1px solid #f3effa" }}>
                           <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
-                          <td style={{ padding: "10px 0", textAlign: "center" }}>{item.paidQuantity}</td>
+                          <td style={{ padding: "10px 0", textAlign: "center" }}>{item.quantity || item.paidQuantity}</td>
                           <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
                           <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
                         </tr>
                       );
+                    } else {
+                      // Fallback for missing components or older structure
+                      if (item.paidQuantity > 0 || (item.quantity > 0 && !item.freeQuantity)) {
+                        const qty = item.paidQuantity || item.quantity;
+                        rows.push(
+                          <tr key={`${item.code || idx}-paid`} style={{ borderBottom: "1px solid #f3effa" }}>
+                            <td style={{ padding: "10px 0", fontWeight: "500" }}>{item.name}</td>
+                            <td style={{ padding: "10px 0", textAlign: "center" }}>{qty}</td>
+                            <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.unitPrice)}</td>
+                            <td style={{ padding: "10px 0", textAlign: "right" }}>{fmt(item.amount)}</td>
+                          </tr>
+                        );
+                      }
+                      if (item.freeQuantity > 0) {
+                        rows.push(
+                          <tr key={`${item.code || idx}-free`} style={{ borderBottom: "1px solid #f3effa" }}>
+                            <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
+                            <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
+                            <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
+                            <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
+                          </tr>
+                        );
+                      }
                     }
-                    if (item.freeQuantity > 0) {
-                      rows.push(
-                        <tr key={`${item.code || idx}-free`} style={{ borderBottom: "1px solid #f3effa" }}>
-                          <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
-                          <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
-                          <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
-                          <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
-                        </tr>
-                      );
-                    }
+                    
                     return rows;
                   })}
                   {bookingResult?.purchaseSummary?.addons?.map((item, idx) => (

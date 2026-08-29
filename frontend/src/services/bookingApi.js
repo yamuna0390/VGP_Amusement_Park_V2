@@ -23,6 +23,46 @@ export async function getTickets() {
   return result.data;
 }
 /**
+ * Get active offers available for a specific visit date.
+ *
+ * GET /api/offers?visitDate=YYYY-MM-DD
+ */
+export async function getOffersByDate(visitDate) {
+  if (!visitDate) {
+    throw new Error("Visit date is required to load offers.");
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/offers?visitDate=${encodeURIComponent(visitDate)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
+
+  let result = null;
+
+  try {
+    result = await response.json();
+  } catch {
+    throw new Error(
+      "Unable to read offer information from the server."
+    );
+  }
+
+  if (!response.ok || !result?.success) {
+    throw new Error(
+      result?.message ||
+        "Failed to load offers for the selected date."
+    );
+  }
+
+  return Array.isArray(result?.data)
+    ? result.data
+    : [];
+}
+/**
  * Create a new booking
  */
 export async function createBooking(payload) {
@@ -127,7 +167,7 @@ export async function createBookingSession() {
     const response = await fetch(`${API_BASE_URL}/booking/session`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({}),
     });
 
@@ -153,7 +193,7 @@ export async function updateBookingSession(payload) {
     const response = await fetch(`${API_BASE_URL}/booking/session`, {
       method: "PATCH",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -179,7 +219,7 @@ export async function updateBookingItems(payload) {
     const response = await fetch(`${API_BASE_URL}/booking/session/items`, {
       method: "PUT",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -205,7 +245,7 @@ export async function updateCustomerInfo(payload) {
     const response = await fetch(`${API_BASE_URL}/booking/session/customer`, {
       method: "PUT",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -231,7 +271,7 @@ export async function generateBookingQuote() {
     const response = await fetch(`${API_BASE_URL}/booking/session/quote`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
     });
 
     const result = await response.json();
@@ -256,7 +296,7 @@ export async function createPaymentOrder() {
     const response = await fetch(`${API_BASE_URL}/booking/payment/order`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({}),
     });
 
@@ -311,7 +351,7 @@ export async function verifyPayment(payload) {
     const response = await fetch(`${API_BASE_URL}/booking/payment/verify`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -322,8 +362,30 @@ export async function verifyPayment(payload) {
     }
 
     return result;
+
   } catch (error) {
-    console.error("Payment Verification API Error:", error);
+    console.error("Verify Payment API Error:", error);
     throw error;
+  }
+}
+/**
+ * Get active meals/addons
+ * GET /meals
+ */
+export async function getMeals() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/meals`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Failed to retrieve active add-ons. Please try again.");
+    }
+
+    return result.data || [];
+  } catch (error) {
+    throw new Error(
+      error.message ||
+      "Failed to retrieve active add-ons. Please try again."
+    );
   }
 }

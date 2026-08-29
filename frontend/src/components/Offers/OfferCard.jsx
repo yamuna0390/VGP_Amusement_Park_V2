@@ -106,6 +106,30 @@ export default function OfferCard({
           )}
         </button>
       </div>
+
+      {/* Footer Arrow Action */}
+      <div className="bk-compact-offer-footer-action">
+        <button
+          type="button"
+          className="bk-compact-offer-arrow"
+          aria-label={`Select ${offer.offerName}`}
+          onClick={handleApply}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

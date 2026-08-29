@@ -36,7 +36,6 @@ async function sendWhatsAppText(toContact, message) {
             body: JSON.stringify(payload)
         });
 
-        // Try to parse JSON safely
         let data = {};
         const textResponse = await response.text();
         try {
@@ -45,17 +44,27 @@ async function sendWhatsAppText(toContact, message) {
             data = { error: "Non-JSON response", raw: textResponse };
         }
 
-        if (!response.ok) {
+        const logicalStatus = data.status || 'N/A';
+        const providerMessage = data.message || data.error || data.raw || "N/A";
+        
+        let messageId = data.message_id || data.id || null;
+        if (!messageId && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            messageId = data.data[0].id || null;
+        }
+
+        console.log(`[QikChat API - Text] HTTP: ${response.status} | Status: ${logicalStatus} | Message: ${providerMessage} | MsgID: ${messageId || 'N/A'}`);
+
+        if (!response.ok || logicalStatus === "error" || logicalStatus === "failed") {
             return {
                 success: false,
                 status: response.status,
-                error: data.message || data.error || data.raw || "Failed to send WhatsApp message"
+                error: providerMessage !== "N/A" ? providerMessage : "Failed to send WhatsApp message"
             };
         }
 
         return {
             success: true,
-            messageId: data.message_id || data.id || null,
+            messageId: messageId,
             status: response.status,
             providerResponse: data
         };
@@ -113,17 +122,27 @@ async function sendWhatsAppDocument(toContact, documentLink, documentFilename) {
             data = { error: "Non-JSON response", raw: textResponse };
         }
 
-        if (!response.ok) {
+        const logicalStatus = data.status || 'N/A';
+        const providerMessage = data.message || data.error || data.raw || "N/A";
+        
+        let messageId = data.message_id || data.id || null;
+        if (!messageId && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            messageId = data.data[0].id || null;
+        }
+
+        console.log(`[QikChat API - Document] HTTP: ${response.status} | Status: ${logicalStatus} | Message: ${providerMessage} | MsgID: ${messageId || 'N/A'}`);
+
+        if (!response.ok || logicalStatus === "error" || logicalStatus === "failed") {
             return {
                 success: false,
                 status: response.status,
-                error: data.message || data.error || data.raw || "Failed to send WhatsApp document"
+                error: providerMessage !== "N/A" ? providerMessage : "Failed to send WhatsApp document"
             };
         }
 
         return {
             success: true,
-            messageId: data.message_id || data.id || null,
+            messageId: messageId,
             status: response.status,
             providerResponse: data
         };
@@ -202,17 +221,27 @@ async function sendWhatsAppBookingTemplate(toContact, customerName, bookingNumbe
             data = { error: "Non-JSON response", raw: textResponse };
         }
 
-        if (!response.ok) {
+        const logicalStatus = data.status || 'N/A';
+        const providerMessage = data.message || data.error || data.raw || "N/A";
+        
+        let messageId = data.message_id || data.id || null;
+        if (!messageId && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            messageId = data.data[0].id || null;
+        }
+
+        console.log(`[QikChat API - Template] HTTP: ${response.status} | Status: ${logicalStatus} | Message: ${providerMessage} | MsgID: ${messageId || 'N/A'}`);
+
+        if (!response.ok || logicalStatus === "error" || logicalStatus === "failed") {
             return {
                 success: false,
                 status: response.status,
-                error: data.message || data.error || data.raw || "Failed to send WhatsApp template"
+                error: providerMessage !== "N/A" ? providerMessage : "Failed to send WhatsApp template"
             };
         }
 
         return {
             success: true,
-            messageId: data.message_id || data.id || null,
+            messageId: messageId,
             status: response.status,
             providerResponse: data
         };

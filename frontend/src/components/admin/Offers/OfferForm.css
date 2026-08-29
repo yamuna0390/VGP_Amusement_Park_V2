@@ -1,111 +1,596 @@
-.offer-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+/* =========================================================
+   OFFER FORM
+   ========================================================= */
 
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group-full {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 14px;
-  font-family: inherit;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+.offer-form-container {
   background: #ffffff;
-  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  width: 100%;
   box-sizing: border-box;
-  transition: all 0.2s ease;
 }
 
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
+.offer-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eeeeee;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.offer-form-title-block {
+  min-width: 0;
+}
+
+.offer-form-title-block h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.offer-form-title-block p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #888888;
+}
+
+.offer-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.offer-btn {
+  min-height: 38px;
+  padding: 9px 16px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.offer-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.offer-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* Checkbox */
+.offer-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
 
-.checkbox-label {
+.offer-btn-secondary {
+  background: #f7f7f7;
+  color: #444444;
+  border-color: #dddddd;
+}
+
+.offer-btn-secondary:hover:not(:disabled) {
+  background: #eeeeee;
+  border-color: #d2d2d2;
+}
+
+.offer-btn-sm {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   FORM LAYOUT
+   ========================================================= */
+
+.offer-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.offer-form-section {
+  background: #fcfcfc;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.offer-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.offer-section-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #333333;
+}
+
+.offer-section-heading p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #888888;
+}
+
+.offer-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.offer-form-row:last-child {
+  margin-bottom: 0;
+}
+
+.offer-form-row > .offer-form-group {
+  flex: 1;
+}
+
+.offer-form-group {
+  margin-bottom: 16px;
+  min-width: 0;
+}
+
+.offer-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.offer-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #555555;
+}
+
+.offer-form-group label span {
+  color: #dc2626;
+}
+
+.offer-form-group input,
+.offer-form-group select,
+.offer-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #333333;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.offer-form-group input,
+.offer-form-group select {
+  height: 40px;
+}
+
+.offer-form-group textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.offer-form-group input:focus,
+.offer-form-group select:focus,
+.offer-form-group textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.offer-form-group input::placeholder,
+.offer-form-group textarea::placeholder {
+  color: #aaaaaa;
+}
+
+.offer-form-group small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #888888;
+}
+
+
+/* =========================================================
+   OFFER RULE SUMMARY
+   ========================================================= */
+
+.offer-rule-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.offer-rule-summary-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #777777;
+}
+
+.offer-rule-summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+
+/* =========================================================
+   TICKET SECTION
+   ========================================================= */
+
+.offer-ticket-section {
+  padding-bottom: 20px;
+}
+
+.offer-section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.offer-section-header-flex h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.offer-section-header-flex p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #888888;
+}
+
+.offer-ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.offer-ticket-card {
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.offer-ticket-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.offer-ticket-card-header > div {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
+  min-width: 0;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.offer-ticket-card-header strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.offer-ticket-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: #eeeeee;
+  color: #777777;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.offer-ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  padding: 16px;
+}
+
+.offer-ticket-grid .offer-form-group {
+  margin-bottom: 16px;
+}
+
+.offer-ticket-grid .offer-form-group:nth-last-child(-n + 2) {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   ICON BUTTONS
+   ========================================================= */
+
+.offer-icon-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.offer-icon-btn-danger {
+  color: #e74c3c;
+  background: #fde8e6;
+}
+
+.offer-icon-btn-danger:hover {
+  background: #fbcbc7;
+  border-color: #f5b8b3;
+}
+
+
+/* =========================================================
+   PRICE PREVIEW
+   ========================================================= */
+
+.offer-price-preview {
+  min-height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  background: #f8fafc;
+}
+
+.offer-price-original {
+  color: #999999;
+  font-size: 13px;
+  text-decoration: line-through;
+}
+
+.offer-price-arrow {
+  color: #aaaaaa;
+  font-size: 13px;
+}
+
+.offer-price-preview strong {
+  color: #15803d;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   EMPTY / LOADING
+   ========================================================= */
+
+.offer-loading {
+  padding: 28px 16px;
+  text-align: center;
+  color: #888888;
+  font-size: 13px;
+  border: 1px dashed #dddddd;
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.offer-empty-state {
+  padding: 28px 16px;
+  text-align: center;
+  border: 1px dashed #d8d8d8;
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.offer-empty-state p {
+  margin: 0 0 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666666;
+}
+
+.offer-empty-state span {
+  font-size: 12px;
+  color: #999999;
+}
+
+
+/* =========================================================
+   SCHEDULE
+   ========================================================= */
+
+.offer-schedule-note {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #777777;
+  font-size: 12px;
+}
+
+.offer-day-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.offer-day-option {
+  min-width: 110px;
+  padding: 9px 12px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #555555;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.offer-day-option input {
+  width: 15px;
+  height: 15px;
   margin: 0;
   cursor: pointer;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 10px 22px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+.offer-day-option-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
   font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
 }
 
-.btn-primary {
-  background: #2563eb;
-  color: #ffffff;
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .offer-form-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .offer-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .offer-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .offer-ticket-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .offer-ticket-grid .offer-form-group:nth-last-child(-n + 2) {
+    margin-bottom: 16px;
+  }
+
+  .offer-ticket-grid .offer-form-group:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.btn-primary:hover {
-  background: #1d4ed8;
-}
+@media (max-width: 600px) {
+  .offer-form-container {
+    padding: 16px;
+  }
 
-.btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
-}
+  .offer-form-section {
+    padding: 16px;
+  }
 
-.btn-secondary:hover {
-  background: #e5e7eb;
+  .offer-form-header {
+    gap: 16px;
+  }
+
+  .offer-header-actions {
+    justify-content: stretch;
+  }
+
+  .offer-header-actions .offer-btn {
+    flex: 1;
+  }
+
+  .offer-section-header-flex {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .offer-section-header-flex .offer-btn {
+    width: 100%;
+  }
+
+  .offer-ticket-card-header {
+    align-items: flex-start;
+  }
+
+  .offer-ticket-card-header > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .offer-day-option {
+    min-width: calc(50% - 5px);
+  }
 }

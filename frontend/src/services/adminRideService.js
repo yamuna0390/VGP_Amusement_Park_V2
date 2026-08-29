@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL } from "@/constants/api";
 
 const getHeaders = () => {
   const headers = { 'Content-Type': 'application/json' };
@@ -107,6 +107,57 @@ class AdminRideService {
       return data.data;
     } catch (error) {
       console.error('Error updating ride status:', error);
+      throw error;
+    }
+  }
+  async uploadImage(file) {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const headers = { ...getHeaders() };
+      delete headers['Content-Type']; // Let browser set multipart boundary
+
+      const response = await fetch(`${API_BASE_URL}/upload`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) {
+        console.error("Backend Error:", data);
+        throw new Error(data.message || 'Failed to upload image');
+      }
+      return data.url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  }
+
+  async uploadRideImage(file, slug, type = 'main') {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const headers = { ...getHeaders() };
+      delete headers['Content-Type'];
+
+      const response = await fetch(`${API_BASE_URL}/upload/ride/${slug}?type=${type}`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) {
+        console.error("Backend Error:", data);
+        throw new Error(data.message || 'Failed to upload ride image');
+      }
+      return data.url; // Returns /uploads/rides/slug/...
+    } catch (error) {
+      console.error('Error uploading ride image:', error);
       throw error;
     }
   }

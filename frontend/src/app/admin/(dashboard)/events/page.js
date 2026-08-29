@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 
 import eventsData from "@/data/events";
@@ -11,6 +11,43 @@ import EventForm from "@/components/admin/Events/EventForm";
 
 export default function EventsPage() {
   const [events, setEvents] = useState(eventsData);
+
+  // Fetch events from backend and merge
+  useEffect(() => {
+    async function loadBackendEvents() {
+      try {
+        const { adminEventService } = await import("@/services/adminEventService");
+        const backendEvents = await adminEventService.getEvents();
+        if (backendEvents && backendEvents.length > 0) {
+          const mapped = backendEvents.map(be => ({
+            id: be.event_code || `EVT-B-${be.id}`,
+            name: be.event_name,
+            type: be.event_type,
+            description: be.description || "",
+            venue: be.venue || "",
+            capacity: be.capacity || 0,
+            startDate: be.start_date,
+            endDate: be.end_date,
+            startTime: be.start_time || "",
+            endTime: be.end_time || "",
+            status: be.status === 'LIVE' ? 'Live' : 'Upcoming',
+            image_url: be.image_url,
+            backend_id: be.id // Keep track of DB ID
+          }));
+          
+          setEvents(prev => {
+            // simple merge avoiding duplicates by event_code
+            const existingIds = new Set(prev.map(p => p.id));
+            const newEvents = mapped.filter(m => !existingIds.has(m.id));
+            return [...newEvents, ...prev];
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load backend events", err);
+      }
+    }
+    loadBackendEvents();
+  }, []);
 
   const [search, setSearch] = useState("");
   const [type, setType] = useState("All");
@@ -63,7 +100,38 @@ export default function EventsPage() {
     );
   }
 
-  function handleSave(event) {
+  async function handleSave(event) {
+    try {
+      const { adminEventService } = await import("@/services/adminEventService");
+      
+      const payload = {
+        event_name: event.name,
+        event_type: event.type,
+        description: event.description,
+        venue: event.venue,
+        capacity: event.capacity,
+        start_date: event.startDate,
+        end_date: event.endDate,
+        start_time: event.startTime,
+        end_time: event.endTime,
+        image_url: event.image_url,
+        status: event.status.toUpperCase() === 'LIVE' ? 'LIVE' : 'UPCOMING'
+      };
+
+      if (editingEvent && event.id && !event.id.startsWith('EVT00')) {
+        // Update existing backend event
+        await adminEventService.updateEvent(event.id, payload);
+      } else if (!editingEvent) {
+        // Create new backend event
+        const res = await adminEventService.createEvent(payload);
+        event.id = res.data.id;
+      }
+    } catch (err) {
+      console.error("Failed to save event to backend:", err);
+      alert("Failed to save to database. Image URL may be missing or invalid.");
+      return;
+    }
+
     if (editingEvent) {
       setEvents((prev) =>
         prev.map((item) =>
@@ -73,7 +141,7 @@ export default function EventsPage() {
     } else {
       const newEvent = {
         ...event,
-        id: `EVT${String(events.length + 1).padStart(3, "0")}`,
+        id: event.id || `EVT${String(events.length + 1).padStart(3, "0")}`,
         createdDate: new Date()
           .toISOString()
           .split("T")[0],

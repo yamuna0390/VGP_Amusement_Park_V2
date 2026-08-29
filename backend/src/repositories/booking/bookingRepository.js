@@ -365,5 +365,57 @@ module.exports = {
     markBookingRedeemed,
     getAllBookings,
     getAdminBookingDetailsById,
-    createBookingItems
+    createBookingItems,
+    findBookingsByUserId
 };
+
+/**
+ * Retrieves all bookings for a specific customer user ID.
+ * 
+ * @param {number} userId - The user ID of the authenticated customer
+ * @param {object} connection - Optional transaction connection
+ */
+async function findBookingsByUserId(userId, connection = db) {
+    const query = `
+        SELECT 
+            b.id,
+            b.booking_number,
+            b.booking_status,
+            b.payment_status,
+            b.visit_date,
+            b.created_at,
+            b.guest_name,
+            b.grand_total
+        FROM bookings b
+        WHERE b.user_id = ?
+        ORDER BY b.created_at DESC
+    `;
+    const [bookings] = await connection.execute(query, [userId]);
+
+    if (!bookings.length) return [];
+
+    // Fetch items for all these bookings
+    const bookingIds = bookings.map(b => b.id);
+    const placeholders = bookingIds.map(() => '?').join(',');
+    
+    const itemsQuery = `
+        SELECT booking_id, item_type, item_name, quantity, final_amount 
+        FROM booking_items 
+        WHERE booking_id IN (${placeholders})
+    `;
+    const [items] = await connection.execute(itemsQuery, bookingIds);
+
+    // Group items by booking
+    const itemsByBookingId = items.reduce((acc, item) => {
+        if (!acc[item.booking_id]) acc[item.booking_id] = [];
+        acc[item.booking_id].push(item);
+        return acc;
+    }, {});
+
+    // Attach items to bookings
+    for (const booking of bookings) {
+        booking.items = itemsByBookingId[booking.id] || [];
+    }
+
+    return bookings;
+}

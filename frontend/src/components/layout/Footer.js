@@ -9,9 +9,9 @@ export default function Footer() {
           <h3>VGP Universal Kingdom</h3>
           <p>East Coast Road, Injambakkam,<br/>Chennai, Tamil Nadu 600115</p>
           <div className="ft-soc">
-            <a href="#" aria-label="Facebook">fb</a>
-            <a href="#" aria-label="Instagram">ig</a>
-            <a href="#" aria-label="YouTube">yt</a>
+            <a href="https://www.facebook.com/vgpuniversalkingdom/" aria-label="Facebook">fb</a>
+            <a href="https://www.instagram.com/vgp_universal_kingdom/?hl=en" aria-label="Instagram">ig</a>
+            <a href="https://www.youtube.com/results?search_query=VGP+UNIVERSAL+KINGDOM" aria-label="YouTube">yt</a>
           </div>
         </div>
         <div className="ft-col">
@@ -24,10 +24,10 @@ export default function Footer() {
         </div>
         <div className="ft-col">
           <h4>Information</h4>
-          <Link href="/about">About Us</Link>
+          <Link href="/aboutus">About Us</Link>
           <Link href="/contact">Contact Us</Link>
-          <a href="#" onClick={(e) => { e.preventDefault(); alert("Terms & Conditions"); }}>Terms &amp; Conditions</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); alert("Privacy Policy"); }}>Privacy Policy</a>
+          <Link href="/terms-and-conditions">Terms &amp; Conditions</Link>
+          <Link href="/privacy-policy">Privacy Policy</Link>
           <Link href="/awards">Awards</Link>
         </div>
         <div className="ft-col">

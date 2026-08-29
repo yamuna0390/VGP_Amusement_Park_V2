@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { fetchRides } from "@/services/rideApi";
+import { getImageUrl } from "@/constants/api";
 import { IC } from "@/data/rideIcons";
 import Pill from "@/components/ui/Pill";
 import RideVideoPreview from "@/components/ui/RideVideoPreview";
@@ -100,9 +101,10 @@ export default function Rides() {
 >
   {hasImage ? (
     <Image
-      src={ride.img}
+      src={getImageUrl(ride.img)}
       alt={ride.n}
       fill
+      unoptimized
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       className="ride-photo"
       loading="lazy"

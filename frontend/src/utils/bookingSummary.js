@@ -1,21 +1,51 @@
 /**
- * Pure utility functions for calculating booking summaries, totals, and preparing payloads.
- * No React, Context, API calls, or UI dependencies.
+ * Pure booking summary utilities.
+ *
+ * New booking flow:
+ * Step 1:
+ *   - Regular tickets + quantities
+ *   - Offer tickets + quantities
+ *
+ * Step 2:
+ *   - Add-ons
+ *
+ * Step 3:
+ *   - Customer information
+ *
+ * Step 4:
+ *   - Checkout
+ *
+ * Regular tickets and offer tickets are independent items.
+ * No old selectedOffer/ticketMappings pricing logic is applied.
  */
 
 /**
- * Returns selected regular tickets with quantity > 0.
- * @param {Object} ticketQty - Map of ticketId -> quantity
- * @param {Array} regularTickets - Array of regular ticket objects
- * @returns {Array<{ticketId: string|number, quantity: number}>}
+ * Get selected regular tickets.
  */
-export function getSelectedRegularTickets(ticketQty = {}, regularTickets = []) {
+export function getSelectedRegularTickets(
+  ticketQty = {},
+  regularTickets = []
+) {
   const selected = [];
-  if (!ticketQty || !Array.isArray(regularTickets)) return selected;
+
+  if (!ticketQty || !Array.isArray(regularTickets)) {
+    return selected;
+  }
 
   regularTickets.forEach((ticket) => {
-    const ticketId = ticket.ticketId !== undefined ? ticket.ticketId : ticket.id;
-    const qty = Number(ticketQty[ticketId] || ticketQty[String(ticketId)] || 0);
+    const ticketId =
+      ticket.ticketId !== undefined
+        ? ticket.ticketId
+        : ticket.id !== undefined
+          ? ticket.id
+          : ticket.code;
+
+    const qty = Number(
+      ticketQty[ticketId] ||
+      ticketQty[String(ticketId)] ||
+      0
+    );
+
     if (qty > 0) {
       selected.push({
         ticketId,
@@ -28,18 +58,32 @@ export function getSelectedRegularTickets(ticketQty = {}, regularTickets = []) {
 }
 
 /**
- * Returns selected offer tickets with quantity > 0.
- * @param {Object} offerQty - Map of offerTicketId -> quantity
- * @param {Array} offerTickets - Array of offer ticket objects
- * @returns {Array<{offerTicketId: string|number, quantity: number}>}
+ * Get selected offer tickets.
+ *
+ * Offer tickets are now independent purchasable items.
  */
-export function getSelectedOfferTickets(offerQty = {}, offerTickets = []) {
+export function getSelectedOfferTickets(
+  offerQty = {},
+  offerTickets = []
+) {
   const selected = [];
-  if (!offerQty || !Array.isArray(offerTickets)) return selected;
+
+  if (!offerQty || !Array.isArray(offerTickets)) {
+    return selected;
+  }
 
   offerTickets.forEach((offer) => {
-    const offerTicketId = offer.offerTicketId !== undefined ? offer.offerTicketId : offer.id;
-    const qty = Number(offerQty[offerTicketId] || offerQty[String(offerTicketId)] || 0);
+    const offerTicketId =
+      offer.offerTicketId !== undefined
+        ? offer.offerTicketId
+        : offer.id;
+
+    const qty = Number(
+      offerQty[offerTicketId] ||
+      offerQty[String(offerTicketId)] ||
+      0
+    );
+
     if (qty > 0) {
       selected.push({
         offerTicketId,
@@ -52,18 +96,30 @@ export function getSelectedOfferTickets(offerQty = {}, offerTickets = []) {
 }
 
 /**
- * Returns selected food items with quantity > 0.
- * @param {Object} foodQty - Map of foodId -> quantity
- * @param {Array} foods - Array of food objects
- * @returns {Array<{foodId: string|number, quantity: number}>}
+ * Get selected food/add-on items.
  */
-export function getSelectedFoods(foodQty = {}, foods = []) {
+export function getSelectedFoods(
+  foodQty = {},
+  foods = []
+) {
   const selected = [];
-  if (!foodQty || !Array.isArray(foods)) return selected;
+
+  if (!foodQty || !Array.isArray(foods)) {
+    return selected;
+  }
 
   foods.forEach((food) => {
-    const foodId = food.foodId !== undefined ? food.foodId : food.id;
-    const qty = Number(foodQty[foodId] || foodQty[String(foodId)] || 0);
+    const foodId =
+      food.foodId !== undefined
+        ? food.foodId
+        : food.id;
+
+    const qty = Number(
+      foodQty[foodId] ||
+      foodQty[String(foodId)] ||
+      0
+    );
+
     if (qty > 0) {
       selected.push({
         foodId,
@@ -76,36 +132,127 @@ export function getSelectedFoods(foodQty = {}, foods = []) {
 }
 
 /**
- * Computes the effective price for a single ticket based on the active bookingType and selectedOffer.
- * Shares the exact same logic used by TicketCard.
+ * Get regular ticket unit price.
+ *
+ * Regular ticket price always comes from the regular ticket itself.
  */
-export function getEffectiveTicketPrice(ticket, bookingType, selectedOffer) {
-  const originalPrice = ticket.price || 0;
-
-  if (bookingType === "offer" && selectedOffer && selectedOffer.ticketMappings) {
-    const isMapped = selectedOffer.ticketMappings.some(m => {
-      const mapId = typeof m === 'object' ? m.ticketTypeId || m.id || m.ticketTypeCode : m;
-      return mapId === ticket.id || mapId === ticket.code;
-    });
-
-    if (isMapped && selectedOffer.promotionType !== "BUY_X_GET_Y" && selectedOffer.discountValue > 0) {
-      const discountAmount = originalPrice * (selectedOffer.discountValue / 100);
-      return Math.round((originalPrice - discountAmount) * 100) / 100;
-    }
-  }
-
-  return originalPrice;
+export function getRegularTicketPrice(ticket) {
+  return Number(
+    ticket?.price ??
+    ticket?.unitPrice ??
+    ticket?.fare ??
+    0
+  );
 }
 
 /**
- * Calculates total amount from selected regular and offer tickets.
- * @param {Object} ticketQty
- * @param {Array} regularTickets
- * @param {Object} offerQty
- * @param {Array} offerTickets
- * @param {string} bookingType
- * @param {Object} selectedOffer
- * @returns {number}
+ * Get offer ticket unit price.
+ *
+ * New dummy offer structure:
+ *
+ * {
+ *   id,
+ *   displayName,
+ *   displaySubname,
+ *   offerPrice,
+ *   instruction
+ * }
+ *
+ * Backend offer structure can later be mapped to this
+ * same calculation without changing the UI flow.
+ */
+export function getOfferTicketPrice(offer) {
+  return Number(
+    offer?.offerPrice ??
+    offer?.unitPrice ??
+    offer?.price ??
+    0
+  );
+}
+
+/**
+ * Backward-compatible helper.
+ *
+ * Old code may still import getEffectiveTicketPrice.
+ * In the new flow it simply returns the regular ticket price.
+ */
+export function getEffectiveTicketPrice(
+  ticket,
+  bookingType,
+  selectedOffer
+) {
+  return getRegularTicketPrice(ticket);
+}
+
+/**
+ * Calculate regular ticket total.
+ */
+export function getRegularTicketTotal(
+  ticketQty = {},
+  regularTickets = []
+) {
+  let total = 0;
+
+  if (!Array.isArray(regularTickets)) {
+    return 0;
+  }
+
+  regularTickets.forEach((ticket) => {
+    const id =
+      ticket.code ??
+      ticket.ticketId ??
+      ticket.id;
+
+    const qty = Number(
+      ticketQty[id] ||
+      ticketQty[String(id)] ||
+      0
+    );
+
+    if (qty > 0) {
+      total += qty * getRegularTicketPrice(ticket);
+    }
+  });
+
+  return Number(total.toFixed(2));
+}
+
+/**
+ * Calculate offer ticket total.
+ */
+export function getOfferTicketTotal(
+  offerQty = {},
+  offerTickets = []
+) {
+  let total = 0;
+
+  if (!Array.isArray(offerTickets)) {
+    return 0;
+  }
+
+  offerTickets.forEach((offer) => {
+    const id =
+      offer.offerTicketId ??
+      offer.id;
+
+    const qty = Number(
+      offerQty[id] ||
+      offerQty[String(id)] ||
+      0
+    );
+
+    if (qty > 0) {
+      total += qty * getOfferTicketPrice(offer);
+    }
+  });
+
+  return Number(total.toFixed(2));
+}
+
+/**
+ * Calculate combined ticket total.
+ *
+ * Regular tickets + offer tickets.
  */
 export function getTicketTotal(
   ticketQty = {},
@@ -115,68 +262,66 @@ export function getTicketTotal(
   bookingType = "regular",
   selectedOffer = null
 ) {
-  let total = 0;
+  const regularTotal = getRegularTicketTotal(
+    ticketQty,
+    regularTickets
+  );
 
-  if (Array.isArray(regularTickets)) {
-    regularTickets.forEach((ticket) => {
-      const id = ticket.code || ticket.ticketId || ticket.id;
-      const qty = Number(ticketQty[id] || ticketQty[String(id)] || 0);
-      const price = getEffectiveTicketPrice(ticket, bookingType, selectedOffer);
-      if (qty > 0) {
-        total += qty * price;
-      }
-    });
-  }
+  const offerTotal = getOfferTicketTotal(
+    offerQty,
+    offerTickets
+  );
 
-  if (Array.isArray(offerTickets)) {
-    offerTickets.forEach((offer) => {
-      const id = offer.offerTicketId !== undefined ? offer.offerTicketId : offer.id;
-      const qty = Number(offerQty[id] || offerQty[String(id)] || 0);
-      const unitPrice = Number(offer.unitPrice || 0);
-      if (qty > 0) {
-        total += qty * unitPrice;
-      }
-    });
-  }
-
-  return total;
+  return Number(
+    (regularTotal + offerTotal).toFixed(2)
+  );
 }
 
 /**
- * Calculates total amount from selected foods.
- * @param {Object} foodQty
- * @param {Array} foods
- * @returns {number}
+ * Calculate add-on / food total.
  */
-export function getFoodTotal(foodQty = {}, foods = []) {
+export function getFoodTotal(
+  foodQty = {},
+  foods = []
+) {
   let total = 0;
 
-  if (Array.isArray(foods)) {
-    foods.forEach((food) => {
-      const id = food.foodId !== undefined ? food.foodId : food.id;
-      const qty = Number(foodQty[id] || foodQty[String(id)] || 0);
-      const price = Number(food.price || food.unitPrice || 0);
-      if (qty > 0) {
-        total += qty * price;
-      }
-    });
+  if (!Array.isArray(foods)) {
+    return 0;
   }
 
-  return total;
+  foods.forEach((food) => {
+    const id =
+      food.foodId !== undefined
+        ? food.foodId
+        : food.id;
+
+    const qty = Number(
+      foodQty[id] ||
+      foodQty[String(id)] ||
+      0
+    );
+
+    const price = Number(
+      food.price ??
+      food.unitPrice ??
+      0
+    );
+
+    if (qty > 0) {
+      total += qty * price;
+    }
+  });
+
+  return Number(total.toFixed(2));
 }
 
 /**
- * Calculates grand total by summing ticketTotal and foodTotal.
+ * Calculate grand total.
  *
- * @param {Object} ticketQty
- * @param {Array} regularTickets
- * @param {Object} offerQty
- * @param {Array} offerTickets
- * @param {Object} foodQty
- * @param {Array} foods
- * @param {string} bookingType
- * @param {Object} selectedOffer
- * @returns {number}
+ * Regular tickets
+ * + Offer tickets
+ * + Add-ons
  */
 export function getGrandTotal(
   ticketQty = {},
@@ -192,21 +337,182 @@ export function getGrandTotal(
     ticketQty,
     regularTickets,
     offerQty,
-    offerTickets,
-    bookingType,
-    selectedOffer
+    offerTickets
   );
 
-  const foodTotal = getFoodTotal(foodQty, foods);
+  const foodTotal = getFoodTotal(
+    foodQty,
+    foods
+  );
 
-  return ticketTotal + foodTotal;
+  return Number(
+    (ticketTotal + foodTotal).toFixed(2)
+  );
 }
 
 /**
- * Prepares the payload object for the Checkout API without calculating totals or making API calls.
+ * Get complete live-summary data.
  *
- * @param {Object} params
- * @returns {Object}
+ * Useful for displaying:
+ *
+ * Regular Tickets
+ *   Adult x 2      ₹1700
+ *
+ * Offer Tickets
+ *   Early Bird x 1 ₹765
+ *
+ * Add-ons
+ *   Food x 2       ₹300
+ *
+ * Grand Total      ₹2765
+ */
+export function getBookingSummary(
+  ticketQty = {},
+  regularTickets = [],
+  offerQty = {},
+  offerTickets = [],
+  foodQty = {},
+  foods = []
+) {
+  const regularItems = [];
+  const offerItems = [];
+  const foodItems = [];
+
+  if (Array.isArray(regularTickets)) {
+    regularTickets.forEach((ticket) => {
+      const id =
+        ticket.code ??
+        ticket.ticketId ??
+        ticket.id;
+
+      const quantity = Number(
+        ticketQty[id] ||
+        ticketQty[String(id)] ||
+        0
+      );
+
+      if (quantity > 0) {
+        const unitPrice = getRegularTicketPrice(ticket);
+
+        regularItems.push({
+          id,
+          name: ticket.name || ticket.displayName || "Ticket",
+          quantity,
+          unitPrice,
+          total: Number(
+            (quantity * unitPrice).toFixed(2)
+          ),
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(offerTickets)) {
+    offerTickets.forEach((offer) => {
+      const id =
+        offer.offerTicketId ??
+        offer.id;
+
+      const quantity = Number(
+        offerQty[id] ||
+        offerQty[String(id)] ||
+        0
+      );
+
+      if (quantity > 0) {
+        const unitPrice = getOfferTicketPrice(offer);
+
+        offerItems.push({
+          id,
+          name:
+            offer.displayName ||
+            offer.name ||
+            "Offer",
+          subname:
+            offer.displaySubname ||
+            offer.badge ||
+            "",
+          instruction:
+            offer.instruction || "",
+          quantity,
+          unitPrice,
+          total: Number(
+            (quantity * unitPrice).toFixed(2)
+          ),
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(foods)) {
+    foods.forEach((food) => {
+      const id =
+        food.foodId !== undefined
+          ? food.foodId
+          : food.id;
+
+      const quantity = Number(
+        foodQty[id] ||
+        foodQty[String(id)] ||
+        0
+      );
+
+      if (quantity > 0) {
+        const unitPrice = Number(
+          food.price ??
+          food.unitPrice ??
+          0
+        );
+
+        foodItems.push({
+          id,
+          name:
+            food.name ||
+            food.displayName ||
+            "Add-on",
+          quantity,
+          unitPrice,
+          total: Number(
+            (quantity * unitPrice).toFixed(2)
+          ),
+        });
+      }
+    });
+  }
+
+  const regularTotal = regularItems.reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+  const offerTotal = offerItems.reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+  const foodTotal = foodItems.reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
+
+  const ticketTotal = regularTotal + offerTotal;
+  const grandTotal = ticketTotal + foodTotal;
+
+  return {
+    regularItems,
+    offerItems,
+    foodItems,
+
+    regularTotal: Number(regularTotal.toFixed(2)),
+    offerTotal: Number(offerTotal.toFixed(2)),
+    ticketTotal: Number(ticketTotal.toFixed(2)),
+    foodTotal: Number(foodTotal.toFixed(2)),
+    grandTotal: Number(grandTotal.toFixed(2)),
+  };
+}
+
+/**
+ * Build checkout payload.
  */
 export function buildCheckoutPayload({
   visitDate,
@@ -221,45 +527,88 @@ export function buildCheckoutPayload({
 } = {}) {
   return {
     visitDate,
-    regularTickets: getSelectedRegularTickets(ticketQty, regularTickets),
-    offerTickets: getSelectedOfferTickets(offerQty, offerTickets),
-    foods: getSelectedFoods(foodQty, foods),
+
+    regularTickets: getSelectedRegularTickets(
+      ticketQty,
+      regularTickets
+    ),
+
+    offerTickets: getSelectedOfferTickets(
+      offerQty,
+      offerTickets
+    ),
+
+    foods: getSelectedFoods(
+      foodQty,
+      foods
+    ),
+
     couponCode,
     customer,
   };
 }
 
 /**
- * Temporary UI calculation for coupon discount based on Subtotal and coupon rules.
- * Where Subtotal = Regular Ticket Total + Offer Ticket Total + Food Total (ticketTotal + foodTotal).
- * THIS IS ONLY FOR UI DISPLAY and will later be replaced by server-side POST /booking/finalreview.
+ * Temporary UI coupon calculation.
  *
- * @param {number} ticketTotal - Regular Ticket Total + Offer Ticket Total
- * @param {number} foodTotal - Food Total
- * @param {Object|null} appliedCoupon - Coupon object { discountType, discountValue }
- * @returns {{ discountAmount: number, adjustedGrandTotal: number }}
+ * Subtotal =
+ * Regular Tickets
+ * + Offer Tickets
+ * + Add-ons
  */
-export function calculateTemporaryCouponUiDiscount(ticketTotal = 0, foodTotal = 0, appliedCoupon = null) {
-  const subtotal = Number(ticketTotal || 0) + Number(foodTotal || 0);
+export function calculateTemporaryCouponUiDiscount(
+  ticketTotal = 0,
+  foodTotal = 0,
+  appliedCoupon = null
+) {
+  const subtotal =
+    Number(ticketTotal || 0) +
+    Number(foodTotal || 0);
+
   if (!appliedCoupon || subtotal <= 0) {
-    return { discountAmount: 0, adjustedGrandTotal: subtotal };
+    return {
+      discountAmount: 0,
+      adjustedGrandTotal: subtotal,
+    };
   }
 
-  const discountType = String(appliedCoupon.discountType || "").toUpperCase().trim();
-  const discountValue = Number(appliedCoupon.discountValue || 0);
+  const discountType = String(
+    appliedCoupon.discountType || ""
+  )
+    .toUpperCase()
+    .trim();
+
+  const discountValue = Number(
+    appliedCoupon.discountValue || 0
+  );
+
   let discountAmount = 0;
 
-  if (discountType === "PERCENTAGE" || discountType === "PERCENT") {
-    discountAmount = (subtotal * discountValue) / 100;
-  } else if (discountType === "FLAT" || discountType === "FIXED") {
+  if (
+    discountType === "PERCENTAGE" ||
+    discountType === "PERCENT"
+  ) {
+    discountAmount =
+      (subtotal * discountValue) / 100;
+  } else if (
+    discountType === "FLAT" ||
+    discountType === "FIXED"
+  ) {
     discountAmount = discountValue;
   }
 
-  // Limit the discount so it never exceeds the current subtotal
-  discountAmount = Math.max(0, Math.min(discountAmount, subtotal));
-  discountAmount = parseFloat(discountAmount.toFixed(2));
+  discountAmount = Math.max(
+    0,
+    Math.min(discountAmount, subtotal)
+  );
 
-  const adjustedGrandTotal = parseFloat((subtotal - discountAmount).toFixed(2));
+  discountAmount = Number(
+    discountAmount.toFixed(2)
+  );
+
+  const adjustedGrandTotal = Number(
+    (subtotal - discountAmount).toFixed(2)
+  );
 
   return {
     discountAmount,
@@ -271,10 +620,19 @@ export default {
   getSelectedRegularTickets,
   getSelectedOfferTickets,
   getSelectedFoods,
+
+  getRegularTicketPrice,
+  getOfferTicketPrice,
+  getEffectiveTicketPrice,
+
+  getRegularTicketTotal,
+  getOfferTicketTotal,
   getTicketTotal,
   getFoodTotal,
   getGrandTotal,
+
+  getBookingSummary,
+
   buildCheckoutPayload,
   calculateTemporaryCouponUiDiscount,
 };
-

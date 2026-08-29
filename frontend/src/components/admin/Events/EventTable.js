@@ -67,9 +67,19 @@ export default function EventTable({
                   </td>
 
                   <td>
-                    <div className="event-banner-placeholder">
-                      🎉
-                    </div>
+                    {event.image_url ? (
+                      <div className="event-banner-thumbnail">
+                        <img 
+                          src={event.image_url.startsWith('http') ? event.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${event.image_url}`} 
+                          alt="Event Banner" 
+                          style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", display: "block" }} 
+                        />
+                      </div>
+                    ) : (
+                      <div className="event-banner-placeholder" style={{ width: "40px", height: "40px", borderRadius: "4px", background: "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#64748B" }}>
+                        No Img
+                      </div>
+                    )}
                   </td>
 
                   <td className="admin-name">

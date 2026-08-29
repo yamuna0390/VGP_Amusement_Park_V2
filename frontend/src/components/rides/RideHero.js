@@ -1,9 +1,10 @@
 import Image from "next/image";
+import { getImageUrl } from "@/constants/api";
 import "./RideHero.css";
 
 export default function RideHero({ ride }) {
-  const isVideo = ride.heroType === "video";
-  const videoSrc = isVideo ? (ride.heroVideo || "/assets/images/rides/roller1.jpg") : null;
+  const isVideo = ride.heroType === "video" && ride.heroVideo;
+  const videoSrc = isVideo ? getImageUrl(ride.heroVideo) : null;
 
   return (
     <section className="ride-hero-container">
@@ -16,33 +17,49 @@ export default function RideHero({ ride }) {
       <div className="ride-hero-banner-wrapper">
         <div className="ride-hero-media">
           {ride.heroType === "image" && (
-            <Image
-              src={ride.heroImage || "/images/rides/castle-jet/card.webp"}
-              alt={ride.n}
-              fill
-              priority
-              className="ride-hero-image"
-            />
-          )}
-
-          {ride.heroType === "video" && (
-            <video
-              className="ride-hero-video"
-              autoPlay
-              muted
-              loop
-              playsInline
-              poster={ride.heroImage || "/assets/images/rides/roller1.jpg"}
-            >
-              <source src={videoSrc} type="video/mp4" />
+            ride.heroImage ? (
               <Image
-                src={ride.heroImage || "/assets/images/rides/roller1.jpg"}
+                src={getImageUrl(ride.heroImage)}
                 alt={ride.n}
                 fill
+                unoptimized
                 priority
                 className="ride-hero-image"
               />
-            </video>
+            ) : (
+              <div className="ride-hero-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#94a3b8' }}>
+                <span style={{ fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Image Unavailable</span>
+              </div>
+            )
+          )}
+
+          {ride.heroType === "video" && (
+            videoSrc ? (
+              <video
+                className="ride-hero-video"
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={ride.heroImage ? getImageUrl(ride.heroImage) : undefined}
+              >
+                <source src={videoSrc} type="video/mp4" />
+                {ride.heroImage && (
+                  <Image
+                    src={getImageUrl(ride.heroImage)}
+                    alt={ride.n}
+                    fill
+                    unoptimized
+                    priority
+                    className="ride-hero-image"
+                  />
+                )}
+              </video>
+            ) : (
+              <div className="ride-hero-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0', color: '#94a3b8' }}>
+                <span style={{ fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Video Unavailable</span>
+              </div>
+            )
           )}
 
           {ride.heroType === "youtube" && (

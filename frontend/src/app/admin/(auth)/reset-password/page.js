@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,7 +8,7 @@ import { resetPassword as resetPasswordService } from "@/services/authService";
 import "../login/login.css";
 
 // This is wrapped in a dynamic Suspense boundary in production or just standard in app dir
-export default function ResetPassword() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const router = useRouter();
@@ -158,5 +158,13 @@ export default function ResetPassword() {
 
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: "center", color: "white", padding: "50px" }}>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

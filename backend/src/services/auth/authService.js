@@ -3,11 +3,13 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const authRepository = require("../../repositories/user/authRepository");
 const emailService = require("../notification/emailService");
+const bookingSessionRepository = require("../../repositories/booking/bookingSessionRepository");
+const { hashToken } = require("../../utils/bookingSessionToken");
 
 /**
  * Register a new user
  */
-async function register(userData) {
+async function register(userData, rawToken) {
   const { email, password } = userData;
 
   // Check if email already exists
@@ -27,6 +29,15 @@ async function register(userData) {
     role: "customer",
   });
 
+  // Bind existing booking session if any
+  if (rawToken) {
+    const sessionTokenHash = hashToken(rawToken);
+    const session = await bookingSessionRepository.getSessionByHash(sessionTokenHash);
+    if (session && session.status === 'ACTIVE' && new Date(session.expires_at) > new Date()) {
+      await bookingSessionRepository.updateSession(session.id, { user_id: userId });
+    }
+  }
+
   return {
     id: userId,
     message: "User registered successfully",
@@ -36,7 +47,7 @@ async function register(userData) {
 /**
  * Login user
  */
-async function login(email, password) {
+async function login(email, password, rawToken) {
   // Find user
   const user = await authRepository.findUserByEmail(email);
 
@@ -66,6 +77,15 @@ async function login(email, password) {
       expiresIn: process.env.JWT_EXPIRES_IN,
     }
   );
+
+  // Bind existing booking session if any
+  if (rawToken) {
+    const sessionTokenHash = hashToken(rawToken);
+    const session = await bookingSessionRepository.getSessionByHash(sessionTokenHash);
+    if (session && session.status === 'ACTIVE' && new Date(session.expires_at) > new Date()) {
+      await bookingSessionRepository.updateSession(session.id, { user_id: user.id });
+    }
+  }
 
   return {
     token,

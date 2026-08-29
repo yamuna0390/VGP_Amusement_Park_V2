@@ -32,12 +32,17 @@ async function createSession(req, res, next) {
  * PATCH /api/booking/session
  * Updates the visit date and/or selected offer.
  */
+/**
+ * PATCH /api/booking/session
+ * API 2 - Updates and validates the visit date only.
+ */
 async function updateSession(req, res, next) {
     try {
         const { updateSessionSchema } = require("../validations/bookingValidation");
-        
+
         // Validate request body
         const { error, value } = updateSessionSchema.validate(req.body);
+
         if (error) {
             const err = new Error(error.details[0].message);
             err.statusCode = 400;
@@ -47,14 +52,20 @@ async function updateSession(req, res, next) {
 
         const rawToken = req.cookies.booking_session;
 
-        const data = await bookingSessionService.updateSession(rawToken, value);
+        const data = await bookingSessionService.updateSession(
+            rawToken,
+            value
+        );
 
         // Map to Response DTO
         const responseData = BookingSessionResponseDTO.fromEntities(data);
 
-        const message = value.bookingType === 'OFFER' ? "Booking selection updated" : "Visit date updated";
-
-        return success(res, message, responseData, 200);
+        return success(
+            res,
+            "Visit date updated",
+            responseData,
+            200
+        );
     } catch (error) {
         next(error);
     }
@@ -139,10 +150,135 @@ async function generateQuote(req, res, next) {
     }
 }
 
+const bookingRepository = require("../repositories/booking/bookingRepository");
+
+/**
+ * GET /api/booking/my-bookings
+ * Retrieves all bookings for the authenticated user.
+ */
+async function getMyBookings(req, res, next) {
+    try {
+        if (!req.user || !req.user.id) {
+            const err = new Error("Unauthorized");
+            err.statusCode = 401;
+            throw err;
+        }
+
+        const bookings = await bookingRepository.findBookingsByUserId(req.user.id);
+
+        return success(res, "Bookings retrieved", bookings, 200);
+    } catch (error) {
+        next(error);
+    }
+}
+
+const path = require("path");
+const fs = require("fs");
+const { generateBookingPdf } = require("../services/pdf/pdfService");
+
+/**
+ * GET /api/booking/my-bookings/:id/pdf
+ * Authenticated endpoint for a customer to download their own PDF without exposing qr_token.
+ */
+async function downloadMyBookingPdf(req, res, next) {
+    try {
+        if (!req.user || !req.user.id) {
+            const err = new Error("Unauthorized");
+            err.statusCode = 401;
+            throw err;
+        }
+
+        const bookingId = req.params.id;
+        const booking = await bookingRepository.getBookingById(bookingId);
+
+        if (!booking || booking.user_id !== req.user.id) {
+            const err = new Error("Ticket not found or unauthorized");
+            err.statusCode = 404;
+            throw err;
+        }
+
+        if (booking.booking_status !== 'CONFIRMED' || booking.payment_status !== 'SUCCESS') {
+            const err = new Error("Ticket not found or unauthorized");
+            err.statusCode = 403;
+            throw err;
+        }
+
+        const tempFilename = `ticket_${booking.id}_${Date.now()}.pdf`;
+        const outputPath = path.join(__dirname, '../../tmp', tempFilename);
+
+        const tmpDir = path.dirname(outputPath);
+        if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true });
+        }
+
+        await generateBookingPdf(booking.id, outputPath);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="VGP_Tickets.pdf"`);
+
+        const readStream = fs.createReadStream(outputPath);
+        readStream.pipe(res);
+
+        readStream.on('end', () => {
+            fs.unlink(outputPath, (err) => {
+                // Ignore cleanup errors
+            });
+        });
+        
+        readStream.on('error', (err) => {
+            next(err);
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function getInternalRenderData(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { secret } = req.query;
+        if (secret !== 'canonical-render-secret') {
+            return res.status(403).json({ error: "Forbidden" });
+        }
+        
+        const booking = await bookingRepository.getAdminBookingDetailsById(id);
+        if (!booking) return res.status(404).json({ error: "Not found" });
+        
+        const rawBooking = await bookingRepository.getBookingById(id);
+        booking.unmasked_qr_token = rawBooking ? rawBooking.qr_token : '';
+        
+        if (booking.remarks) {
+            try {
+                const remarks = JSON.parse(booking.remarks);
+                if (remarks.sessionId) {
+                    const db = require("../config/database");
+                    const [sessionItems] = await db.execute('SELECT * FROM booking_session_items WHERE session_id = ?', [remarks.sessionId]);
+                    if (sessionItems.length > 0) {
+                        const [sessionComponents] = await db.execute('SELECT * FROM booking_session_item_components WHERE session_item_id IN (SELECT id FROM booking_session_items WHERE session_id = ?)', [remarks.sessionId]);
+                        const [tickets] = await db.execute('SELECT id, name, code FROM ticket_types');
+                        booking.sessionItems = sessionItems;
+                        booking.sessionComponents = sessionComponents;
+                        booking.ticketsMetadata = tickets;
+                    }
+                }
+            } catch (err) {
+                console.error("Internal Render: Failed to fetch session data", err);
+            }
+        }
+        
+        return res.status(200).json({ data: booking });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     createSession,
     updateSession,
     updateSessionItems,
     updateCustomer,
-    generateQuote
+    generateQuote,
+    getMyBookings,
+    downloadMyBookingPdf,
+    getInternalRenderData
 };
