@@ -70,6 +70,7 @@ export default function LoginForm({ switchToRegister, onClose }) {
           value={formData.email}
           onChange={handleChange}
           required
+          maxLength={150}
         />
       </div>
 

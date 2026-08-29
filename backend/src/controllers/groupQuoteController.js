@@ -6,13 +6,14 @@ const { success } = require("../utils/response");
  */
 async function createGroupQuote(req, res, next) {
     try {
-        const { organisationName, groupSize, preferredDate, contactNumber } = req.body;
+        const { organisationName, groupSize, preferredDate, contactNumber, email } = req.body;
 
         const result = await groupQuoteService.createGroupQuote({
             organisationName,
             groupSize,
             preferredDate,
-            contactNumber
+            contactNumber,
+            email
         });
 
         return success(res, "Group quote request received successfully.", result, 201);

@@ -7,6 +7,7 @@ const {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  updateProfileSchema,
 } = require("../validations/authValidation");
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.post(
 router.put(
   "/profile",
   authMiddleware,
+  validate(updateProfileSchema),
   authController.updateProfile
 );
 

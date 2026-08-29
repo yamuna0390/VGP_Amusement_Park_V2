@@ -36,9 +36,12 @@ router.post("/session/quote", bookingController.generateQuote);
 // Generates a Razorpay payment order for the current session.
 router.post("/payment/order", paymentController.createPaymentOrder);
 
+const validate = require("../middleware/validationMiddleware");
+const { verifyPaymentSchema } = require("../validations/bookingValidation");
+
 // POST /api/booking/payment/verify
 // Verifies the Razorpay payment signature.
-router.post("/payment/verify", paymentController.verifyPayment);
+router.post("/payment/verify", validate(verifyPaymentSchema), paymentController.verifyPayment);
 
 // GET /api/booking/my-bookings
 // Gets bookings for logged in customer

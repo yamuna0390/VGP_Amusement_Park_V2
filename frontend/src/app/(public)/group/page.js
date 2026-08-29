@@ -19,8 +19,8 @@ export default function Group() {
     setError("");
 
     // Frontend Validation
-    if (!organisationName.trim()) {
-      setError("Organisation Name is required.");
+    if (!organisationName.trim() || organisationName.trim().length < 2 || organisationName.trim().length > 150) {
+      setError("Organisation Name must be between 2 and 150 characters.");
       return;
     }
 
@@ -30,8 +30,8 @@ export default function Group() {
     }
 
     const size = parseInt(groupSize, 10);
-    if (size <= 0) {
-      setError("Group Size must be a positive number.");
+    if (size < 1 || size > 10000) {
+      setError("Group Size must be between 1 and 10000.");
       return;
     }
 
@@ -48,8 +48,8 @@ export default function Group() {
       return;
     }
 
-    if (!contactNumber.trim()) {
-      setError("Contact Number is required.");
+    if (!contactNumber.trim() || !/^[6-9]\d{9}$/.test(contactNumber.trim())) {
+      setError("Please enter a valid 10-digit Indian mobile number.");
       return;
     }
 
@@ -137,6 +137,9 @@ export default function Group() {
                       value={organisationName}
                       onChange={(e) => setOrganisationName(e.target.value)}
                       disabled={isSubmitting}
+                      required
+                      minLength={2}
+                      maxLength={150}
                     />
                   </div>
                   <div className="field">
@@ -147,6 +150,9 @@ export default function Group() {
                       value={groupSize}
                       onChange={(e) => setGroupSize(e.target.value)}
                       disabled={isSubmitting}
+                      required
+                      min={1}
+                      max={10000}
                     />
                   </div>
                   <div className="field">
@@ -156,6 +162,7 @@ export default function Group() {
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
                       disabled={isSubmitting}
+                      required
                     />
                   </div>
                   <div className="field">
@@ -165,6 +172,10 @@ export default function Group() {
                       value={contactNumber}
                       onChange={(e) => setContactNumber(e.target.value)}
                       disabled={isSubmitting}
+                      required
+                      pattern="^[6-9]\d{9}$"
+                      maxLength={10}
+                      title="Enter a valid 10-digit Indian mobile number"
                     />
                   </div>
                   <div className="field" style={{ gridColumn: "1 / -1" }}>
@@ -175,6 +186,7 @@ export default function Group() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isSubmitting}
+                      maxLength={150}
                     />
                   </div>
                 </div>

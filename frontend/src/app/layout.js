@@ -18,6 +18,7 @@ export const metadata = {
 };
 import { ToastProvider } from "@/context/ToastContext";
 import { BookingProvider } from "@/context/BookingContext";
+import ApiInterceptor from "@/components/ApiInterceptor";
 
 export default function RootLayout({ children }) {
   return (
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
       </head>
   <body>
     <ToastProvider>
+        <ApiInterceptor />
         <BookingProvider>
           {children}
         </BookingProvider>

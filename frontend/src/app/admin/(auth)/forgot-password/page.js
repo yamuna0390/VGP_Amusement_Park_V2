@@ -72,6 +72,7 @@ export default function ForgotPassword() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              maxLength={150}
             />
           </div>
 

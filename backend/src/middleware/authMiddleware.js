@@ -16,7 +16,7 @@ async function authMiddleware(req, res, next) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Fetch latest user details from database to avoid trusting frontend payload
     const user = await authRepository.findUserById(decoded.id);
     if (!user) {
@@ -34,10 +34,18 @@ async function authMiddleware(req, res, next) {
 
     next();
   } catch (error) {
-    // If token is invalid or expired, return 401
+    let code = "UNAUTHORIZED";
+    let message = "Authentication failed. Please log in again.";
+
+    if (error.name === 'TokenExpiredError') {
+      code = "SESSION_EXPIRED";
+      message = "Your session has expired. Please log in again.";
+    }
+
     return res.status(401).json({
       success: false,
-      message: "Authentication failed: " + error.message
+      code,
+      message
     });
   }
 }

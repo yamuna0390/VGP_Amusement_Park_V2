@@ -39,11 +39,11 @@ export default function StepTraveller({ onNext, onBack }) {
 
   const handleNext = async () => {
     const errs = {};
-    if (!customer?.name?.trim()) {
-      errs.name = "Lead traveller name is required.";
+    if (!customer?.name?.trim() || customer.name.trim().length < 2 || customer.name.trim().length > 150) {
+      errs.name = "Lead traveller name must be between 2 and 150 characters.";
     }
-    if (!customer?.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) {
-      errs.email = "Valid email is required.";
+    if (!customer?.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email) || customer.email.length > 150) {
+      errs.email = "Valid email under 150 characters is required.";
     }
     if (!customer?.mobile?.trim() || !/^[6-9]\d{9}$/.test(customer.mobile.replace(/\D/g, "").slice(-10))) {
       errs.mobile = "Valid 10-digit Indian mobile number is required.";
@@ -119,6 +119,9 @@ export default function StepTraveller({ onNext, onBack }) {
                   placeholder="Arun Kumar"
                   value={customer?.name || ""}
                   onChange={(e) => handleChange("name", e.target.value)}
+                  required
+                  minLength={2}
+                  maxLength={150}
                 />
                 {errors.name && <span className="booking-field__error">{errors.name}</span>}
               </div>
@@ -136,6 +139,8 @@ export default function StepTraveller({ onNext, onBack }) {
                     placeholder="arun@example.com"
                     value={customer?.email || ""}
                     onChange={(e) => handleChange("email", e.target.value)}
+                    required
+                    maxLength={150}
                   />
                   {errors.email && <span className="booking-field__error">{errors.email}</span>}
                 </div>
@@ -151,6 +156,7 @@ export default function StepTraveller({ onNext, onBack }) {
                     placeholder="+91 98765 43210"
                     value={customer?.mobile || ""}
                     onChange={(e) => handleChange("mobile", e.target.value)}
+                    required
                   />
                   {errors.mobile && <span className="booking-field__error">{errors.mobile}</span>}
                 </div>

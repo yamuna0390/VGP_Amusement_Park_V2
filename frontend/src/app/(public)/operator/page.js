@@ -194,6 +194,8 @@ function OperatorPortalContent() {
                   <input
                     type="text"
                     required
+                    minLength={2}
+                    maxLength={100}
                     value={operatorName}
                     onChange={(e) => setOperatorName(e.target.value)}
                     placeholder="Enter operator name"
@@ -208,6 +210,7 @@ function OperatorPortalContent() {
                   <input
                     type="email"
                     required
+                    maxLength={150}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter email address"
@@ -222,6 +225,9 @@ function OperatorPortalContent() {
                   <input
                     type="tel"
                     required
+                    pattern="^[6-9]\d{9}$"
+                    maxLength={10}
+                    title="Enter a valid 10-digit Indian mobile number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter phone number"
@@ -235,6 +241,8 @@ function OperatorPortalContent() {
                   </label>
                   <textarea
                     required
+                    minLength={10}
+                    maxLength={1000}
                     rows={4}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}

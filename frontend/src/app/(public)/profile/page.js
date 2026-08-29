@@ -136,6 +136,7 @@ export default function ProfilePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={!isEditing}
                 required
+                maxLength={150}
                 style={!isEditing ? { backgroundColor: "#f9f9f9", color: "#555" } : {}}
               />
             </div>
@@ -150,6 +151,9 @@ export default function ProfilePage() {
                 onChange={(e) => setPhone(e.target.value)}
                 disabled={!isEditing}
                 required
+                pattern="^[6-9]\d{9}$"
+                maxLength={10}
+                title="Enter a valid 10-digit Indian mobile number"
                 style={!isEditing ? { backgroundColor: "#f9f9f9", color: "#555" } : {}}
               />
             </div>

@@ -114,6 +114,8 @@ function ResetPasswordForm() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
+                    minLength={6}
+                    maxLength={100}
                   />
                   <button
                     type="button"

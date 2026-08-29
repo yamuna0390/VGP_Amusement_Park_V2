@@ -77,6 +77,9 @@ export default function RegisterForm({ switchToLogin }) {
           value={formData.fullName}
           onChange={handleChange}
           placeholder="Enter your full name"
+          required
+          minLength={3}
+          maxLength={100}
         />
       </div>
 
@@ -88,6 +91,8 @@ export default function RegisterForm({ switchToLogin }) {
           value={formData.email}
           onChange={handleChange}
           placeholder="Enter your email"
+          required
+          maxLength={150}
         />
       </div>
 
@@ -99,6 +104,10 @@ export default function RegisterForm({ switchToLogin }) {
           value={formData.phone}
           onChange={handleChange}
           placeholder="Enter your phone number"
+          required
+          pattern="^[6-9]\d{9}$"
+          maxLength={10}
+          title="Enter a valid 10-digit Indian mobile number"
         />
       </div>
 
@@ -110,6 +119,9 @@ export default function RegisterForm({ switchToLogin }) {
           value={formData.password}
           onChange={handleChange}
           placeholder="Enter your password"
+          required
+          minLength={6}
+          maxLength={100}
         />
       </div>
 

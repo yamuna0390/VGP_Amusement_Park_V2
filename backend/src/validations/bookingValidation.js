@@ -99,6 +99,7 @@ const updateSessionItemsSchema = Joi.object({
 const updateCustomerSchema = Joi.object({
     leadTravellerName: Joi.string()
         .trim()
+        .min(2)
         .max(150)
         .required(),
 
@@ -110,7 +111,7 @@ const updateCustomerSchema = Joi.object({
 
     mobile: Joi.string()
         .trim()
-        .max(20)
+        .pattern(/^[6-9]\d{9}$/)
         .required(),
 
     whatsappDelivery: Joi.boolean()
@@ -118,8 +119,16 @@ const updateCustomerSchema = Joi.object({
 }).unknown(false);
 
 
+const verifyPaymentSchema = Joi.object({
+    razorpay_order_id: Joi.string().trim().min(1).max(100).required(),
+    razorpay_payment_id: Joi.string().trim().min(1).max(100).required(),
+    razorpay_signature: Joi.string().trim().min(1).max(256).required()
+}).unknown(false);
+
+
 module.exports = {
     updateSessionSchema,
     updateSessionItemsSchema,
-    updateCustomerSchema
+    updateCustomerSchema,
+    verifyPaymentSchema
 };
