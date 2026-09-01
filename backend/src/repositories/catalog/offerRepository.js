@@ -111,7 +111,7 @@ async function getOfferById(offerId, connection = db) {
             valid_to,
             min_advance_days,
             status,
-            display_order,
+            display_order, image_url,
             created_at,
             updated_at,
             offer_type_id,
@@ -185,7 +185,7 @@ async function getAllActiveOffers(connection = db) {
             valid_to,
             min_advance_days,
             status,
-            display_order,
+            display_order, image_url,
             created_at,
             updated_at,
             offer_type_id,
@@ -194,8 +194,6 @@ async function getAllActiveOffers(connection = db) {
             minimum_booking_value
         FROM offers
         WHERE status = 'Active'
-          AND (valid_from IS NULL OR valid_from <= CURRENT_DATE)
-          AND (valid_to IS NULL OR valid_to >= CURRENT_DATE)
         ORDER BY display_order ASC
         `
     );
@@ -250,7 +248,7 @@ async function getActiveOffers(connection = db, visitDate) {
             o.valid_to,
             o.min_advance_days,
             o.status,
-            o.display_order,
+            o.display_order, image_url,
 
             o.offer_type_id,
 

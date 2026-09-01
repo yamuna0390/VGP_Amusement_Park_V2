@@ -78,7 +78,8 @@ const createAdminOffer = async (req, res, next) => {
     status,
     display_order,
     offer_tickets,
-    offer_schedule_rules
+    offer_schedule_rules,
+    image_url
 } = req.body;
 
         // ---------------------------------------------------------
@@ -98,9 +99,10 @@ const createAdminOffer = async (req, res, next) => {
     valid_to,
     min_advance_days,
     status,
-    display_order
+    display_order,
+    image_url
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
     offer_name,
     description || null,
@@ -124,7 +126,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     status || "Active",
     display_order !== undefined
         ? display_order
-        : 0
+        : 0,
+    image_url || null
 ]
         );
 
@@ -254,7 +257,8 @@ const updateAdminOffer = async (req, res, next) => {
             status,
             display_order,
             offer_tickets,
-            offer_schedule_rules
+            offer_schedule_rules,
+            image_url
         } = req.body;
 
         // ---------------------------------------------------------
@@ -274,7 +278,8 @@ const updateAdminOffer = async (req, res, next) => {
                 valid_to = ?,
                 min_advance_days = ?,
                 status = ?,
-                display_order = ?
+                display_order = ?,
+                image_url = ?
              WHERE id = ?`,
             [
                 offer_name,
@@ -307,6 +312,8 @@ const updateAdminOffer = async (req, res, next) => {
                 display_order !== undefined
                     ? display_order
                     : 0,
+                    
+                image_url || null,
 
                 id
             ]

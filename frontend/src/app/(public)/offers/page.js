@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Info, Loader2 } from "lucide-react";
 import "@/components/Offers/offers-page.css";
 import { fetchOffers } from "@/services/offerApi";
+import { getImageUrl } from "@/constants/api";
 
 const BG_HEX = {
   "bg-mint": "#D8F5EF",
@@ -20,220 +21,16 @@ const bgKeys = Object.keys(BG_HEX);
 
 /*
 |--------------------------------------------------------------------------
-| OFFER IMAGE MAPPING
-|--------------------------------------------------------------------------
-| IMPORTANT:
-| Images are mapped to the actual offer, NOT to the card index.
-|
-| Therefore:
-|   Early Bird -> Early Bird image
-|   Birthday -> Birthday image
-|   College -> College image
-|   Little Legend -> Little Legend image
-|   etc.
-|
-| This prevents images from changing when backend display_order changes.
-|--------------------------------------------------------------------------
-*/
-
-const OFFER_IMAGES = {
-  EARLYBIRD: "/images/offers/offer_early_bird.jpg",
-  EARLY_BIRD: "/images/offers/offer_early_bird.jpg",
-  EARLY_BIRD_15: "/images/offers/offer_early_bird.jpg",
-
-  BIRTHDAY: "/images/offers/offer_birthday_special.jpg",
-  BIRTHDAY_SPECIAL: "/images/offers/offer_birthday_special.jpg",
-
-  CAMPUS20: "/images/offers/offer_college_students.jpg",
-  COLLEGE_STUDENTS: "/images/offers/offer_college_students.jpg",
-  COLLEGE_STUDENT: "/images/offers/offer_college_students.jpg",
-
-  DOUBLE_DHAMAKA: "/images/offers/offer_double_dhamaka.jpg",
-  DOUBLEDHAMAKA: "/images/offers/offer_double_dhamaka.jpg",
-
-  AADI_SPECIAL: "/images/offers/offer_aadi_special.jpg",
-  AADI: "/images/offers/offer_aadi_special.jpg",
-
-  FRIENDSHIP_DAY: "/images/offers/offer_friendship_day.jpg",
-  FRIENDSHIP: "/images/offers/offer_friendship_day.jpg",
-
-  LITTLE_LEGEND: "/images/offers/offer_little_legend.jpg",
-  LITTLELEGEND: "/images/offers/offer_little_legend.jpg",
-};
-
-/*
-|--------------------------------------------------------------------------
-| NORMALIZE TEXT
-|--------------------------------------------------------------------------
-*/
-
-function normalizeOfferText(value) {
-  if (!value) return "";
-
-  return String(value)
-    .toLowerCase()
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ");
-}
-
-/*
-|--------------------------------------------------------------------------
 | GET OFFER IMAGE
-|--------------------------------------------------------------------------
-|
-| First try offer_code.
-| If offer_code is unavailable, use offer_name.
-|
-| NEVER use array index here.
 |--------------------------------------------------------------------------
 */
 
 function getOfferImage(offer) {
-  if (!offer) {
-    return "/images/offers/offer_early_bird.jpg";
+  if (offer?.image_url) {
+    return getImageUrl(offer.image_url);
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | 1. Exact offer_code matching
-  |--------------------------------------------------------------------------
-  */
-
-  const rawCode =
-    offer.offer_code ||
-    offer.offerCode ||
-    offer.code ||
-    "";
-
-  const normalizedCode = String(rawCode)
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
-
-  if (OFFER_IMAGES[normalizedCode]) {
-    return OFFER_IMAGES[normalizedCode];
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | 2. Name-based matching
-  |--------------------------------------------------------------------------
-  |
-  | This is a safety fallback in case an existing offer has a code that
-  | wasn't included in OFFER_IMAGES.
-  |--------------------------------------------------------------------------
-  */
-
-  const name = normalizeOfferText(
-    offer.offer_name ||
-    offer.offerName ||
-    offer.name ||
-    ""
-  );
-
-  /*
-  |--------------------------------------------------------------------------
-  | Early Bird
-  |--------------------------------------------------------------------------
-  */
-
-  if (name.includes("early bird")) {
-    return "/images/offers/offer_early_bird.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Birthday
-  |--------------------------------------------------------------------------
-  */
-
-  if (name.includes("birthday")) {
-    return "/images/offers/offer_birthday_special.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | College / Student
-  |--------------------------------------------------------------------------
-  */
-
-  if (
-    name.includes("college") ||
-    name.includes("student")
-  ) {
-    return "/images/offers/offer_college_students.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Double Dhamaka
-  |--------------------------------------------------------------------------
-  */
-
-  if (
-    name.includes("double dhamaka") ||
-    name.includes("double-dhamaka")
-  ) {
-    return "/images/offers/offer_double_dhamaka.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Aadi
-  |--------------------------------------------------------------------------
-  */
-
-  if (name.includes("aadi")) {
-    return "/images/offers/offer_aadi_special.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Friendship
-  |--------------------------------------------------------------------------
-  */
-
-  if (name.includes("friendship")) {
-    return "/images/offers/offer_friendship_day.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Little Legend
-  |--------------------------------------------------------------------------
-  */
-
-  if (
-    name.includes("little legend") ||
-    name.includes("littlelegend")
-  ) {
-    return "/images/offers/offer_little_legend.jpg";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Unknown offer
-  |--------------------------------------------------------------------------
-  |
-  | IMPORTANT:
-  | Do NOT use idx here.
-  |
-  | An unknown offer should use a neutral fallback instead of showing
-  | another offer's image.
-  |--------------------------------------------------------------------------
-  */
-
-  console.warn(
-    "[Offers] No image mapping found for offer:",
-    {
-      id: offer.id,
-      offer_code: offer.offer_code,
-      offer_name: offer.offer_name,
-    }
-  );
-
-  return "/images/offers/offer_early_bird.jpg";
+  return "/images/sampleVGP.jpg";
 }
 
 /*
@@ -260,25 +57,6 @@ function formatDate(dateString) {
 
 /*
 |--------------------------------------------------------------------------
-| SHORT TICKET NAME
-|--------------------------------------------------------------------------
-*/
-
-function getShortTicketName(name) {
-  if (!name) return "";
-
-  const lower = name.toLowerCase();
-
-  if (lower.includes("adult")) return "Adult";
-  if (lower.includes("child")) return "Child";
-  if (lower.includes("senior")) return "Senior";
-  if (lower.includes("student")) return "Student";
-
-  return name;
-}
-
-/*
-|--------------------------------------------------------------------------
 | BUY X GET Y GROUPING
 |--------------------------------------------------------------------------
 */
@@ -291,40 +69,30 @@ function groupBuyXGetY(offerTickets) {
   const groups = {};
 
   offerTickets.forEach((tk) => {
-    const minQty =
-      tk.minQty !== undefined
-        ? tk.minQty
-        : tk.min_qty;
-
-    const freeQty =
-      tk.freeQty !== undefined
-        ? tk.freeQty
-        : tk.free_qty;
+    const minQty = tk.buyQuantity;
+    const freeQty = tk.freeQuantity;
+    
+    // Ignore invalid entries
+    if (minQty === undefined || minQty === null) return;
 
     const key = `${minQty}-${freeQty}`;
 
     if (!groups[key]) {
       groups[key] = {
         min: minQty,
-        free: freeQty,
+        free: freeQty || 0,
         tickets: [],
       };
     }
 
-    groups[key].tickets.push(
-      getShortTicketName(
-        tk.ticketCode ||
-        tk.ticketName ||
-        tk.ticket_name
-      )
-    );
+    if (tk.displayName) {
+      groups[key].tickets.push(tk.displayName);
+    }
   });
 
   return Object.values(groups).map((g) => ({
     mainText: `Buy ${g.min} → Get ${g.free} Free`,
-    subText: `Applicable to: ${[
-      ...new Set(g.tickets),
-    ].join(", ")}`,
+    subText: `Applicable to: ${[...new Set(g.tickets)].join(", ")}`,
   }));
 }
 
@@ -335,12 +103,14 @@ function groupBuyXGetY(offerTickets) {
 */
 
 function generateBadge(offer) {
-  if (offer.promotion_type === "PERCENTAGE") {
-    return `${offer.discount_value}% OFF`;
+  if (Number(offer.offer_type_id) === 1 && offer.discount_percentage) {
+    const val = Number(offer.discount_percentage);
+    return `${val}% OFF`;
   }
 
-  if (offer.promotion_type === "FLAT") {
-    return `₹${offer.discount_value} OFF`;
+  if (Number(offer.offer_type_id) === 2 && offer.flat_discount) {
+    const val = Number(offer.flat_discount);
+    return `₹${val} OFF`;
   }
 
   return null;
@@ -369,31 +139,6 @@ export default function Offers() {
     async function load() {
       try {
         const data = await fetchOffers();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Debug information
-        |--------------------------------------------------------------------------
-        | This will help us verify that every offer has the expected
-        | offer_code and offer_name.
-        |--------------------------------------------------------------------------
-        */
-
-        console.log(
-          "[Offers] API response:",
-          data
-        );
-
-        if (Array.isArray(data)) {
-          console.table(
-            data.map((offer) => ({
-              id: offer.id,
-              offer_code: offer.offer_code,
-              offer_name: offer.offer_name,
-              promotion_type: offer.promotion_type,
-            }))
-          );
-        }
 
         setOffersData(
           Array.isArray(data) ? data : []
@@ -587,16 +332,6 @@ export default function Offers() {
                 const displayImg =
                   getOfferImage(offer);
 
-                console.log(
-                  `[Offers] Card ${idx + 1}:`,
-                  {
-                    offerId: offer.id,
-                    offerCode: offer.offer_code,
-                    offerName: offer.offer_name,
-                    image: displayImg,
-                  }
-                );
-
                 return (
                   <div
                     key={
@@ -683,8 +418,8 @@ export default function Offers() {
                           BUY X GET Y
                       ================================================== */}
 
-                      {offer.promotion_type ===
-                        "BUY_X_GET_Y" && (
+                      {Number(offer.offer_type_id) ===
+                        3 && (
                         <div
                           style={{
                             marginBottom:

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-
+import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 export default function Footer() {
   return (
     <footer className="footer" id="footer">
@@ -9,9 +9,15 @@ export default function Footer() {
           <h3>VGP Universal Kingdom</h3>
           <p>East Coast Road, Injambakkam,<br/>Chennai, Tamil Nadu 600115</p>
           <div className="ft-soc">
-            <a href="https://www.facebook.com/vgpuniversalkingdom/" aria-label="Facebook">fb</a>
-            <a href="https://www.instagram.com/vgp_universal_kingdom/?hl=en" aria-label="Instagram">ig</a>
-            <a href="https://www.youtube.com/results?search_query=VGP+UNIVERSAL+KINGDOM" aria-label="YouTube">yt</a>
+            <a href="https://www.facebook.com/vgpuniversalkingdom/" aria-label="Visit VGP Universal Kingdom on Facebook" target="_blank" rel="noopener noreferrer" title="VGP Universal Kingdom Facebook">
+              <FaFacebookF />
+            </a>
+            <a href="https://www.instagram.com/vgp_universal_kingdom/?hl=en" aria-label="Visit VGP Universal Kingdom on Instagram" target="_blank" rel="noopener noreferrer" title="VGP Universal Kingdom Instagram">
+              <FaInstagram />
+            </a>
+            <a href="https://www.youtube.com/@vgpuniversalkingdom6708" aria-label="Visit VGP Universal Kingdom on YouTube" target="_blank" rel="noopener noreferrer" title="VGP Universal Kingdom YouTube">
+              <FaYoutube />
+            </a>
           </div>
         </div>
         <div className="ft-col">

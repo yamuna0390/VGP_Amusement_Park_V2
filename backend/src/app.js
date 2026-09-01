@@ -110,10 +110,13 @@ app.use("/api/rides", rideRoutes);
 app.use("/api/upload", uploadRoutes);
 
 const eventRoutes = require("./routes/eventRoutes");
-app.use("/api/events", eventRoutes);
-
 const operatorEnquiryRoutes = require("./routes/operatorEnquiryRoutes");
+const publicRoutes = require("./routes/publicRoutes");
+
+app.use("/api/events", eventRoutes);
 app.use("/api/operator-enquiries", operatorEnquiryRoutes);
+app.use("/api/public", publicRoutes);
+
 /**
  * ==========================================
  * 404 Handler
