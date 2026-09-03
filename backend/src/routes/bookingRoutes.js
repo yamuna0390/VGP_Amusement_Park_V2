@@ -9,7 +9,7 @@ router.get("/internal-render/:id", bookingController.getInternalRenderData);
 
 // POST /api/booking/session
 // authMiddleware is optional here because the user may be a guest
-// Let's use authMiddleware but it already sets req.user = null if no token is provided, 
+// Let's use authMiddleware but it already sets req.user = null if no token is provided,
 // so we can safely use it.
 router.post("/session", authMiddleware, bookingController.createSession);
 
@@ -42,6 +42,10 @@ const { verifyPaymentSchema } = require("../validations/bookingValidation");
 // POST /api/booking/payment/verify
 // Verifies the Razorpay payment signature.
 router.post("/payment/verify", validate(verifyPaymentSchema), paymentController.verifyPayment);
+
+// POST /api/booking/payment/webhook
+// Razorpay webhook receiver
+router.post("/payment/webhook", paymentController.handleWebhook);
 
 // GET /api/booking/my-bookings
 // Gets bookings for logged in customer

@@ -9,8 +9,8 @@ const razorpayService = require("./razorpayService");
 
 /**
  * Creates a payment order for the current booking session.
- * 
- * @param {string} rawToken 
+ *
+ * @param {string} rawToken
  */
 async function createPaymentOrder(rawToken) {
     const sessionTokenHash = hashToken(rawToken);
@@ -24,7 +24,7 @@ async function createPaymentOrder(rawToken) {
         throw { statusCode: 400, message: "Booking session is not active." };
     }
     if (new Date() > new Date(session.expires_at)) {
-        throw { statusCode: 400, message: "Booking session has expired." };
+        throw { statusCode: 401, code: "SESSION_EXPIRED", message: "Booking session has expired." };
     }
 
     // 2. Validate Customer
@@ -45,14 +45,14 @@ async function createPaymentOrder(rawToken) {
     if (isNaN(grandTotal) || grandTotal <= 0) {
         throw { statusCode: 400, message: "Invalid quote amount." };
     }
-    
+
     const currency = quote.currency || 'INR';
 
     // 4. Idempotency Check
     // Check if we already created a PAYMENT_PENDING booking for this exact session
     // We can use the `remarks` field in `bookings` to store the session_id
     const [existingBookings] = await db.execute(
-        'SELECT * FROM bookings WHERE booking_status = "PAYMENT_PENDING" AND remarks LIKE ? ORDER BY created_at DESC LIMIT 1', 
+        'SELECT * FROM bookings WHERE booking_status = "PAYMENT_PENDING" AND remarks LIKE ? ORDER BY created_at DESC LIMIT 1',
         [`%{"sessionId":${session.id}}%`]
     );
 
@@ -81,7 +81,7 @@ async function createPaymentOrder(rawToken) {
         // Create the `bookings` record
         const visitDateStr = new Date(session.visit_date).toISOString().split('T')[0];
         bookingNumber = await bookingRepository.generateBookingNumber(visitDateStr);
-        
+
         const items = await db.execute('SELECT * FROM booking_session_items WHERE session_id = ?', [session.id]).then(res => res[0]);
         let paid_visitors = 0, free_visitors = 0;
         for (const item of items) {
@@ -161,39 +161,18 @@ const crypto = require("crypto");
 
 /**
  * Verifies a Razorpay payment signature and updates the database.
- * 
+ *
  * @param {string} razorpayOrderId
  * @param {string} razorpayPaymentId
  * @param {string} razorpaySignature
  */
-async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature) {
-    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
-        throw { statusCode: 400, message: "Missing required payment verification parameters." };
-    }
-
-    // Generate expected signature
-    const secret = process.env.RAZORPAY_KEY_SECRET;
-    const expectedSignature = crypto
-        .createHmac("sha256", secret)
-        .update(razorpayOrderId + "|" + razorpayPaymentId)
-        .digest("hex");
-
-    // Secure comparison
-    const isAuthentic = crypto.timingSafeEqual(
-        Buffer.from(expectedSignature),
-        Buffer.from(razorpaySignature)
-    );
-
-    if (!isAuthentic) {
-        throw { statusCode: 400, message: "Invalid payment signature." };
-    }
-
-    // Get connection for transaction
+async function processSuccessfulPayment(razorpayOrderId, razorpayPaymentId, gatewayResponse) {
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
 
-        // Find the local booking payment
+        // 1. Find and lock the local booking payment attempt
+        // The repository adds FOR UPDATE when connection !== db to lock this row safely
         const payment = await bookingPaymentRepository.getPaymentByGatewayOrderId(razorpayOrderId, connection);
         if (!payment) {
             throw { statusCode: 404, message: "Payment record not found for the given order ID." };
@@ -203,13 +182,20 @@ async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignatu
             throw { statusCode: 400, message: "Invalid payment gateway for this order." };
         }
 
-        // Idempotency check
+        // 2. Find and lock the parent booking row (MUST happen in this order)
+        const booking = await bookingRepository.getBookingById(payment.booking_id, connection);
+        if (!booking) {
+            throw { statusCode: 404, message: "Parent booking not found." };
+        }
+
+        // 3. Evaluate combined states while both rows are protected
+
+        // CASE A - Payment already SUCCESS
         if (payment.payment_status === 'SUCCESS') {
             if (payment.gateway_payment_id === razorpayPaymentId) {
-                const booking = await bookingRepository.getBookingById(payment.booking_id, connection);
                 await connection.commit();
-                return { 
-                    success: true, 
+                return {
+                    success: true,
                     message: "Payment already verified successfully",
                     data: {
                         bookingId: booking.id,
@@ -225,10 +211,37 @@ async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignatu
             }
         }
 
+        // CASE C - Booking already CONFIRMED
+        if (booking.booking_status === 'CONFIRMED') {
+            await bookingPaymentRepository.updatePaymentSuccess(payment.id, razorpayPaymentId, gatewayResponse, connection);
+            await bookingPaymentRepository.markPaymentForReconciliation(payment.id, connection);
+            await connection.commit();
+            return {
+                success: true,
+                isNewSuccess: false, // Do not trigger notifications
+                message: "Booking is already confirmed by another payment attempt."
+            };
+        }
+
+        // CASE D - Booking CANCELLED and delayed payment arrives
+        if (booking.booking_status === 'CANCELLED') {
+            await bookingPaymentRepository.updatePaymentSuccess(payment.id, razorpayPaymentId, gatewayResponse, connection);
+            await bookingPaymentRepository.markPaymentForReconciliation(payment.id, connection);
+            await connection.commit();
+            return {
+                success: true,
+                isNewSuccess: false,
+                requiresManualReview: true,
+                reason: "BOOKING_ALREADY_CANCELLED"
+            };
+        }
+
+        // Validate normal path
         if (payment.payment_status !== 'PENDING') {
             throw { statusCode: 400, message: `Payment is in ${payment.payment_status} state.` };
         }
 
+        // CASE B - Normal success path
         // Generate Invoice Number
         const currentDate = new Date().toISOString().split('T')[0];
         const invoiceNumber = await bookingRepository.generateInvoiceNumber(currentDate, connection);
@@ -237,11 +250,6 @@ async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignatu
         const qrToken = crypto.randomBytes(32).toString("hex");
 
         // Update booking_payments
-        const gatewayResponse = {
-            razorpay_order_id: razorpayOrderId,
-            razorpay_payment_id: razorpayPaymentId,
-            razorpay_signature: razorpaySignature
-        };
         await bookingPaymentRepository.updatePaymentSuccess(payment.id, razorpayPaymentId, gatewayResponse, connection);
 
         // Update bookings
@@ -249,14 +257,12 @@ async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignatu
         await bookingRepository.updateBookingInvoiceNumber(payment.booking_id, invoiceNumber, connection);
         await bookingRepository.updateBookingQrToken(payment.booking_id, qrToken, connection);
 
-        // Fetch booking to get booking_number for the response
-        const booking = await bookingRepository.getBookingById(payment.booking_id, connection);
-
         await connection.commit();
 
-        return { 
-            success: true, 
+        return {
+            success: true,
             message: "Payment verified successfully",
+            isNewSuccess: true, // indicates to caller whether to send notification
             data: {
                 bookingId: booking.id,
                 bookingNumber: booking.booking_number,
@@ -274,7 +280,98 @@ async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignatu
     }
 }
 
+/**
+ * Verifies a Razorpay payment signature and updates the database.
+ *
+ * @param {string} razorpayOrderId
+ * @param {string} razorpayPaymentId
+ * @param {string} razorpaySignature
+ */
+async function verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature) {
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+        throw { statusCode: 400, message: "Missing required payment verification parameters." };
+    }
+
+    // Generate expected signature
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(razorpayOrderId + "|" + razorpayPaymentId)
+        .digest("hex");
+
+    // Secure comparison
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const receivedBuffer = Buffer.from(razorpaySignature);
+
+    let isAuthentic = false;
+    if (expectedBuffer.length === receivedBuffer.length) {
+        isAuthentic = crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+    }
+
+    if (!isAuthentic) {
+        throw { statusCode: 400, message: "Invalid payment signature." };
+    }
+
+    const gatewayResponse = {
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_signature: razorpaySignature
+    };
+
+    return await processSuccessfulPayment(razorpayOrderId, razorpayPaymentId, gatewayResponse);
+}
+
+/**
+ * Handles Razorpay webhook securely.
+ */
+async function handleWebhook(rawBody, signature, payload) {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (!secret) {
+        throw { statusCode: 500, message: "RAZORPAY_WEBHOOK_SECRET is not configured." };
+    }
+
+    const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(rawBody)
+        .digest("hex");
+
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const receivedBuffer = Buffer.from(signature);
+
+    let isAuthentic = false;
+    if (expectedBuffer.length === receivedBuffer.length) {
+        isAuthentic = crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+    }
+
+    if (!isAuthentic) {
+        throw { statusCode: 400, message: "Invalid webhook signature." };
+    }
+
+    const event = payload.event;
+
+    if (event === 'payment.captured') {
+        const orderId = payload.payload.payment.entity.order_id;
+        const paymentId = payload.payload.payment.entity.id;
+
+        // Use full payload as gatewayResponse to store exactly what webhook sent
+        const result = await processSuccessfulPayment(orderId, paymentId, payload);
+
+        if (result.isNewSuccess) {
+            // Send notifications via background task
+            const bookingNotificationService = require("../booking/bookingNotificationService");
+            bookingNotificationService.sendBookingConfirmation(result.data.bookingId)
+                .catch(error => {
+                    console.error("[BOOKING NOTIFICATION] Webhook background task failed:", error);
+                });
+        }
+        return result;
+    }
+
+    return { success: true, message: "Event ignored" };
+}
+
 module.exports = {
     createPaymentOrder,
-    verifyPayment
+    verifyPayment,
+    handleWebhook
 };

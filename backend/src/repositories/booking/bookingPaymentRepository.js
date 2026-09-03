@@ -2,7 +2,7 @@ const db = require("../../config/database");
 
 /**
  * Creates a new booking payment record.
- * 
+ *
  * @param {object} paymentData - The payment details
  * @param {object} connection - Optional transaction connection
  */
@@ -38,13 +38,13 @@ async function createBookingPayment(paymentData, connection = db) {
 
 /**
  * Finds an existing pending payment for a given booking.
- * 
- * @param {number} bookingId 
- * @param {object} connection 
+ *
+ * @param {number} bookingId
+ * @param {object} connection
  */
 async function getPendingPaymentByBookingId(bookingId, connection = db) {
     const query = `
-        SELECT * FROM booking_payments 
+        SELECT * FROM booking_payments
         WHERE booking_id = ? AND payment_status = 'PENDING'
         ORDER BY created_at DESC LIMIT 1
     `;
@@ -54,32 +54,35 @@ async function getPendingPaymentByBookingId(bookingId, connection = db) {
 
 /**
  * Finds a payment record by gateway order ID.
- * 
- * @param {string} gatewayOrderId 
- * @param {object} connection 
+ *
+ * @param {string} gatewayOrderId
+ * @param {object} connection
  */
 async function getPaymentByGatewayOrderId(gatewayOrderId, connection = db) {
-    const query = `
-        SELECT * FROM booking_payments 
+    let query = `
+        SELECT * FROM booking_payments
         WHERE gateway_order_id = ?
         ORDER BY created_at DESC LIMIT 1
     `;
+    if (connection !== db) {
+        query += " FOR UPDATE";
+    }
     const [rows] = await connection.execute(query, [gatewayOrderId]);
     return rows[0] || null;
 }
 
 /**
  * Updates a payment as SUCCESS.
- * 
- * @param {number} paymentId 
- * @param {string} gatewayPaymentId 
- * @param {object} gatewayResponse 
- * @param {object} connection 
+ *
+ * @param {number} paymentId
+ * @param {string} gatewayPaymentId
+ * @param {object} gatewayResponse
+ * @param {object} connection
  */
 async function updatePaymentSuccess(paymentId, gatewayPaymentId, gatewayResponse, connection = db) {
     const query = `
-        UPDATE booking_payments 
-        SET 
+        UPDATE booking_payments
+        SET
             payment_status = 'SUCCESS',
             gateway_payment_id = ?,
             gateway_response = ?,
@@ -91,9 +94,26 @@ async function updatePaymentSuccess(paymentId, gatewayPaymentId, gatewayResponse
     return result.affectedRows > 0;
 }
 
+/**
+ * Marks a specific payment attempt as requiring reconciliation.
+ *
+ * @param {number} paymentId
+ * @param {object} connection
+ */
+async function markPaymentForReconciliation(paymentId, connection = db) {
+    const query = `
+        UPDATE booking_payments
+        SET reconciliation_status = 'REQUIRED'
+        WHERE id = ?
+    `;
+    const [result] = await connection.execute(query, [paymentId]);
+    return result.affectedRows > 0;
+}
+
 module.exports = {
     createBookingPayment,
     getPendingPaymentByBookingId,
     getPaymentByGatewayOrderId,
-    updatePaymentSuccess
+    updatePaymentSuccess,
+    markPaymentForReconciliation
 };

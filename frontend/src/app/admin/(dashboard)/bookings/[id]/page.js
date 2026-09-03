@@ -58,8 +58,8 @@ export default function BookingDetailsPage() {
 
   const tickets = booking.items ? booking.items.filter(item => item.item_type === 'TICKET') : [];
   const foodAddons = booking.items ? booking.items.filter(item => item.item_type === 'MEAL' || item.item_type === 'ADDON') : [];
-  
-  const payment = booking.payments && booking.payments.length > 0 ? booking.payments[0] : null;
+
+  const payments = booking.payments || [];
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -81,7 +81,7 @@ export default function BookingDetailsPage() {
       </div>
 
       <div className="booking-details-container">
-        
+
         <div className="details-grid">
           {/* Customer Info */}
           <div className="details-card">
@@ -229,36 +229,53 @@ export default function BookingDetailsPage() {
           <div className="details-card">
             <h3>Payment Information</h3>
             <div className="detail-row">
-              <span className="detail-label">Payment Status</span>
+              <span className="detail-label">Booking Payment Status</span>
               <span className="detail-value">
                 <span className={`status-badge ${booking.payment_status.toLowerCase()}`}>
                   {booking.payment_status}
                 </span>
               </span>
             </div>
-            {payment ? (
-              <>
-                <div className="detail-row">
-                  <span className="detail-label">Gateway</span>
-                  <span className="detail-value">{payment.payment_gateway}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Order ID</span>
-                  <span className="detail-value">{payment.gateway_order_id || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Payment ID</span>
-                  <span className="detail-value">{payment.gateway_payment_id || 'N/A'}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Amount Paid</span>
-                  <span className="detail-value">{fmt(payment.amount)}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Paid At</span>
-                  <span className="detail-value">{formatDate(payment.paid_at)}</span>
-                </div>
-              </>
+
+            <hr style={{borderTop: '1px dashed #eee', margin: '15px 0'}} />
+            <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>Payment Attempts: {payments.length}</h4>
+
+            {payments.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {payments.map((payment, index) => {
+                  const reconStatus = payment.reconciliation_status || 'NONE';
+                  return (
+                    <div key={payment.id || index} style={{ padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '4px', border: '1px solid #e0e0e0' }}>
+                      <strong style={{ display: 'block', marginBottom: '8px', color: '#555' }}>Attempt {index + 1}</strong>
+
+                      <div className="detail-row" style={{ marginBottom: '4px' }}>
+                        <span className="detail-label" style={{ fontSize: '0.9rem' }}>Payment Status</span>
+                        <span className="detail-value" style={{ fontSize: '0.9rem' }}>{payment.payment_status}</span>
+                      </div>
+
+                      <div className="detail-row" style={{ marginBottom: '4px' }}>
+                        <span className="detail-label" style={{ fontSize: '0.9rem' }}>Reconciliation Status</span>
+                        <span className="detail-value" style={{
+                          fontSize: '0.9rem',
+                          color: reconStatus !== 'NONE' ? '#fb2020' : 'inherit'
+                        }}>
+                          {reconStatus}
+                        </span>
+                      </div>
+
+                      <div className="detail-row" style={{ marginBottom: '4px' }}>
+                        <span className="detail-label" style={{ fontSize: '0.9rem' }}>Gateway Payment ID</span>
+                        <span className="detail-value" style={{ fontSize: '0.9rem' }}>{payment.gateway_payment_id || 'N/A'}</span>
+                      </div>
+
+                      <div className="detail-row" style={{ marginBottom: '4px' }}>
+                        <span className="detail-label" style={{ fontSize: '0.9rem' }}>Paid At</span>
+                        <span className="detail-value" style={{ fontSize: '0.9rem' }}>{formatDate(payment.paid_at)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <p>No payment information found.</p>
             )}
@@ -277,10 +294,10 @@ export default function BookingDetailsPage() {
                 )}
               </span>
             </div>
-            
+
             <div className="documents-section">
-              <button 
-                className="doc-btn" 
+              <button
+                className="doc-btn"
                 onClick={handleDownloadTicket}
                 disabled={!booking.has_qr || downloading}
                 style={{opacity: (!booking.has_qr || downloading) ? 0.5 : 1}}

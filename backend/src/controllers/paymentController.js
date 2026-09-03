@@ -33,22 +33,49 @@ async function verifyPayment(req, res, next) {
             razorpay_payment_id,
             razorpay_signature
         );
-        
-        if (result.success) {
+
+        if (result.isNewSuccess) {
             // Trigger background notification workflow securely decoupled from HTTP response
             bookingNotificationService.sendBookingConfirmation(result.data.bookingId)
                 .catch(error => {
                     console.error("[BOOKING NOTIFICATION] Background task failed:", error);
                 });
         }
-        
+
         return success(res, result.message, result.data, 200);
     } catch (error) {
         next(error);
     }
 }
 
+/**
+ * POST /api/booking/payment/webhook
+ * Handles Razorpay webhooks.
+ */
+async function handleWebhook(req, res, next) {
+    try {
+        const rawBody = req.rawBody;
+        const signature = req.headers['x-razorpay-signature'];
+        const payload = req.body;
+
+        if (!rawBody || !signature) {
+            throw { statusCode: 400, message: "Missing raw body or signature" };
+        }
+
+        await paymentService.handleWebhook(rawBody, signature, payload);
+
+        // Always respond with 200 OK to acknowledge receipt
+        return success(res, "Webhook processed", null, 200);
+    } catch (error) {
+        // Log webhook errors but still return 200 to prevent Razorpay from endlessly retrying
+        // unless it's an intermittent DB failure.
+        console.error("Webhook processing failed:", error);
+        return res.status(200).json({ success: false, message: "Webhook processed with internal errors" });
+    }
+}
+
 module.exports = {
     createPaymentOrder,
-    verifyPayment
+    verifyPayment,
+    handleWebhook
 };

@@ -4,7 +4,7 @@ const db = require("../../config/database");
  * Generates a unique booking number for a specific visit date.
  * Format: VGP{YYMMDD}{6-digit-sequence}
  * Example: VGP240815000005
- * 
+ *
  * @param {string} visitDate - Date string in YYYY-MM-DD format
  * @param {object} connection - Optional transaction connection
  */
@@ -13,7 +13,7 @@ async function generateBookingNumber(visitDate, connection = db) {
     const yy = String(dateObj.getFullYear()).slice(-2);
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
-    
+
     const datePrefix = `${yy}${mm}${dd}`;
 
     // Atomically increment and get the sequence
@@ -22,12 +22,12 @@ async function generateBookingNumber(visitDate, connection = db) {
         VALUES (?, 1)
         ON DUPLICATE KEY UPDATE last_sequence = LAST_INSERT_ID(last_sequence + 1)
     `;
-    
+
     await connection.execute(query, [visitDate]);
-    
+
     // Retrieve the value that LAST_INSERT_ID() just computed
     const [rows] = await connection.execute('SELECT LAST_INSERT_ID() as seq');
-    
+
     let seq = rows[0].seq;
     // Note: If the INSERT was a new row (not DUPLICATE KEY), LAST_INSERT_ID() returns 1 but we still want 1.
     // However, if LAST_INSERT_ID() returns 0 (which shouldn't happen with the above UPDATE), default to 1.
@@ -37,13 +37,13 @@ async function generateBookingNumber(visitDate, connection = db) {
     }
 
     const sequenceString = String(seq).padStart(6, '0');
-    
+
     return `VGP${datePrefix}${sequenceString}`;
 }
 
 /**
  * Creates a new booking record in the database.
- * 
+ *
  * @param {object} bookingData - The booking details
  * @param {object} connection - Optional transaction connection
  */
@@ -51,19 +51,19 @@ async function createBooking(bookingData, connection = db) {
     const query = `
         INSERT INTO bookings (
             booking_number, user_id, guest_name, guest_email, guest_mobile, whatsapp_delivery,
-            visit_date, ticket_subtotal, meal_subtotal, subtotal, 
-            offer_discount, coupon_discount, total_discount, 
-            ticket_tax, food_tax, total_tax, convenience_fee, grand_total, 
-            paid_visitors, free_visitors, total_visitors, 
-            offer_id, offer_code, offer_name, coupon_id, coupon_code, 
+            visit_date, ticket_subtotal, meal_subtotal, subtotal,
+            offer_discount, coupon_discount, total_discount,
+            ticket_tax, food_tax, total_tax, convenience_fee, grand_total,
+            paid_visitors, free_visitors, total_visitors,
+            offer_id, offer_code, offer_name, coupon_id, coupon_code,
             booking_status, payment_status, remarks
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, 
-            ?, ?, ?, ?, 
-            ?, ?, ?, 
-            ?, ?, ?, ?, ?, 
-            ?, ?, ?, 
-            ?, ?, ?, ?, ?, 
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?, ?, ?,
             ?, ?, ?
         )
     `;
@@ -106,7 +106,7 @@ async function createBooking(bookingData, connection = db) {
 
 /**
  * Creates booking items in the database.
- * 
+ *
  * @param {number} bookingId
  * @param {Array} items
  * @param {object} connection - Optional transaction connection
@@ -142,22 +142,26 @@ async function createBookingItems(bookingId, items, connection = db) {
  * Retrieves a booking by its ID.
  */
 async function getBookingById(bookingId, connection = db) {
-    const [rows] = await connection.execute('SELECT * FROM bookings WHERE id = ?', [bookingId]);
+    let query = 'SELECT * FROM bookings WHERE id = ?';
+    if (connection !== db) {
+        query += ' FOR UPDATE';
+    }
+    const [rows] = await connection.execute(query, [bookingId]);
     return rows[0] || null;
 }
 
 /**
  * Updates the booking and payment status for a booking.
- * 
- * @param {number} bookingId 
- * @param {string} bookingStatus 
- * @param {string} paymentStatus 
- * @param {object} connection 
+ *
+ * @param {number} bookingId
+ * @param {string} bookingStatus
+ * @param {string} paymentStatus
+ * @param {object} connection
  */
 async function updateBookingPaymentStatus(bookingId, bookingStatus, paymentStatus, connection = db) {
     const query = `
-        UPDATE bookings 
-        SET 
+        UPDATE bookings
+        SET
             booking_status = ?,
             payment_status = ?
         WHERE id = ?
@@ -170,7 +174,7 @@ async function updateBookingPaymentStatus(bookingId, bookingStatus, paymentStatu
  * Generates a unique invoice number.
  * Format: INV{YYMMDD}{6-digit-sequence}
  * Example: INV260811000001
- * 
+ *
  * @param {string} visitDate - Can use current date or visit date, but typically current date for invoice
  * @param {object} connection - Optional transaction connection
  */
@@ -179,7 +183,7 @@ async function generateInvoiceNumber(invoiceDate, connection = db) {
     const yy = String(dateObj.getFullYear()).slice(-2);
     const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
     const dd = String(dateObj.getDate()).padStart(2, '0');
-    
+
     const datePrefix = `${yy}${mm}${dd}`;
     const dateStr = `${dateObj.getFullYear()}-${mm}-${dd}`;
 
@@ -188,9 +192,9 @@ async function generateInvoiceNumber(invoiceDate, connection = db) {
         VALUES (?, 1)
         ON DUPLICATE KEY UPDATE last_sequence = LAST_INSERT_ID(last_sequence + 1)
     `;
-    
+
     const [result] = await connection.execute(query, [dateStr]);
-    
+
     let seq;
     if (result.affectedRows === 1) {
         // It was a brand new insert, so the sequence is exactly 1.
@@ -224,10 +228,10 @@ async function getInvoiceNumberByBookingId(bookingId, connection = db) {
 
 /**
  * Updates the QR token for a booking.
- * 
- * @param {number} bookingId 
- * @param {string} qrToken 
- * @param {object} connection 
+ *
+ * @param {number} bookingId
+ * @param {string} qrToken
+ * @param {object} connection
  */
 async function updateBookingQrToken(bookingId, qrToken, connection) {
     const query = `UPDATE bookings SET qr_token = ? WHERE id = ?`;
@@ -237,9 +241,9 @@ async function updateBookingQrToken(bookingId, qrToken, connection) {
 
 /**
  * Retrieves a booking by QR token with an exclusive row lock.
- * 
- * @param {string} qrToken 
- * @param {object} connection 
+ *
+ * @param {string} qrToken
+ * @param {object} connection
  */
 async function getBookingByQrTokenLock(qrToken, connection) {
     const query = `SELECT * FROM bookings WHERE qr_token = ? FOR UPDATE`;
@@ -249,9 +253,9 @@ async function getBookingByQrTokenLock(qrToken, connection) {
 
 /**
  * Retrieves a booking by QR token without locking.
- * 
- * @param {string} qrToken 
- * @param {object} connection 
+ *
+ * @param {string} qrToken
+ * @param {object} connection
  */
 async function getBookingByQrToken(qrToken, connection = db) {
     const query = `SELECT * FROM bookings WHERE qr_token = ?`;
@@ -261,9 +265,9 @@ async function getBookingByQrToken(qrToken, connection = db) {
 
 /**
  * Marks a booking as redeemed by setting redeemed_at.
- * 
- * @param {number} bookingId 
- * @param {object} connection 
+ *
+ * @param {number} bookingId
+ * @param {object} connection
  */
 async function markBookingRedeemed(bookingId, connection) {
     const query = `UPDATE bookings SET redeemed_at = NOW() WHERE id = ?`;
@@ -276,7 +280,7 @@ async function markBookingRedeemed(bookingId, connection) {
  */
 async function getAllBookings(filters, connection = db) {
     let query = `
-        SELECT 
+        SELECT
             id, booking_number, invoice_number, guest_name, guest_mobile, guest_email,
             visit_date, grand_total, payment_status, booking_status, created_at,
             IF(qr_token IS NOT NULL AND qr_token != '', 1, 0) as has_qr
@@ -315,7 +319,7 @@ async function getAllBookings(filters, connection = db) {
 
     // Order & Pagination
     query += ` ORDER BY created_at DESC`;
-    
+
     if (filters.limit && filters.offset !== undefined) {
         query += ` LIMIT ${Number(filters.limit)} OFFSET ${Number(filters.offset)}`;
     }
@@ -330,7 +334,7 @@ async function getAllBookings(filters, connection = db) {
 async function getAdminBookingDetailsById(bookingId, connection = db) {
     const [bookings] = await connection.execute('SELECT * FROM bookings WHERE id = ?', [bookingId]);
     if (bookings.length === 0) return null;
-    
+
     const booking = bookings[0];
 
     const [items] = await connection.execute('SELECT * FROM booking_items WHERE booking_id = ?', [bookingId]);
@@ -371,13 +375,13 @@ module.exports = {
 
 /**
  * Retrieves all bookings for a specific customer user ID.
- * 
+ *
  * @param {number} userId - The user ID of the authenticated customer
  * @param {object} connection - Optional transaction connection
  */
 async function findBookingsByUserId(userId, connection = db) {
     const query = `
-        SELECT 
+        SELECT
             b.id,
             b.booking_number,
             b.booking_status,
@@ -397,10 +401,10 @@ async function findBookingsByUserId(userId, connection = db) {
     // Fetch items for all these bookings
     const bookingIds = bookings.map(b => b.id);
     const placeholders = bookingIds.map(() => '?').join(',');
-    
+
     const itemsQuery = `
-        SELECT booking_id, item_type, item_name, quantity, final_amount 
-        FROM booking_items 
+        SELECT booking_id, item_type, item_name, quantity, final_amount
+        FROM booking_items
         WHERE booking_id IN (${placeholders})
     `;
     const [items] = await connection.execute(itemsQuery, bookingIds);
