@@ -3,6 +3,32 @@ import { useBooking } from "@/context/BookingContext";
 import { calcTotals, fmt } from "@/utils/bookingCalc";
 import { QRCodeSVG } from "qrcode.react";
 
+const formatISTDate = (dateString) => {
+  if (!dateString) return "";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    const parts = formatter.formatToParts(d);
+    const p = {};
+    parts.forEach(part => { p[part.type] = part.value; });
+    
+    return `${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute} ${p.dayPeriod}`;
+  } catch (e) {
+    return dateString;
+  }
+};
+
 export default function Invoice({ booking }) {
   const {
     bookingId, 
@@ -31,7 +57,7 @@ export default function Invoice({ booking }) {
   const bNumber = bookingNumber || bookingId;
   const bInvoiceNo = invoiceNo || `INV-${bNumber}`;
   
-  const quote = bookingResult?.quote;
+const quote = booking.quote || bookingResult?.quote;
   const qrToken = bookingResult?.qr_token || null;
   
   const displayGrandTotal = quote ? quote.grandTotal : (grandTotal !== undefined ? grandTotal : 0);
@@ -111,7 +137,7 @@ export default function Invoice({ booking }) {
       <div className="bk-inv__meta" style={{ fontSize: "0.85rem", color: "#444", marginBottom: "20px" }}>
         <div>
           <strong>Invoice:</strong> {bInvoiceNo}<br />
-          <strong>Date:</strong> {bookingDate || new Date(booking.created_at).toLocaleDateString("en-IN", { dateStyle: "medium" })}<br />
+          <strong>Date:</strong> {formatISTDate(bookingDate || booking.created_at)}<br />
           <strong>GSTIN:</strong> 33ABCDE1234F1Z5
         </div>
       </div>
