@@ -13,7 +13,11 @@ const nunito = Nunito({
 });
 
 export const metadata = {
-  title: "VGP Universal Kingdom — Family Amusement Park",
+  metadataBase: new URL("https://vgpuniversalkingdom.in"),
+  title: {
+    default: "VGP Universal Kingdom — Family Amusement Park",
+    template: "%s | VGP Universal Kingdom",
+  },
   description: "VGP Universal Kingdom, Chennai — a family amusement & water park with 22 rides, 11 water-park attractions, a pet zoo, dining and stay.",
 };
 import { ToastProvider } from "@/context/ToastContext";

@@ -102,7 +102,7 @@ export default function ProfilePage() {
               fontSize: "0.85rem",
               marginBottom: "20px",
               backgroundColor: message.type === "success" ? "#e8f5e9" : "#ffebee",
-              color: message.type === "success" ? "#2e7d32" : "#c62828",
+              color: message.type === "success" ? "#2e7d32" : "#f02525",
               border: `1px solid ${message.type === "success" ? "#a5d6a7" : "#ef9a9a"}`
             }}>
               {message.text}

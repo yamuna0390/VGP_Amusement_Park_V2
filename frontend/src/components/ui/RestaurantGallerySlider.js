@@ -1,21 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import {
-  Autoplay,
-  Pagination,
-  Navigation,
-  Keyboard,
-  EffectFade,
-  A11y,
-} from "swiper/modules";
-
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import "swiper/css/effect-fade";
 
 import "./RestaurantGallerySlider.css";
 
@@ -70,13 +56,10 @@ const GALLERY_SLIDES = [
   }
 ];
 
+import SharedSlider from "@/components/ui/SharedSlider";
+
 export default function RestaurantGallerySlider() {
   const [mounted, setMounted] = useState(false);
-  const swiperRef = useRef(null);
-  const progressRef = useRef(null);
-  const prevBtnRef = useRef(null);
-  const nextBtnRef = useRef(null);
-  const paginationRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
@@ -91,80 +74,50 @@ export default function RestaurantGallerySlider() {
   }
 
   return (
-    <div className="restaurant-gallery-slider-wrapper">
-      <Swiper
-        className="rg-swiper"
-        modules={[Autoplay, Pagination, Navigation, Keyboard, EffectFade, A11y]}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        loop={true}
-        speed={800}
-        autoplay={{
-          delay: 4500,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        keyboard={{ enabled: true }}
-        a11y={{ enabled: true }}
-        grabCursor={true}
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-          if (swiper.params && swiper.params.navigation) {
-            swiper.params.navigation.prevEl = prevBtnRef.current;
-            swiper.params.navigation.nextEl = nextBtnRef.current;
-            swiper.navigation.init();
-            swiper.navigation.update();
-          }
-          if (swiper.params && swiper.params.pagination) {
-            swiper.params.pagination.el = paginationRef.current;
-            swiper.pagination.init();
-            swiper.pagination.render();
-            swiper.pagination.update();
-          }
-        }}
-        onAutoplayTimeLeft={(_s, _time, progress) => {
-          if (progressRef.current) {
-            progressRef.current.style.transform = `scaleX(${1 - progress})`;
-          }
-        }}
-      >
-        {GALLERY_SLIDES.map((slide) => (
-          <SwiperSlide key={slide.id}>
-            {({ isActive }) => (
-              <div className="rg-slide-card">
-                {/* Background Image with subtle Ken Burns zoom */}
-                <div className={`rg-image-container ${isActive ? "active-zoom" : ""}`}>
-                  <Image
-                    src={slide.img}
-                    alt={slide.alt}
-                    fill
-                    sizes="(max-width: 1200px) 100vw, 1150px"
-                    priority={slide.id === 1}
-                    className="rg-slide-img"
-                  />
-                  {/* Cinematic gradient overlay */}
-                  <div className="rg-overlay" />
-                </div>
+    <SharedSlider
+      items={GALLERY_SLIDES}
+      containerClassName="restaurant-gallery-slider-wrapper"
+      swiperClassName="rg-swiper"
+      effect="fade"
+      fadeEffect={{ crossFade: true }}
+      loop={true}
+      speed={800}
+      autoplayDelay={4500}
+      paginationEl=".rg-dots"
+      navigationProps={{ prevEl: ".rg-prev", nextEl: ".rg-next" }}
+      showProgressBar={true}
+      progressTrackClassName="rg-progress-track"
+      progressBarClassName="rg-progress-bar"
+      renderItem={(slide, index, isActive) => (
+        <div className="rg-slide-card">
+          {/* Background Image with subtle Ken Burns zoom */}
+          <div className={`rg-image-container ${isActive ? "active-zoom" : ""}`}>
+            <Image
+              src={slide.img}
+              alt={slide.alt}
+              fill
+              sizes="(max-width: 1200px) 100vw, 1150px"
+              priority={slide.id === 1}
+              className="rg-slide-img"
+            />
+            {/* Cinematic gradient overlay */}
+            <div className="rg-overlay" />
+          </div>
 
-                {/* Glassmorphism Caption Panel */}
-                <div className={`rg-caption-panel ${isActive ? "rg-caption-anim" : ""}`}>
-                  <span className="rg-tagline">{slide.tagline}</span>
-                  <h3 className="rg-title">{slide.title}</h3>
-                  <p className="rg-description">{slide.description}</p>
-                </div>
-              </div>
-            )}
-          </SwiperSlide>
-        ))}
-      </Swiper>
-
+          {/* Glassmorphism Caption Panel */}
+          <div className={`rg-caption-panel ${isActive ? "rg-caption-anim" : ""}`}>
+            <span className="rg-tagline">{slide.tagline}</span>
+            <h3 className="rg-title">{slide.title}</h3>
+            <p className="rg-description">{slide.description}</p>
+          </div>
+        </div>
+      )}
+    >
       {/* Navigation Controls Row */}
       <div className="rg-controls-row">
         <button
-          ref={prevBtnRef}
           className="rg-nav-btn rg-prev"
           aria-label="Previous slide"
-          onClick={() => swiperRef.current?.slidePrev()}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
@@ -172,24 +125,17 @@ export default function RestaurantGallerySlider() {
         </button>
 
         {/* Pagination Dots */}
-        <div ref={paginationRef} className="rg-dots" />
+        <div className="rg-dots" />
 
         <button
-          ref={nextBtnRef}
           className="rg-nav-btn rg-next"
           aria-label="Next slide"
-          onClick={() => swiperRef.current?.slideNext()}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
       </div>
-
-      {/* Smooth Autoplay Progress Track */}
-      <div className="rg-progress-track">
-        <div className="rg-progress-bar" ref={progressRef} />
-      </div>
-    </div>
+    </SharedSlider>
   );
 }

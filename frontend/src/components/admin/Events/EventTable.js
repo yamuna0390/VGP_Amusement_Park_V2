@@ -1,6 +1,7 @@
 "use client";
 
 import StatusBadge from "@/components/admin/Common/StatusBadge";
+import { getImageUrl } from "@/constants/api";
 import "@/components/admin/Common/AdminTable.css";
 import "./EventTable.css";
 
@@ -70,7 +71,7 @@ export default function EventTable({
                     {event.image_url ? (
                       <div className="event-banner-thumbnail">
                         <img 
-                          src={event.image_url.startsWith('http') ? event.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${event.image_url}`} 
+                          src={getImageUrl(event.image_url)} 
                           alt="Event Banner" 
                           style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", display: "block" }} 
                         />

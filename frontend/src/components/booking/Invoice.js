@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useBooking } from "@/context/BookingContext";
 import { calcTotals, fmt } from "@/utils/bookingCalc";
 import { QRCodeSVG } from "qrcode.react";
@@ -67,6 +67,9 @@ const quote = booking.quote || bookingResult?.quote;
   const displayDiscount = quote?.totalDiscount !== undefined ? quote.totalDiscount : (discount || 0);
   const displaySavings = savings || displayDiscount;
 
+  const fmtInvoiceTotalPayable = (amount) =>
+    `₹${Math.floor(Number(amount || 0)).toLocaleString("en-IN")}`;
+
   // Normalize items to a consistent format (handle both camelCase from live API and snake_case from DB)
   const rawItems = booking.tickets || [];
   const normalizedItems = rawItems.map((item, idx) => {
@@ -125,11 +128,11 @@ const quote = booking.quote || bookingResult?.quote;
       {/* Header */}
       <div className="bk-inv__head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid var(--purple-deep)", paddingBottom: "14px", marginBottom: "20px" }}>
         <div>
-          <div className="bk-inv__brand" style={{ fontSize: "1.35rem", fontWeight: "900", color: "var(--purple-deep)" }}>👑 VGP UNIVERSAL KINGDOM</div>
-          <div className="bk-inv__sub" style={{ fontSize: "0.8rem", color: "#666" }}>Family Amusement &amp; Water Park · ECR, Chennai</div>
+          <div className="bk-inv__brand" style={{ fontSize: "1.35rem", fontWeight: "900", color: "var(--purple-deep)" }}>ðŸ‘‘ VGP UNIVERSAL KINGDOM</div>
+          <div className="bk-inv__sub" style={{ fontSize: "0.8rem", color: "#666" }}>Family Amusement &amp; Water Park Â· ECR, Chennai</div>
         </div>
         <div className="bk-inv__badge" style={{ fontSize: "0.85rem", fontWeight: "800", background: "var(--purple-light)", color: "var(--purple-deep)", padding: "4px 10px", borderRadius: "6px" }}>
-          TAX INVOICE · E-TICKET
+          TAX INVOICE Â· E-TICKET
         </div>
       </div>
 
@@ -164,7 +167,7 @@ const quote = booking.quote || bookingResult?.quote;
           {displayCouponCode && <div>Coupon: <strong style={{ color: "#2e7d32" }}>{displayCouponCode}</strong></div>}
           {displaySavings > 0 && (
             <div style={{ color: "#2e7d32", fontWeight: "700", marginTop: "4px" }}>
-              💰 You save: {fmt(displaySavings)}
+              ðŸ’° You save: {fmt(displaySavings)}
             </div>
           )}
         </div>
@@ -197,7 +200,7 @@ const quote = booking.quote || bookingResult?.quote;
                       {item.ticketType}
                     </td>
                     <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32", fontWeight: "700" }}>
-                      −{fmt(Math.abs(Number(item.totalPrice)))}
+                      âˆ’{fmt(Math.abs(Number(item.totalPrice)))}
                     </td>
                   </tr>
                 );
@@ -222,7 +225,7 @@ const quote = booking.quote || bookingResult?.quote;
                     {item.unitPrice != null ? fmt(item.unitPrice) : ''}
                   </td>
                   <td style={{ padding: "10px 0", textAlign: "right", color: isFree ? "#2e7d32" : "inherit" }}>
-                    {isFree ? "₹0.00" : fmt(item.totalPrice)}
+                    {isFree ? "â‚¹0.00" : fmt(item.totalPrice)}
                   </td>
                 </tr>
               );
@@ -259,7 +262,7 @@ const quote = booking.quote || bookingResult?.quote;
                               {isFree ? "FREE" : "Included"}
                             </td>
                             <td style={{ padding: "2px 0 6px 0", textAlign: "right", fontSize: "0.8rem", color: isFree ? "#2e7d32" : "#555" }}>
-                              {isFree ? "₹0.00" : "-"}
+                              {isFree ? "â‚¹0.00" : "-"}
                             </td>
                           </tr>
                         );
@@ -292,7 +295,7 @@ const quote = booking.quote || bookingResult?.quote;
                             <td style={{ padding: "10px 0", fontWeight: "700" }}>Free {item.name}</td>
                             <td style={{ padding: "10px 0", textAlign: "center" }}>{item.freeQuantity}</td>
                             <td style={{ padding: "10px 0", textAlign: "right" }}>FREE</td>
-                            <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>₹0.00</td>
+                            <td style={{ padding: "10px 0", textAlign: "right", color: "#2e7d32" }}>â‚¹0.00</td>
                           </tr>
                         );
                       }
@@ -340,7 +343,7 @@ const quote = booking.quote || bookingResult?.quote;
               {(!isItemized && (!quote || displayDiscount > 0)) && (
                 <tr className="bk-inv__deduct" style={{ color: "#2e7d32", fontWeight: "700" }}>
                   <td colSpan={3} style={{ padding: "10px 0" }}>Discount Applied</td>
-                  <td style={{ padding: "10px 0", textAlign: "right" }}>−{fmt(displayDiscount)}</td>
+                  <td style={{ padding: "10px 0", textAlign: "right" }}>âˆ’{fmt(displayDiscount)}</td>
                 </tr>
               )}
               <tr style={{ borderBottom: "1px dashed var(--border)" }}>
@@ -352,7 +355,7 @@ const quote = booking.quote || bookingResult?.quote;
                 <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(quote ? quote.addonTax : t?.foodGST || 0)}</td>
               </tr>
               <tr style={{ borderBottom: "1px dashed var(--border)" }}>
-                <td colSpan={3} style={{ padding: "8px 0" }}>Convenience fee {(!quote && t) ? `(min ₹${t.convenienceFee})` : ''}</td>
+                <td colSpan={3} style={{ padding: "8px 0" }}>Convenience fee {(!quote && t) ? `(min â‚¹${t.convenienceFee})` : ''}</td>
                 <td style={{ padding: "8px 0", textAlign: "right" }}>{fmt(quote ? quote.convenienceFee : t?.convenienceFee || 0)}</td>
               </tr>
             </>
@@ -362,7 +365,7 @@ const quote = booking.quote || bookingResult?.quote;
 
       <div className="bk-inv__total" style={{ display: "flex", justifyContent: "space-between", fontSize: "1.1rem", fontWeight: "900", borderTop: "2px solid var(--purple-deep)", paddingTop: "12px", marginBottom: "30px", color: "var(--purple-deep)" }}>
         <span>Total Payable</span>
-        <strong>{fmt(displayGrandTotal || displaySubtotal || 0)}</strong>
+        <strong>{fmtInvoiceTotalPayable(displayGrandTotal || displaySubtotal || 0)}</strong>
       </div>
 
       {/* QR + T&C */}
@@ -412,9 +415,10 @@ const quote = booking.quote || bookingResult?.quote;
       {/* Action buttons */}
       <div className="bk-inv__actions no-print" style={{ marginTop: "30px", display: "flex", gap: "12px", justifyContent: "center" }}>
         <button className="cta-big cta-red" onClick={handlePrint} style={{ height: "45px", padding: "0 28px" }}>
-          🖨 Print / Download PDF
+          ðŸ–¨ Print / Download PDF
         </button>
       </div>
     </div>
   );
 }
+

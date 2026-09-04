@@ -100,4 +100,58 @@ router.post("/ride/:slug", (req, res) => {
   });
 });
 
+const videoFileFilter = (req, file, cb) => {
+  const allowedMimeTypes = ["video/mp4", "video/webm"];
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only MP4 and WebM are allowed."));
+  }
+};
+
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const destDir = path.join(__dirname, "../uploads/video");
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    cb(null, destDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = crypto.randomBytes(4).toString("hex") + "-" + Date.now();
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `hero-${uniqueSuffix}${ext}`);
+  }
+});
+
+const uploadVideo = multer({
+  storage: videoStorage,
+  fileFilter: videoFileFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+});
+
+router.post("/video/homepage", (req, res) => {
+  uploadVideo.single("video")(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: "Video is too large. Maximum size is 50 MB." });
+      }
+      return res.status(400).json({ success: false, message: err.message });
+    } else if (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No video uploaded or invalid file type." });
+    }
+
+    const filePath = `/uploads/video/${req.file.filename}`;
+    
+    res.status(200).json({
+      success: true,
+      url: filePath,
+    });
+  });
+});
+
 module.exports = router;

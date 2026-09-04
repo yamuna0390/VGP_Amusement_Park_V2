@@ -70,6 +70,20 @@ export default function Header() {
         console.error("Failed to mark notification as read", error);
       }
     }
+
+    // Close the notifications menu
+    setShowNotifications(false);
+
+    // Preserve metadata for future exact-message navigation
+    const queryParams = new URLSearchParams();
+    if (notification.type) queryParams.append("type", notification.type);
+    
+    const refId = notification.reference_id || notification.referenceId;
+    if (refId) queryParams.append("id", refId);
+    
+    // Redirect to messages page
+    const queryString = queryParams.toString();
+    router.push(`/admin/messages${queryString ? `?${queryString}` : ""}`);
   };
 
   const pageTitle = useMemo(() => {

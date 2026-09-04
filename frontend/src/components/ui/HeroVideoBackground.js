@@ -23,35 +23,55 @@
  *     YouTube fails to load or the browser blocks autoplay.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getImageUrl } from "@/constants/api";
 
-// ── VIDEO SOURCE CONFIG ───────────────────────────────────────────────────
-const VIDEO_SOURCE = {
-  /** "youtube" | "local" */
-  type: "youtube",
-
-  /** YouTube video ID (used when type === "youtube") */
-  youtubeId: "a1Fw7SqAcP0",
-
-  /** Local file path (used when type === "local") */
-  // src: "/assets/video/hero.mp4",
-};
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Duration (ms) for the opacity fade-in once the video starts playing. */
 const FADE_DURATION_MS = 700;
+const FALLBACK_YOUTUBE_ID = "a1Fw7SqAcP0";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function HeroVideoBackground() {
   const containerRef = useRef(null);
+  const [videoConfig, setVideoConfig] = useState(null);
+
+  // Fetch config on mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/public/homepage-video`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
+        });
+        const data = await response.json();
+        
+        if (isMounted) {
+          if (data && data.success && data.videoUrl) {
+            setVideoConfig({ type: "local", src: getImageUrl(data.videoUrl) });
+          } else {
+            setVideoConfig({ type: "youtube", youtubeId: FALLBACK_YOUTUBE_ID });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load video settings:", error);
+        if (isMounted) {
+          setVideoConfig({ type: "youtube", youtubeId: FALLBACK_YOUTUBE_ID });
+        }
+      }
+    };
+    fetchConfig();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !videoConfig) return;
 
     // ── LOCAL VIDEO PATH ────────────────────────────────────────────────
-    if (VIDEO_SOURCE.type === "local") {
+    if (videoConfig.type === "local") {
       const video = document.createElement("video");
-      video.src = VIDEO_SOURCE.src;
+      video.src = videoConfig.src;
       video.autoplay = true;
       video.muted = true;
       video.loop = true;
@@ -77,12 +97,11 @@ export default function HeroVideoBackground() {
     }
 
     // ── YOUTUBE EMBED ───────────────────────────────────────────────────
-    if (VIDEO_SOURCE.type !== "youtube") return;
+    if (videoConfig.type !== "youtube") return;
 
-    const { youtubeId } = VIDEO_SOURCE;
+    const { youtubeId } = videoConfig;
 
     // Create the iframe element that will receive the YT player.
-    // The `.yt-cover` class in globals.css handles the cover-fill sizing.
     const iframe = document.createElement("iframe");
     iframe.id = "hero-yt-player";
     iframe.className = "yt-cover";
@@ -96,8 +115,7 @@ export default function HeroVideoBackground() {
       FADE_DURATION_MS +
       "ms ease;border:0;pointer-events:none;";
 
-    // Build the embed URL with all the flags needed to suppress controls &
-    // autoplay silently. `enablejsapi=1` allows the IFrame API to control it.
+    // Build the embed URL with all the flags needed to suppress controls & autoplay silently
     const params = new URLSearchParams({
       autoplay: "1",
       mute: "1",
@@ -129,21 +147,14 @@ export default function HeroVideoBackground() {
         events: {
           onReady(event) {
             if (destroyed) return;
-            // Ensure muted & playing — some browsers block autoplay otherwise.
             event.target.mute();
             event.target.playVideo();
           },
           onStateChange(event) {
             if (destroyed) return;
-
-            // YT.PlayerState.PLAYING === 1  →  fade the iframe in
             if (event.data === window.YT.PlayerState.PLAYING) {
               iframe.style.opacity = "1";
             }
-
-            // YT.PlayerState.ENDED === 0  →  loop manually as a safety net
-            // (the `loop` param + `playlist` already handles this natively,
-            // but we add the JS fallback for reliability).
             if (event.data === window.YT.PlayerState.ENDED) {
               event.target.playVideo();
             }
@@ -153,10 +164,8 @@ export default function HeroVideoBackground() {
     };
 
     if (window.YT && window.YT.Player) {
-      // API already loaded (e.g. navigated back to this page).
       initPlayer();
     } else {
-      // Inject the IFrame API script once and register our callback.
       if (!document.getElementById("yt-iframe-api-script")) {
         const script = document.createElement("script");
         script.id = "yt-iframe-api-script";
@@ -165,8 +174,6 @@ export default function HeroVideoBackground() {
         document.head.appendChild(script);
       }
 
-      // `onYouTubeIframeAPIReady` may already be set by another component;
-      // chain onto it to be safe.
       const prevReady = window.onYouTubeIframeAPIReady;
       window.onYouTubeIframeAPIReady = () => {
         if (typeof prevReady === "function") prevReady();
@@ -174,19 +181,14 @@ export default function HeroVideoBackground() {
       };
     }
 
-    // ── Cleanup ────────────────────────────────────────────────────────
     return () => {
       destroyed = true;
       if (player && typeof player.destroy === "function") {
-        try {
-          player.destroy();
-        } catch (_) {
-          // swallow errors on unmount
-        }
+        try { player.destroy(); } catch (_) {}
       }
       if (container.contains(iframe)) container.removeChild(iframe);
     };
-  }, []); // run once on mount
+  }, [videoConfig]); 
 
   return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }

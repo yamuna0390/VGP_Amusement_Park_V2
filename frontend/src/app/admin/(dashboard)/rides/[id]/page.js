@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { adminRideService } from "@/services/adminRideService";
 import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
+import { getImageUrl } from "@/constants/api";
 
 export default function ViewRidePage() {
   const { id } = useParams();
@@ -78,7 +79,7 @@ export default function ViewRidePage() {
           {ride.card_image_url && (
             <div style={{ marginBottom: '12px' }}>
               <strong>Card Image:</strong><br/>
-              <img src={ride.card_image_url} alt={ride.name} style={{ maxWidth: '200px', marginTop: '8px', borderRadius: '4px' }} />
+              <img src={getImageUrl(ride.card_image_url)} alt={ride.name} style={{ maxWidth: '200px', marginTop: '8px', borderRadius: '4px' }} />
             </div>
           )}
           <p><strong>Hero Type:</strong> {ride.hero_type}</p>
@@ -90,7 +91,7 @@ export default function ViewRidePage() {
           {ride.gallery && ride.gallery.length > 0 ? (
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {ride.gallery.map(g => (
-                <img key={g.id} src={g.image_url} alt="Gallery" style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '4px' }} />
+                <img key={g.id} src={getImageUrl(g.image_url)} alt="Gallery" style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '4px' }} />
               ))}
             </div>
           ) : (

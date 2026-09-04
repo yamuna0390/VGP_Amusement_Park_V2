@@ -53,6 +53,15 @@ router.get('/notifications', adminNotificationController.getNotifications);
 router.get('/notifications/unread-count', adminNotificationController.getUnreadCount);
 router.patch('/notifications/:id/read', adminNotificationController.markAsRead);
 
+// Admin Messages
+const messageController = require('../controllers/messageController');
+router.get('/messages', messageController.getAllMessages);
+
+// Admin Settings
+const adminSettingsController = require('../controllers/adminSettingsController');
+router.get('/settings', adminSettingsController.getSettings);
+router.put('/settings', adminSettingsController.updateSetting);
+
 // Admin Events
 const adminEventController = require('../controllers/adminEventController');
 router.get('/events', adminEventController.getAdminEvents);
@@ -60,5 +69,14 @@ router.get('/events/:id', adminEventController.getAdminEventById);
 router.post('/events', adminEventController.createAdminEvent);
 router.put('/events/:id', adminEventController.updateAdminEvent);
 router.patch('/events/:id/status', adminEventController.updateAdminEventStatus);
+
+// Admin Reviews
+const adminReviewController = require('../controllers/adminReviewController');
+router.get('/reviews', adminReviewController.getAdminReviews);
+router.get('/reviews/:id', adminReviewController.getAdminReviewById);
+router.post('/reviews', adminReviewController.createAdminReview);
+router.put('/reviews/:id', adminReviewController.updateAdminReview);
+router.patch('/reviews/:id/status', adminReviewController.updateAdminReviewStatus);
+router.delete('/reviews/:id', adminReviewController.deleteAdminReview);
 
 module.exports = router;

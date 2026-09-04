@@ -54,7 +54,30 @@ async function getSettings(connection = db, settingKeys = []) {
     }, {});
 }
 
+/**
+ * Update a single park setting.
+ *
+ * @param {PoolConnection|Pool} connection
+ * @param {string} settingKey
+ * @param {string} settingValue
+ * @returns {Promise<boolean>}
+ */
+async function updateSetting(connection = db, settingKey, settingValue) {
+    const [result] = await connection.execute(
+        `
+        INSERT INTO park_settings (setting_key, setting_value)
+        VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE 
+            setting_value = VALUES(setting_value)
+        `,
+        [settingKey, settingValue]
+    );
+
+    return result.affectedRows > 0;
+}
+
 module.exports = {
     getSetting,
-    getSettings
+    getSettings,
+    updateSetting
 };

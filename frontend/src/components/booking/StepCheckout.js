@@ -69,7 +69,7 @@ export default function StepCheckout({ onBack }) {
         amount: amount,
         currency: currency,
         name: "VGP Universal Kingdom",
-        description: "Amusement Park Booking",
+        description: `Booking #${bookingNumber}`,
         order_id: orderId,
         handler: async function (response) {
           try {
@@ -120,6 +120,11 @@ export default function StepCheckout({ onBack }) {
         },
         theme: {
           color: "#E52823",
+        },
+        modal: {
+          ondismiss: function () {
+            setSubmitting(false);
+          }
         },
       };
 

@@ -178,7 +178,7 @@ async function generateQuote(rawToken) {
     const totalTax = round2(ticketTax + addonTax);
     const convenienceFee = 40.00;
 
-    let grandTotal = round2(subtotal - totalDiscount + totalTax + convenienceFee);
+    let grandTotal = Math.floor(subtotal - totalDiscount + totalTax + convenienceFee);
     if (grandTotal < 0) grandTotal = 0;
 
     // Transaction to insert quote and update last_activity_at
@@ -260,3 +260,4 @@ async function generateQuote(rawToken) {
 module.exports = {
     generateQuote
 };
+

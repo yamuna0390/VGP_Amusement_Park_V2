@@ -15,19 +15,7 @@
  * otherwise, ready to swap to real photography.
  */
 
-import { useRef } from "react";
 import Link from "next/link";
-import { Swiper, SwiperSlide } from "swiper/react";
-import {
-  Autoplay,
-  Pagination,
-  Navigation,
-  Keyboard,
-  A11y,
-} from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
 
 // ── SLIDE DATA ─────────────────────────────────────────────────────────────
 // To integrate with a CMS/API later, replace this array with a prop or fetch.
@@ -104,9 +92,9 @@ const SLIDES = [
 ];
 // ───────────────────────────────────────────────────────────────────────────
 
-export default function BeachSlider() {
-  const progressRef = useRef(null);
+import SharedSlider from "@/components/ui/SharedSlider";
 
+export default function BeachSlider() {
   return (
     <section className="beach-slider" aria-label="Private Beach &amp; Events">
 
@@ -130,76 +118,61 @@ export default function BeachSlider() {
       </svg>
 
       {/* ── Swiper ───────────────────────────────────────────────────── */}
-      <div className="bs-wrap">
-        <Swiper
-          className="bs-swiper"
-          modules={[Autoplay, Pagination, Navigation, Keyboard, A11y]}
-          loop
-          autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-          pagination={{ clickable: true, el: ".bs-dots" }}
-          navigation={{ prevEl: ".bs-prev", nextEl: ".bs-next" }}
-          keyboard={{ enabled: true }}
-          a11y={{ enabled: true }}
-          speed={650}
-          grabCursor
-          onAutoplayTimeLeft={(s, _time, progress) => {
-            if (progressRef.current) {
-              progressRef.current.style.transform = `scaleX(${1 - progress})`;
-            }
-          }}
-        >
-          {SLIDES.map((slide) => (
-            <SwiperSlide key={slide.id}>
-              {({ isActive }) => (
-                <div className="bs-card" style={{ "--accent": slide.accent, "--accent-dark": slide.accentDark }}>
+      <SharedSlider
+        items={SLIDES}
+        containerClassName="bs-wrap"
+        swiperClassName="bs-swiper"
+        paginationEl=".bs-dots"
+        navigationProps={{ prevEl: ".bs-prev", nextEl: ".bs-next" }}
+        showProgressBar={true}
+        autoplayDelay={5000}
+        speed={650}
+        loop={true}
+        renderItem={(slide, index, isActive) => (
+          <div className="bs-card" style={{ "--accent": slide.accent, "--accent-dark": slide.accentDark }}>
+            {/* LEFT — text content */}
+            <div className="bs-content">
+              <span className="bs-sub">{slide.sub}</span>
+              <div className="bs-icon" aria-hidden="true">{slide.icon}</div>
+              <h2 className={`bs-heading ${isActive ? "bs-anim-up" : ""}`}>
+                {slide.heading}
+              </h2>
+              <p className={`bs-desc ${isActive ? "bs-anim-up bs-delay-1" : ""}`}>
+                {slide.description}
+              </p>
+              <div className={`bs-actions ${isActive ? "bs-anim-up bs-delay-2" : ""}`}>
+                <Link
+                  href={slide.cta.href}
+                  className="bs-btn-primary"
+                  id={`beach-slider-cta-${slide.id}`}
+                >
+                  {slide.cta.label}
+                </Link>
+                <Link
+                  href={slide.cta2.href}
+                  className="bs-btn-ghost"
+                  id={`beach-slider-cta2-${slide.id}`}
+                >
+                  {slide.cta2.label} →
+                </Link>
+              </div>
+            </div>
 
-                  {/* LEFT — text content */}
-                  <div className="bs-content">
-                    <span className="bs-sub">{slide.sub}</span>
-                    <div className="bs-icon" aria-hidden="true">{slide.icon}</div>
-                    <h2 className={`bs-heading ${isActive ? "bs-anim-up" : ""}`}>
-                      {slide.heading}
-                    </h2>
-                    <p className={`bs-desc ${isActive ? "bs-anim-up bs-delay-1" : ""}`}>
-                      {slide.description}
-                    </p>
-                    <div className={`bs-actions ${isActive ? "bs-anim-up bs-delay-2" : ""}`}>
-                      <Link
-                        href={slide.cta.href}
-                        className="bs-btn-primary"
-                        id={`beach-slider-cta-${slide.id}`}
-                      >
-                        {slide.cta.label}
-                      </Link>
-                      <Link
-                        href={slide.cta2.href}
-                        className="bs-btn-ghost"
-                        id={`beach-slider-cta2-${slide.id}`}
-                      >
-                        {slide.cta2.label} →
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* RIGHT — image */}
-                  <div className={`bs-img-wrap ${isActive ? "bs-anim-in" : ""}`}>
-                    <img
-                      src={slide.img}
-                      alt={slide.imgAlt}
-                      loading="lazy"
-                      decoding="async"
-                      className="bs-img"
-                    />
-                    {/* Accent chip */}
-                    <div className="bs-chip" aria-hidden="true">{slide.icon}</div>
-                  </div>
-
-                </div>
-              )}
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
+            {/* RIGHT — image */}
+            <div className={`bs-img-wrap ${isActive ? "bs-anim-in" : ""}`}>
+              <img
+                src={slide.img}
+                alt={slide.imgAlt}
+                loading="lazy"
+                decoding="async"
+                className="bs-img"
+              />
+              {/* Accent chip */}
+              <div className="bs-chip" aria-hidden="true">{slide.icon}</div>
+            </div>
+          </div>
+        )}
+      >
         {/* ── Custom nav row ─────────────────────────────────────────── */}
         <div className="bs-nav-row" aria-hidden="true">
           <button className="bs-arrow bs-prev" aria-label="Previous slide">
@@ -217,13 +190,7 @@ export default function BeachSlider() {
             </svg>
           </button>
         </div>
-
-        {/* Autoplay progress bar */}
-        <div className="bs-progress-track" aria-hidden="true">
-          <div className="bs-progress-bar" ref={progressRef} />
-        </div>
-      </div>
-
+      </SharedSlider>
     </section>
   );
 }

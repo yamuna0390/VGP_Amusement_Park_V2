@@ -19,20 +19,36 @@ export default function ApiInterceptor() {
       try {
         const response = await originalFetch(...args);
 
-        // Check for 401 Unauthorized
-        if (response.status === 401) {
-          // Clone the response to read JSON without consuming it for the caller
+        // Check for 400 Bad Request
+        if (response.status === 400) {
           const clone = response.clone();
           try {
             const data = await clone.json();
-
-            // Check if it's our session expired / unauthorized code
-            if (data.code === "SESSION_EXPIRED" || data.code === "UNAUTHORIZED") {
-              // Prevent multiple redirects and toasts
+            if (data.code === "BOOKING_STEP_INCOMPLETE" && pathname.startsWith("/book")) {
               if (!isLoggingOut) {
                 isLoggingOut = true;
+                showToast("Your booking session was restarted in another tab. Please start again.");
+                setTimeout(() => {
+                  window.location.href = "/book";
+                }, 1500);
+              }
+              throw new Error("BOOKING_SESSION_RESTARTED");
+            }
+          } catch (e) {
+            if (e.message === "BOOKING_SESSION_RESTARTED") throw e;
+          }
+        }
 
+        // Check for 401 Unauthorized
+        if (response.status === 401) {
+          const clone = response.clone();
+          try {
+            const data = await clone.json();
+            if (data.code === "SESSION_EXPIRED" || data.code === "UNAUTHORIZED" || data.code === "SESSION_NOT_FOUND") {
+              if (!isLoggingOut) {
+                isLoggingOut = true;
                 const isAdmin = pathname.startsWith("/admin");
+                const isBooking = pathname.startsWith("/book");
 
                 if (isAdmin) {
                   localStorage.removeItem("adminToken");
@@ -40,6 +56,11 @@ export default function ApiInterceptor() {
                   showToast("Your session has expired. Please log in again.");
                   setTimeout(() => {
                     window.location.href = "/admin/login";
+                  }, 1500);
+                } else if (isBooking) {
+                  showToast("Your booking session has expired. Please start again.");
+                  setTimeout(() => {
+                    window.location.href = "/book";
                   }, 1500);
                 } else {
                   localStorage.removeItem("token");
@@ -50,16 +71,12 @@ export default function ApiInterceptor() {
                   }, 1500);
                 }
               }
-
-              // Reject the original request with a controlled error
               throw new Error("SESSION_EXPIRED");
             }
           } catch (e) {
-            // Re-throw if it's our SESSION_EXPIRED error
             if (e.message === "SESSION_EXPIRED") {
               throw e;
             }
-            // Not a JSON response or failed to parse, proceed normally
           }
         }
 

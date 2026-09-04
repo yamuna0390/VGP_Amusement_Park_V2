@@ -101,7 +101,7 @@
 
 .status-badge.failed, .status-badge.cancelled {
   background-color: #ffebee;
-  color: #c62828;
+  color: #f31919;
 }
 
 .action-btn {

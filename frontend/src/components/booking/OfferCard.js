@@ -2,6 +2,7 @@
 
 import Counter from "./Counter";
 import { fmt } from "@/utils/bookingCalc";
+import { getImageUrl } from "@/constants/api";
 
 export default function OfferCard({
   offer,
@@ -14,9 +15,9 @@ export default function OfferCard({
   const initialQty = Number(offer.initialQty) || 1;
   const qty = quantity || initialQty;
 
-  const unitPrice = Number(offer.unitPrice) || 0;
-  const buyQty = Number(offer.buyQty) || 0;
-  const freeQty = Number(offer.freeQty) || 0;
+  const unitPrice = Number(offer.offerPrice) || 0;
+  const buyQty = Number(offer.buyQuantity) || 0;
+  const freeQty = Number(offer.freeQuantity) || 0;
 
   const totalPay = qty * unitPrice;
 
@@ -61,45 +62,10 @@ export default function OfferCard({
   };
 
   const placeholderText = offer.displayName?.split(" ")[0] || "Offer";
-  let fallbackImage = null;
-  const nameStr = String(offer.displayName || offer.offerName || "").toLowerCase();
-  const codeStr = String(offer.code || offer.offerTicketId || "").toLowerCase();
-
-  if (
-    nameStr.includes("student") ||
-    nameStr.includes("campus") ||
-    nameStr.includes("college") ||
-    codeStr.includes("campus") ||
-    codeStr.includes("student")
-  ) {
-    fallbackImage = "/images/Thumbnail/students.png";
-  } else if (
-    nameStr.includes("child") ||
-    codeStr.includes("child") ||
-    nameStr.includes("legend") ||
-    nameStr.includes("little")
-  ) {
-    fallbackImage = "/images/Thumbnail/child.png";
-  } else if (nameStr.includes("senior") || codeStr.includes("senior")) {
-    fallbackImage = "/images/Thumbnail/senior.png";
-  } else if (
-    nameStr.includes("adult") ||
-    nameStr.includes("early") ||
-    nameStr.includes("birthday") ||
-    nameStr.includes("aadi") ||
-    nameStr.includes("friendship") ||
-    codeStr.includes("early") ||
-    codeStr.includes("birthday") ||
-    codeStr.includes("aadi") ||
-    codeStr.includes("friendship")
-  ) {
-    fallbackImage = "/images/Thumbnail/Adult.png";
-  } else {
-    fallbackImage = "/images/Thumbnail/Adult.png";
-  }
+  let fallbackImage = "/images/Thumbnail/Adult.png";
 
   const imageSrc =
-    offer.image ||
+    getImageUrl(offer.image_url || offer.image) ||
     fallbackImage ||
     `https://placehold.co/180x180/F8FAFC/64748B?text=${placeholderText}`;
 

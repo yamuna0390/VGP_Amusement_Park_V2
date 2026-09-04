@@ -5,6 +5,7 @@ import { Plus, Eye, Pencil } from "lucide-react";
 import Link from "next/link";
 import { adminRideService } from "@/services/adminRideService";
 import StatusBadge from "@/components/admin/Common/StatusBadge";
+import { getImageUrl } from "@/constants/api";
 import "@/components/admin/Common/AdminTable.css";
 
 export default function AdminRidesPage() {
@@ -115,7 +116,7 @@ export default function AdminRidesPage() {
                     <td>
                       {ride.card_image_url ? (
                         <img 
-                          src={ride.card_image_url} 
+                          src={getImageUrl(ride.card_image_url)} 
                           alt={ride.name} 
                           style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
                         />

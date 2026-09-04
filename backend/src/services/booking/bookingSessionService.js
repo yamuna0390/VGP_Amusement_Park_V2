@@ -231,7 +231,7 @@ async function updateSession(rawToken, payload) {
         new Date(session.expires_at) <= new Date()
     ) {
         const err = new Error("Session has expired");
-        err.statusCode = 403;
+        err.statusCode = 401;
         err.code = "SESSION_EXPIRED";
         throw err;
     }
@@ -332,7 +332,7 @@ async function updateSessionItems(rawToken, payload) {
 
     if (session.status !== 'ACTIVE' || new Date(session.expires_at) <= new Date()) {
         const err = new Error("Session has expired");
-        err.statusCode = 403;
+        err.statusCode = 401;
         err.code = "SESSION_EXPIRED";
         throw err;
     }
@@ -537,7 +537,7 @@ async function updateCustomer(rawToken, payload) {
 
     if (session.status !== 'ACTIVE' || new Date(session.expires_at) <= new Date()) {
         const err = new Error("Session has expired");
-        err.statusCode = 403;
+        err.statusCode = 401;
         err.code = "SESSION_EXPIRED";
         throw err;
     }

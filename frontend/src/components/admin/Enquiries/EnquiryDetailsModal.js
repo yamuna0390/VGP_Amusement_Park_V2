@@ -48,6 +48,17 @@ export default function EnquiryDetailsModal({
             </span>
           </div>
 
+          {enquiry.type && (
+            <div className="details-row">
+              <span className="details-label">
+                Type
+              </span>
+              <span className="details-value">
+                {enquiry.type}
+              </span>
+            </div>
+          )}
+
           <div className="details-row">
             <span className="details-label">
               Subject
@@ -118,27 +129,55 @@ export default function EnquiryDetailsModal({
 
         </div>
 
-        {/* Message */}
+        {/* Group Quote Information */}
+        {enquiry.type === "Group Quote" && (
+          <div className="details-section">
+            <h3 className="details-section-title">
+              Group Quote Details
+            </h3>
 
-        <div className="details-section">
+            <div className="details-row">
+              <span className="details-label">
+                Group Size
+              </span>
+              <span className="details-value">
+                {enquiry.groupSize}
+              </span>
+            </div>
 
-          <h3 className="details-section-title">
-            Message
-          </h3>
-
-          <div className="details-row">
-            <span
-              className="details-value"
-              style={{
-                whiteSpace: "pre-wrap",
-                lineHeight: "1.7",
-              }}
-            >
-              {enquiry.message}
-            </span>
+            <div className="details-row">
+              <span className="details-label">
+                Preferred Date
+              </span>
+              <span className="details-value">
+                {formatDate(enquiry.preferredDate)}
+              </span>
+            </div>
           </div>
+        )}
 
-        </div>
+        {/* Message */}
+        {enquiry.message && (
+          <div className="details-section">
+
+            <h3 className="details-section-title">
+              Message
+            </h3>
+
+            <div className="details-row">
+              <span
+                className="details-value"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  lineHeight: "1.7",
+                }}
+              >
+                {enquiry.message}
+              </span>
+            </div>
+
+          </div>
+        )}
 
       </div>
     </Modal>

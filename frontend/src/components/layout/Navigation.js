@@ -57,7 +57,7 @@ export default function Navigation() {
           <Link href="/" className="logo" id="nav-logo">
             <img
               className="logo-img"
-              src="/assets/ukd_logo_t.png"
+              src="/assets/header_logo.png"
               alt="VGP Universal Kingdom — Family Amusement Park"
             />
           </Link>

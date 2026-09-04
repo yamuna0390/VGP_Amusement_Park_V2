@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
 
 import { adminOfferService } from "@/services/adminOfferService";
 import { adminTicketTypeService } from "@/services/adminTicketTypeService";
+import { uploadService } from "@/services/uploadService";
+import { getImageUrl } from "@/constants/api";
 
 import "./OfferForm.css";
 
@@ -14,6 +16,7 @@ const DEFAULT_FORM = {
   description: "",
   instruction: "",
   offer_code: "",
+  image_url: null,
 
   offer_type_id: 1,
 
@@ -122,10 +125,26 @@ export default function OfferForm({
   const [ticketTypes, setTicketTypes] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [loadingTickets, setLoadingTickets] = useState(true);
+  const [imageUploading, setImageUploading] = useState(false);
 
   useEffect(() => {
     loadTickets();
   }, []);
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    try {
+      const data = await uploadService.uploadImage(file);
+      setForm((prev) => ({ ...prev, image_url: data.url }));
+    } catch (error) {
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (!initialData) {
@@ -136,6 +155,7 @@ export default function OfferForm({
     setForm({
       ...DEFAULT_FORM,
       ...initialData,
+      image_url: initialData.image_url || null,
 
       offer_type_id:
         initialData.offer_type_id ??
@@ -609,6 +629,8 @@ export default function OfferForm({
           form.instruction?.trim() || null,
         offer_code:
           form.offer_code?.trim() || null,
+        image_url:
+          form.image_url || null,
 
         offer_type_id:
           Number(form.offer_type_id),
@@ -813,7 +835,7 @@ export default function OfferForm({
               <input
                 type="text"
                 name="offer_code"
-                value={form.offer_code}
+                value={form.offer_code ?? ""}
                 onChange={handleChange}
                 placeholder="Example: EARLYBIRD15"
               />
@@ -830,7 +852,7 @@ export default function OfferForm({
 
             <textarea
               name="description"
-              value={form.description}
+              value={form.description ?? ""}
               onChange={handleChange}
               rows={3}
               placeholder="Explain the offer and its benefit to customers."
@@ -842,11 +864,53 @@ export default function OfferForm({
 
             <textarea
               name="instruction"
-              value={form.instruction}
+              value={form.instruction ?? ""}
               onChange={handleChange}
               rows={3}
               placeholder="Tell customers what they need to do or provide to use this offer."
             />
+          </div>
+
+          <div className="offer-form-group">
+            <label>Offer Image</label>
+            <div className="offer-image-upload-wrapper" style={{ marginTop: '8px' }}>
+              {form.image_url ? (
+                <div className="offer-image-preview" style={{ marginBottom: '10px' }}>
+                  <img 
+                    src={getImageUrl(form.image_url)} 
+                    alt="Offer Preview" 
+                    style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', objectFit: 'cover' }} 
+                  />
+                </div>
+              ) : null}
+              
+              <div className="offer-upload-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <label className="offer-btn offer-btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <ImageIcon size={16} />
+                  {imageUploading ? "Uploading..." : form.image_url ? "Replace Image" : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={imageUploading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {form.image_url && !imageUploading && (
+                  <button
+                    type="button"
+                    className="offer-btn offer-btn-secondary"
+                    style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                    onClick={() => setForm(prev => ({ ...prev, image_url: null }))}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <small style={{ display: 'block', marginTop: '6px' }}>
+                Upload an image to display on the public offer card.
+              </small>
+            </div>
           </div>
         </section>
 
@@ -902,7 +966,7 @@ export default function OfferForm({
                       : undefined
                   }
                   step="0.01"
-                  value={discountValue}
+                  value={discountValue ?? ""}
                   onChange={handleDiscountChange}
                   placeholder={
                     isPercentage

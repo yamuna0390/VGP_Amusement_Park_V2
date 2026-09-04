@@ -9,6 +9,8 @@ export default function EnquiryTable({
   enquiries,
   onView,
   onStatusChange,
+  showType = false,
+  highlightedId = null
 }) {
   function getNextStatus(status) {
     switch (status) {
@@ -31,6 +33,7 @@ export default function EnquiryTable({
           <tr>
             <th>Enquiry ID</th>
             <th>Customer</th>
+            {showType && <th>Type</th>}
             <th>Subject</th>
             <th>Received</th>
             <th>Status</th>
@@ -51,7 +54,11 @@ export default function EnquiryTable({
               const nextStatus = getNextStatus(enquiry.status);
 
               return (
-                <tr key={enquiry.id}>
+                <tr 
+                  key={enquiry.id}
+                  id={`message-row-${enquiry.id}`}
+                  style={enquiry.id === highlightedId ? { backgroundColor: "rgba(255, 215, 0, 0.15)", transition: "background-color 0.5s ease" } : {}}
+                >
 
                   <td>
                     <span className="admin-id">
@@ -65,6 +72,21 @@ export default function EnquiryTable({
                       <small>{enquiry.mobile}</small>
                     </div>
                   </td>
+
+                  {showType && (
+                    <td>
+                      <span style={{
+                        padding: "4px 8px", 
+                        borderRadius: "12px", 
+                        fontSize: "0.8rem", 
+                        fontWeight: "600",
+                        background: enquiry.type === "Group Quote" ? "#e0f2fe" : "#f3e8ff",
+                        color: enquiry.type === "Group Quote" ? "#0369a1" : "#7e22ce"
+                      }}>
+                        {enquiry.type}
+                      </span>
+                    </td>
+                  )}
 
                   <td>
                     <strong>{enquiry.subject}</strong>

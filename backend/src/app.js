@@ -112,6 +112,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/group-quotes", groupQuoteRoutes);
 app.use("/api/rides", rideRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/reviews", require("./routes/reviewRoutes"));
 
 const eventRoutes = require("./routes/eventRoutes");
 const operatorEnquiryRoutes = require("./routes/operatorEnquiryRoutes");

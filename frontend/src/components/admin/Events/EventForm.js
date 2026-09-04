@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "@/components/admin/Common/Modal";
+import { getImageUrl } from "@/constants/api";
 import "./EventForm.css";
 
 const initialState = {
@@ -127,7 +128,7 @@ export default function EventForm({
             ) : (
               <div style={{ position: "relative", borderRadius: "12px", overflow: "hidden", display: "inline-block", border: "1px solid #E2E8F0" }}>
                 <img 
-                  src={formData.image_url.startsWith('http') ? formData.image_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${formData.image_url}`} 
+                  src={getImageUrl(formData.image_url)} 
                   alt="Event Preview" 
                   style={{ display: "block", maxHeight: "200px", objectFit: "cover" }} 
                 />

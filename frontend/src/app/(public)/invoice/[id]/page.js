@@ -64,7 +64,7 @@ export default async function InvoiceRenderPage(props) {
     bookingId: rawData.id,
     bookingNumber: rawData.booking_number,
     invoiceNo: rawData.invoice_number,
-    bookingDate: new Date(rawData.created_at).toLocaleDateString("en-IN", { dateStyle: "medium" }),
+    bookingDate: rawData.created_at,
     visitDate: new Date(rawData.visit_date).toLocaleDateString("en-IN", { dateStyle: "medium" }),
     customer: {
       name: rawData.guest_name,

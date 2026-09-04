@@ -91,7 +91,7 @@ nav.scrolled .logo-img{height:36px}
 .nav-link:hover,.nav-link.active{background:#5A257F;color:#fff}
 .btn-book{background:var(--red);color:#fff;font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetica,sans-serif;font-weight:700;font-size:1rem;padding:9px 20px;border-radius:26px;border:none;box-shadow:0 3px 0 var(--yellow-deep);cursor:pointer}
 .btn-book:hover{transform:translateY(-2px)}
-.btn-login{background:rgba(74,33,107,.12);color:var(--purple-deep);font-weight:800;padding:8px 18px;border-radius:26px;border:none;box-shadow:0 3px 0 var(--blue-deep);cursor:pointer;margin-left:6px}
+.btn-login{background:transparent;color:var(--purple-deep);font-weight:800;padding:8px 18px;border-radius:26px;border:none;box-shadow:none;cursor:pointer;margin-left:6px}
 .hamburger{background:var(--purple-deep);border:none;border-radius:10px;color:#F6C33B;font-size:1.3rem;padding:6px 12px;cursor:pointer;margin-left:8px;box-shadow:0 3px 0 var(--purple-deep)}
 
 /* ---------- drawer ---------- */
@@ -592,8 +592,9 @@ footer .cols h4{font-family:var(--font-roboto-condensed),'Arial Narrow',Helvetic
 footer a,.footer a{display:block;color:#dccff2;text-decoration:none;font-weight:600;padding:3px 0;cursor:pointer}
 footer a:hover,.footer a:hover{color:#F6C33B}
 .footer p{color:#dccff2;font-size:.9rem;margin-bottom:8px}
-.ft-soc{display:flex;gap:10px;margin-top:12px}
-.ft-soc a{background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-weight:800;text-transform:uppercase;font-size:.75rem}
+.ft-soc{display:flex;gap:12px;margin-top:12px;align-items:center}
+.ft-soc a{display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;font-size:1.2rem;transition:all 0.2s ease;padding:0;}
+.ft-soc a:hover{background:rgba(255,255,255,.25);transform:translateY(-2px);}
 .ft-copy{text-align:center;font-size:.8rem;color:#c9b8e8;margin-top:34px;border-top:1px solid #7a55b0;padding-top:16px;max-width:1150px;margin-inline:auto}
 .foot-note{text-align:center;font-size:.8rem;color:#c9b8e8;margin-top:34px;border-top:1px solid #7a55b0;padding-top:16px}
 
@@ -1771,13 +1772,13 @@ body.portal-mode{background:#EEF0F6}
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(74, 33, 107, 0.12);
+  background: transparent;
   color: var(--purple-deep);
   font-weight: 800;
   padding: 8px 18px;
   border-radius: 26px;
   border: none;
-  box-shadow: 0 3px 0 var(--blue-deep);
+  box-shadow: none;
   cursor: pointer;
   margin-left: 6px;
   transition: all 0.2s ease;

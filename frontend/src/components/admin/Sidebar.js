@@ -15,7 +15,8 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Settings,
-  BookOpenCheck
+  BookOpenCheck,
+  Star
 } from "lucide-react";
 
 import "./Sidebar.css";
@@ -65,14 +66,24 @@ export default function Sidebar() {
       icon: CalendarDays,
     },
     {
-      name: "Gallery",
-      href: "/admin/gallery",
+      name: "Media",
+      href: "/admin/media",
       icon: ImageIcon,
     },
     {
       name: "Contact",
       href: "/admin/contact",
       icon: MessageSquare,
+    },
+    {
+      name: "Messages",
+      href: "/admin/messages",
+      icon: MessageSquare,
+    },
+    {
+      name: "Reviews",
+      href: "/admin/reviews",
+      icon: Star,
     },
     {
       name: "Settings",
